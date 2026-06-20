@@ -575,9 +575,9 @@
       </p>
       <div class="meta-bar">
         <span class="meta-pill"><strong>Owner</strong> Shad · shad@tripwheel.io</span>
-        <span class="meta-pill"><strong>Latest</strong> v0.4.2-states</span>
+        <span class="meta-pill"><strong>Latest</strong> v0.4.3-states</span>
         <span class="meta-pill"><strong>Updated</strong> Jun 20, 2026</span>
-        <span class="meta-pill"><strong>Entries</strong> 11 versions + docs</span>
+        <span class="meta-pill"><strong>Entries</strong> 12 versions + docs</span>
       </div>
     </header>
 
@@ -596,13 +596,58 @@
 
     <div class="timeline">
 
+      <!-- v0.4.3-states -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.4.3-states</span>
+            <span class="date">Jun 20, 2026</span>
+            <span class="badge latest">Latest</span>
+          </div>
+          <h2 class="entry-title">Page-based topbar breadcrumbs & panel polish</h2>
+          <p class="entry-desc">
+            Iteration on v0.4.2 app shell header logic: hierarchical breadcrumbs without duplicate page titles,
+            plus a fix for double borders on nested empty states inside panels.
+          </p>
+          <div class="tags">
+            <span class="tag">Topbar</span>
+            <span class="tag">Breadcrumbs</span>
+            <span class="tag">Empty states</span>
+            <span class="tag">Panel polish</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>Topbar: page-based breadcrumb hierarchy — path in <code>.bc</code>, current page in <code>.tb-title</code> only (no duplicate titles)</li>
+            <li>Dashboard: workspace name in breadcrumb; main title = Dashboard</li>
+            <li>Tool pages: <code>Tools /</code> breadcrumb + tool name as main title (Social Media, Photo Tool)</li>
+            <li>Nested pages: full path in breadcrumb (e.g. <code>Tools / Photo Tool /</code>) + leaf title below (Job history)</li>
+            <li>Fixed overlapping borders on dashboard Connected accounts empty state — strip frame from <code>.panel &gt; .empty-state</code></li>
+          </ul>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.4.3-states.html" target="_blank">↗ Open prototype</a>
+            <a class="link-btn" href="prototypes/v0.4.2-states.html" target="_blank">Previous · v0.4.2</a>
+            <a class="link-btn" href="docs/specs/v0.4.2.md" target="_blank">UI spec v0.4.2</a>
+          </div>
+
+          <div class="section-label" style="margin-top:16px">Source sessions</div>
+          <div class="chat-ref">
+            Forked from v0.4.2-states ·
+            <a href="#">Topbar breadcrumb hierarchy session</a> ·
+            <a href="#">Panel empty-state border fix</a>
+          </div>
+        </div>
+      </article>
+
       <!-- v0.4.2-states -->
       <article class="entry" data-type="prototype">
         <div class="entry-head">
           <div class="entry-top">
             <span class="version-tag">v0.4.2-states</span>
             <span class="date">Jun 19–20, 2026</span>
-            <span class="badge latest">Latest</span>
           </div>
           <h2 class="entry-title">Full prototype with empty states & state navigator</h2>
           <p class="entry-desc">
