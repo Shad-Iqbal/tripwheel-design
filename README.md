@@ -2,7 +2,8 @@
 
 Product design workspace for [Tripwheel](https://tripwheel.io) — prototypes, specs, tokens, and a living version log.
 
-**Owner:** Shad · shad@tripwheel.io
+**Owner:** Shad · shad@tripwheel.io  
+**Live version log:** [tripwheel-design.vercel.app](https://tripwheel-design.vercel.app)
 
 ## Quick links
 
