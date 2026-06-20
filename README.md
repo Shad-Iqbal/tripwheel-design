@@ -28,9 +28,9 @@ tripwheel-design/
 │   ├── research/           # Research plan, qual script, landing copy
 │   └── design-system.md
 ├── tokens/                 # design-tokens.json
-├── assets/screenshots/     # Version log thumbnails
-├── reference/              # Reference screens
-├── public/images/          # Shared assets
+├── assets/
+│   ├── screenshots/     # Version log thumbnails
+│   └── images/          # Shared prototype assets
 └── src/                    # Future React/components
 ```
 

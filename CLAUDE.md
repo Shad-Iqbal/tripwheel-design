@@ -22,7 +22,7 @@ Product design workspace for Tripwheel. Tokens, prototypes, specs, and the versi
 | Screenshots | `assets/screenshots/` |
 | UI components (future) | `src/components/` |
 | Reference screens | `reference/` |
-| Assets / images | `public/images/` |
+| Assets / images | `assets/images/` |
 | Tool connections | `.mcp.json` |
 | Conventions | `.claude/rules/` |
 | Workflows | `.claude/skills/` · `.claude/commands/` |
