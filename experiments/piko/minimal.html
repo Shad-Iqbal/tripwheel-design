@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tripwheel — Social Media Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-primary: oklch(52% 0.14 250);
+    --color-primary-fg: oklch(98% 0.005 250);
+    --color-accent: oklch(62% 0.18 250);
+    --color-bg: oklch(98.5% 0.004 250);
+    --color-surface: oklch(100% 0 0);
+    --color-surface-raised: oklch(99% 0.003 250);
+    --color-border: oklch(91% 0.008 250);
+    --color-border-subtle: oklch(95% 0.005 250);
+    --color-muted: oklch(95% 0.006 250);
+    --color-text: oklch(16% 0.02 250);
+    --color-text-2: oklch(45% 0.015 250);
+    --color-text-3: oklch(62% 0.01 250);
+    --color-success: oklch(58% 0.16 145);
+    --color-warning: oklch(72% 0.18 75);
+    --color-danger: oklch(55% 0.2 25);
+    --color-info: oklch(58% 0.14 250);
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
+    --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.06);
+    --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--color-surface-raised);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 12px;
+    gap: 4px;
+    border-right: 1px solid var(--color-border-subtle);
+  }
+
+  .sidebar-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text);
+    padding: 4px 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-mark {
+    width: 22px;
+    height: 22px;
+    background: var(--color-primary);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-fg);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: oklch(0% 0 0 / 0.03);
+    color: var(--color-text);
+  }
+
+  .nav-item.active {
+    background: oklch(0% 0 0 / 0.05);
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .nav-item.dimmed {
+    color: var(--color-text-3);
+    opacity: 0.55;
+    cursor: default;
+  }
+  .nav-item.dimmed:hover {
+    background: none;
+    color: var(--color-text-3);
+  }
+
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-3);
+    padding: 20px 10px 6px;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .sidebar-user:hover {
+    background: oklch(0% 0 0 / 0.03);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-2);
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .user-name { font-size: 12px; font-weight: 500; color: var(--color-text); }
+  .user-org { font-size: 11px; color: var(--color-text-3); }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 36px 0;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-primary);
+    color: var(--color-primary-fg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 20px 36px 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .tab {
+    padding: 8px 16px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s ease;
+  }
+  .tab:hover {
+    color: var(--color-text-2);
+  }
+  .tab.active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-text);
+    font-weight: 600;
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 36px;
+  }
+
+  .filter-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-3);
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+  }
+  .filter-btn:hover {
+    color: var(--color-text-2);
+    background: oklch(0% 0 0 / 0.03);
+  }
+  .filter-btn.active {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .filter-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--color-border);
+    margin: 0 6px;
+  }
+
+  .filter-dropdown {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-3);
+    background: none;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-body);
+    appearance: none;
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23999' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+
+  .filter-spacer { flex: 1; }
+
+  .view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--color-muted);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+  }
+  .view-toggle-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-3);
+    background: none;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.15s ease;
+  }
+  .view-toggle-btn.active {
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── Post list ── */
+  .post-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 36px 36px;
+  }
+
+  .date-group {
+    margin-top: 28px;
+  }
+  .date-group:first-child {
+    margin-top: 8px;
+  }
+
+  .date-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-3);
+    padding: 0 0 12px;
+  }
+
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 8px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.12s ease;
+    position: relative;
+  }
+  .post-row:hover {
+    background: oklch(0% 0 0 / 0.02);
+  }
+  .post-row + .post-row {
+    border-top: 1px solid var(--color-border-subtle);
+  }
+  .post-row:hover + .post-row {
+    border-top-color: transparent;
+  }
+
+  .post-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--color-muted);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .post-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-caption {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .post-channel {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-3);
+  }
+
+  .post-time {
+    font-size: 11px;
+    color: var(--color-text-3);
+  }
+
+  .meta-dot {
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--color-text-3);
+    opacity: 0.5;
+  }
+
+  /* Status pills — minimal: dot + text */
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+    padding: 0 4px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .status-scheduled .status-dot { background: var(--color-success); }
+  .status-scheduled { color: var(--color-text-3); }
+
+  .status-draft .status-dot { background: var(--color-warning); }
+  .status-draft { color: var(--color-text-3); }
+
+  .status-failed .status-dot { background: var(--color-danger); }
+  .status-failed { color: var(--color-danger); }
+
+  /* Hover actions */
+  .post-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+  }
+  .post-row:hover .post-actions {
+    opacity: 1;
+  }
+
+  .action-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.12s ease;
+  }
+  .action-btn:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-3);
+  }
+
+  .action-more {
+    padding: 5px 7px;
+    font-size: 13px;
+    color: var(--color-text-3);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.12s ease;
+  }
+  .action-more:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-3);
+  }
+
+  /* Failed row accent */
+  .post-row.failed .post-caption {
+    color: var(--color-danger);
+  }
+
+  .failed-reason {
+    font-size: 11px;
+    color: var(--color-danger);
+    opacity: 0.8;
+  }
+
+  /* Scrollbar */
+  .post-list::-webkit-scrollbar { width: 6px; }
+  .post-list::-webkit-scrollbar-track { background: transparent; }
+  .post-list::-webkit-scrollbar-thumb {
+    background: oklch(0% 0 0 / 0.08);
+    border-radius: 3px;
+  }
+  .post-list::-webkit-scrollbar-thumb:hover {
+    background: oklch(0% 0 0 / 0.14);
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">T</div>
+    Tripwheel
+  </div>
+
+  <a class="nav-item" href="#">
+    <span class="nav-icon">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 6h4M6 9h2"/></svg>
+    </span>
+    Dashboard
+  </a>
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+    </span>
+    Social Media
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="10" rx="2"/><circle cx="6" cy="7" r="1.5"/><path d="M14 13l-3.5-3.5L8 12l-2-2-4 4"/></svg>
+    </span>
+    Photo Tool
+  </a>
+
+  <div class="nav-section-label">Coming soon</div>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">📋</span>
+    Itinerary Builder
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">🗺</span>
+    Trip Listing
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">📖</span>
+    Bookings
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">💳</span>
+    Payments
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">📊</span>
+    Reports
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">👥</span>
+    Team
+  </a>
+  <a class="nav-item dimmed" href="#">
+    <span class="nav-icon">⚙</span>
+    Settings
+  </a>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">JT</div>
+    <div class="user-info">
+      <span class="user-name">Jane Traveler</span>
+      <span class="user-org">Wander Co.</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="main">
+  <!-- Page header -->
+  <div class="page-header">
+    <h1 class="page-title">Social Media</h1>
+    <button class="btn-primary">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
+      Create post
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active">Queue</div>
+    <div class="tab">Channels</div>
+    <div class="tab">Calendar</div>
+    <div class="tab">Analytics</div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <button class="filter-btn active">All</button>
+    <button class="filter-btn">Facebook</button>
+    <button class="filter-btn">Instagram</button>
+    <div class="filter-sep"></div>
+    <select class="filter-dropdown">
+      <option>All statuses</option>
+      <option>Scheduled</option>
+      <option>Draft</option>
+      <option>Failed</option>
+    </select>
+    <div class="filter-spacer"></div>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active">List</button>
+      <button class="view-toggle-btn">Calendar</button>
+    </div>
+  </div>
+
+  <!-- Post list -->
+  <div class="post-list">
+
+    <!-- TODAY -->
+    <div class="date-group">
+      <div class="date-label">Today</div>
+
+      <div class="post-row">
+        <div class="post-thumb">🌅</div>
+        <div class="post-content">
+          <div class="post-caption">Sunset over Santorini — book your summer escape now</div>
+          <div class="post-meta">
+            <span class="post-channel">Instagram</span>
+            <span class="meta-dot"></span>
+            <span class="post-time">6:00 PM</span>
+          </div>
+        </div>
+        <div class="status status-scheduled">
+          <span class="status-dot"></span>
+          Scheduled
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">Edit</button>
+          <button class="action-more">&#x22EF;</button>
+        </div>
+      </div>
+
+      <div class="post-row">
+        <div class="post-thumb">🍜</div>
+        <div class="post-content">
+          <div class="post-caption">Street food tour — 5 spots you can't miss</div>
+          <div class="post-meta">
+            <span class="post-channel">Facebook</span>
+            <span class="meta-dot"></span>
+            <span class="post-time">8:30 PM</span>
+          </div>
+        </div>
+        <div class="status status-scheduled">
+          <span class="status-dot"></span>
+          Scheduled
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">Edit</button>
+          <button class="action-more">&#x22EF;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOMORROW -->
+    <div class="date-group">
+      <div class="date-label">Tomorrow</div>
+
+      <div class="post-row">
+        <div class="post-thumb">🏔</div>
+        <div class="post-content">
+          <div class="post-caption">3 days in the Alps — our new guided itinerary is live</div>
+          <div class="post-meta">
+            <span class="post-channel">Facebook</span>
+            <span class="meta-dot"></span>
+            <span class="post-time">9:00 AM</span>
+          </div>
+        </div>
+        <div class="status status-scheduled">
+          <span class="status-dot"></span>
+          Scheduled
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">Edit</button>
+          <button class="action-more">&#x22EF;</button>
+        </div>
+      </div>
+
+      <div class="post-row">
+        <div class="post-thumb">🌴</div>
+        <div class="post-content">
+          <div class="post-caption">Bali retreat — early bird pricing ends Friday</div>
+          <div class="post-meta">
+            <span class="post-channel">Facebook + Instagram</span>
+          </div>
+        </div>
+        <div class="status status-draft">
+          <span class="status-dot"></span>
+          Draft
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">Edit</button>
+          <button class="action-more">&#x22EF;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- THU, JUN 25 -->
+    <div class="date-group">
+      <div class="date-label">Thu, Jun 25</div>
+
+      <div class="post-row failed">
+        <div class="post-thumb">🍁</div>
+        <div class="post-content">
+          <div class="post-caption">Throwback: client trip to Kyoto</div>
+          <div class="post-meta">
+            <span class="post-channel">Instagram</span>
+            <span class="meta-dot"></span>
+            <span class="failed-reason">Token expired</span>
+          </div>
+        </div>
+        <div class="status status-failed">
+          <span class="status-dot"></span>
+          Failed
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">Retry</button>
+          <button class="action-more">&#x22EF;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

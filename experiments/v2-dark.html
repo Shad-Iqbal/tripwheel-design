@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tripwheel — UI Prototype v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b0a; --bg-raised:#161514; --bg-card:#1c1b19; --bg-hover:#242320;
+    --border:#2a2825; --border-light:#1f1e1c;
+    --text:#f0ebe3; --text-dim:#a09888; --text-muted:#6b6050;
+    --accent:#d4a574; --accent-hover:#e0b68a; --accent-muted:rgba(212,165,116,.12);
+    --accent-glow:rgba(212,165,116,.06);
+    --success:#6fcf97; --success-bg:rgba(111,207,151,.1);
+    --warning:#f2c94c; --warning-bg:rgba(242,201,76,.1);
+    --error:#eb5757; --error-bg:rgba(235,87,87,.1);
+    --info:#6bb8ff; --info-bg:rgba(107,184,255,.1);
+    --r:6px; --r-md:10px; --r-lg:14px; --r-xl:20px; --r-full:9999px;
+    --sh:0 1px 3px rgba(0,0,0,.3); --sh-md:0 8px 24px rgba(0,0,0,.4); --sh-lg:0 20px 50px rgba(0,0,0,.5);
+    --display:'Playfair Display',Georgia,serif;
+    --sans:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);color:var(--text);background:var(--bg);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(212,165,116,.04),transparent);pointer-events:none;z-index:0}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  a{color:var(--accent);text-decoration:none;transition:color .2s}
+  a:hover{color:var(--accent-hover)}
+  .hidden{display:none!important}
+  ::selection{background:var(--accent);color:var(--bg)}
+
+  /* ---- buttons ---- */
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--r-md);font-weight:600;font-size:13px;border:1px solid transparent;transition:all .2s var(--ease);letter-spacing:.01em}
+  .btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-hover);box-shadow:0 0 20px rgba(212,165,116,.25);transform:translateY(-1px)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--bg-hover);border-color:var(--text-muted)}
+  .btn-sm{padding:7px 14px;font-size:12px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+  /* ---- pills ---- */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:var(--r-full);font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+  .pill::before{content:"";width:6px;height:6px;border-radius:50%}
+  .pill.scheduled{background:var(--info-bg);color:var(--info)} .pill.scheduled::before{background:var(--info)}
+  .pill.draft{background:var(--bg-hover);color:var(--text-muted)} .pill.draft::before{background:var(--text-muted)}
+  .pill.published{background:var(--success-bg);color:var(--success)} .pill.published::before{background:var(--success)}
+  .pill.failed{background:var(--error-bg);color:var(--error)} .pill.failed::before{background:var(--error)}
+  .badge-soon{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);background:var(--bg-hover);border:1px solid var(--border);padding:2px 8px;border-radius:var(--r-full)}
+
+  /* ---- SIGNUP ---- */
+  #signup{min-height:100vh;display:flex;position:relative}
+  .auth-form{flex:1;display:flex;align-items:center;justify-content:center;padding:48px;background:var(--bg-raised);position:relative;z-index:1}
+  .auth-brand{flex:1.1;background:var(--bg);padding:72px;display:flex;flex-direction:column;justify-content:center;gap:28px;position:relative;overflow:hidden}
+  .auth-brand::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4a574' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+  .auth-brand::after{content:"";position:absolute;bottom:-120px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(212,165,116,.08),transparent 70%)}
+  .auth-brand .logo{font-family:var(--display);font-size:24px;font-weight:700;color:var(--accent);letter-spacing:-.01em;position:relative;z-index:1}
+  .auth-brand h2{font-family:var(--display);font-size:38px;line-height:1.15;font-weight:700;max-width:420px;color:var(--text);position:relative;z-index:1}
+  .auth-brand ul{list-style:none;display:flex;flex-direction:column;gap:16px;position:relative;z-index:1}
+  .auth-brand li{display:flex;gap:12px;align-items:center;font-size:15px;color:var(--text-dim)}
+  .auth-brand li::before{content:"✓";width:24px;height:24px;border-radius:50%;background:var(--accent-muted);border:1px solid rgba(212,165,116,.2);display:grid;place-items:center;font-size:11px;color:var(--accent);flex-shrink:0}
+  .auth-card{width:100%;max-width:400px}
+  .auth-card .logo{font-family:var(--display);font-size:22px;font-weight:700;color:var(--accent);margin-bottom:32px;letter-spacing:-.01em}
+  .auth-card h1{font-family:var(--display);font-size:28px;margin-bottom:8px;font-weight:700;letter-spacing:-.02em}
+  .auth-card .sub{color:var(--text-dim);margin-bottom:28px;font-size:14px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-weight:600;font-size:12px;margin-bottom:7px;color:var(--text-dim);letter-spacing:.03em;text-transform:uppercase}
+  .field input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);transition:all .2s}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
+  .field input::placeholder{color:var(--text-muted)}
+  .field .hint{font-size:12px;color:var(--text-muted);margin-top:6px}
+  .pwd-wrap{position:relative}
+  .pwd-wrap button{position:absolute;right:12px;top:10px;font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+  .pwd-wrap button:hover{color:var(--accent)}
+  .strength{height:3px;border-radius:var(--r-full);background:var(--border);margin-top:8px;overflow:hidden}
+  .strength i{display:block;height:100%;width:66%;background:linear-gradient(90deg,var(--success),var(--accent));border-radius:var(--r-full)}
+  .check-row{display:flex;gap:10px;align-items:flex-start;margin:8px 0 22px;font-size:13px;color:var(--text-dim)}
+  .check-row input[type=checkbox]{accent-color:var(--accent)}
+  .divider{display:flex;align-items:center;gap:14px;color:var(--text-muted);font-size:11px;margin:20px 0;letter-spacing:.06em;text-transform:uppercase}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+  .oauth{display:flex;flex-direction:column;gap:10px}
+  .auth-foot{text-align:center;margin-top:24px;color:var(--text-dim);font-size:13px}
+
+  /* ---- APP SHELL ---- */
+  #app{display:flex;min-height:100vh;position:relative;z-index:1}
+  .sidebar{width:250px;background:var(--bg-raised);border-right:1px solid var(--border-light);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .sb-brand{padding:22px 24px;font-family:var(--display);font-size:20px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-light);letter-spacing:-.01em}
+  .sb-brand .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#c08850);color:var(--bg);display:grid;place-items:center;font-size:14px}
+  .sb-nav{padding:14px;flex:1;overflow:auto}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);padding:18px 14px 8px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r-md);color:var(--text-dim);font-weight:500;font-size:13px;width:100%;text-align:left;margin-bottom:2px;transition:all .15s var(--ease)}
+  .nav-item .ico{width:18px;text-align:center;opacity:.7;font-size:14px}
+  .nav-item:hover{background:var(--bg-hover);color:var(--text)}
+  .nav-item.active{background:var(--accent-muted);color:var(--accent);font-weight:600}
+  .nav-item.active .ico{opacity:1}
+  .nav-item.disabled{color:var(--text-muted);cursor:not-allowed;opacity:.6}
+  .nav-item.disabled:hover{background:transparent;color:var(--text-muted)}
+  .nav-item .badge-soon{margin-left:auto}
+  .sb-foot{border-top:1px solid var(--border-light);padding:14px}
+  .userchip{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--r-md);transition:background .15s}
+  .userchip:hover{background:var(--bg-hover)}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#c08850);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0}
+  .userchip .meta{line-height:1.3;overflow:hidden}
+  .userchip .meta b{font-size:13px;display:block;font-weight:600}
+  .userchip .meta span{font-size:12px;color:var(--text-muted)}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{height:64px;background:var(--bg-raised);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:16px;padding:0 32px;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+  .topbar h1{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .search{flex:1;max-width:320px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 14px;color:var(--text-muted);font-size:13px;display:flex;gap:10px;align-items:center;transition:border-color .2s}
+  .search:hover{border-color:var(--text-muted)}
+  .topbar .spacer{flex:1}
+  .icon-btn{width:38px;height:38px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--text-muted);transition:all .15s}
+  .icon-btn:hover{background:var(--bg-hover);color:var(--text)}
+  .content{padding:32px;max-width:1200px;width:100%;margin:0 auto;flex:1}
+
+  /* ---- cards / panels ---- */
+  .panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);transition:border-color .2s}
+  .panel:hover{border-color:rgba(212,165,116,.15)}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border-light)}
+  .panel-head h3{font-size:14px;font-weight:600;letter-spacing:.01em}
+  .panel-body{padding:20px}
+  .grid{display:grid;gap:16px}
+
+  .stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh);transition:all .25s var(--ease)}
+  .stat:hover{border-color:rgba(212,165,116,.2);transform:translateY(-2px);box-shadow:var(--sh-md)}
+  .stat .lbl{color:var(--text-muted);font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+  .stat .num{font-family:var(--display);font-size:32px;font-weight:700;margin:8px 0 4px;letter-spacing:-.02em}
+  .stat .trend{font-size:12px;font-weight:600;color:var(--success)}
+
+  .row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-light);transition:background .15s}
+  .row:last-child{border-bottom:none}
+  .thumb{width:48px;height:48px;border-radius:var(--r-md);background:var(--bg-hover);flex-shrink:0;display:grid;place-items:center;color:var(--text-muted);font-size:18px}
+  .row .grow{flex:1;min-width:0}
+  .row .cap{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+  .row .meta{color:var(--text-muted);font-size:12px;display:flex;gap:8px;align-items:center;margin-top:3px}
+  .chan{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:10px;color:#fff;font-weight:700}
+  .chan.fb{background:#1877f2} .chan.ig{background:#e1306c}
+
+  /* ---- teaser ---- */
+  .teaser{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  .teaser .card{background:var(--bg-card);border:1px dashed var(--border);border-radius:var(--r-lg);padding:18px;transition:all .25s var(--ease)}
+  .teaser .card:hover{border-color:var(--text-muted);transform:translateY(-2px)}
+  .teaser .card .t{display:flex;align-items:center;justify-content:space-between;font-weight:600;margin-bottom:6px;font-size:13px}
+  .teaser .card .ico{width:32px;height:32px;border-radius:8px;background:var(--bg-hover);display:grid;place-items:center;margin-bottom:12px;font-size:16px}
+  .teaser .card p{color:var(--text-muted);font-size:13px}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:22px}
+  .tab{padding:11px 16px;font-weight:600;font-size:13px;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+  .tab.active{color:var(--accent);border-color:var(--accent)}
+  .tab:hover{color:var(--text)}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .page-head .ttl{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01em}
+
+  /* ---- empty state ---- */
+  .empty{text-align:center;max-width:420px;margin:60px auto;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .empty .art{width:80px;height:80px;border-radius:50%;background:var(--accent-muted);border:1px solid rgba(212,165,116,.15);display:grid;place-items:center;font-size:32px}
+  .empty h3{font-family:var(--display);font-size:20px;font-weight:700} .empty p{color:var(--text-dim);font-size:14px;line-height:1.6}
+
+  .date-group{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 10px}
+  .postcard{display:flex;gap:14px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);transition:all .2s var(--ease)}
+  .postcard:hover{border-color:rgba(212,165,116,.2);transform:translateY(-1px);box-shadow:var(--sh-md)}
+  .postcard .thumb{width:52px;height:52px}
+  .postcard .acts{display:flex;gap:4px;opacity:0;transition:.2s}
+  .postcard:hover .acts{opacity:1}
+
+  .chip{padding:7px 14px;border:1px solid var(--border);border-radius:var(--r-full);font-size:12px;font-weight:600;background:transparent;color:var(--text-dim);transition:all .15s}
+  .chip:hover{border-color:var(--text-muted);color:var(--text)}
+  .chip.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+  .filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .filterbar .spacer{flex:1}
+
+  /* ---- modal ---- */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:50;padding:24px;animation:fadeIn .2s var(--ease)}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .modal{background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--sh-lg);width:100%;max-width:520px;max-height:90vh;overflow:auto;animation:slideUp .3s var(--ease)}
+  .modal.wide{max-width:940px}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border-light);position:sticky;top:0;background:var(--bg-raised);z-index:1}
+  .modal-head h3{font-family:var(--display);font-size:17px;font-weight:700}
+  .modal-body{padding:24px}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid var(--border-light)}
+  .x{font-size:18px;color:var(--text-muted);width:32px;height:32px;border-radius:var(--r-md);transition:all .15s}
+  .x:hover{background:var(--bg-hover);color:var(--text)}
+
+  .chan-opt{display:flex;align-items:center;gap:16px;padding:16px;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:12px;transition:border-color .2s}
+  .chan-opt:hover{border-color:var(--text-muted)}
+  .chan-opt .lg{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px}
+  .chan-opt .grow{flex:1}
+
+  /* ---- composer ---- */
+  .composer{display:grid;grid-template-columns:1fr 340px;gap:0}
+  .comp-edit{padding:24px;border-right:1px solid var(--border-light)}
+  .comp-prev{padding:24px;background:var(--bg)}
+  textarea.cap{width:100%;min-height:120px;border:1px solid var(--border);border-radius:var(--r-md);padding:14px;font-family:inherit;font-size:14px;resize:vertical;background:var(--bg);color:var(--text);transition:all .2s}
+  textarea.cap:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-muted)}
+  textarea.cap::placeholder{color:var(--text-muted)}
+  .comp-tool{display:flex;gap:6px;margin:12px 0}
+  .mini{width:34px;height:34px;border-radius:var(--r-md);background:var(--bg-hover);display:grid;place-items:center;color:var(--text-muted);transition:all .15s}
+  .mini:hover{background:var(--border);color:var(--text)}
+  .dropzone{border:2px dashed var(--border);border-radius:var(--r-md);padding:24px;text-align:center;color:var(--text-muted);margin:14px 0;transition:all .2s}
+  .dropzone:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+  .thumbstrip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .thumbstrip .t{width:66px;height:66px;border-radius:var(--r-md);background:var(--bg-hover);position:relative;display:grid;place-items:center;color:var(--text-muted);font-size:20px}
+  .thumbstrip .t .edit{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.7);color:var(--text);font-size:9px;padding:2px 6px;border-radius:var(--r-full);cursor:pointer;transition:background .15s}
+  .thumbstrip .t .edit:hover{background:var(--accent);color:var(--bg)}
+  .radio-row{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+  .radio-row label{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-dim);cursor:pointer}
+  .radio-row input[type=radio]{accent-color:var(--accent)}
+  .prev-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+  .prev-card .ph{display:flex;gap:10px;align-items:center;padding:12px}
+  .prev-card .img{height:160px;background:var(--bg-hover);display:grid;place-items:center;color:var(--text-muted);font-size:24px}
+  .prev-card .body{padding:12px;font-size:13px;color:var(--text-dim);line-height:1.5}
+  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-md);padding:3px;gap:3px}
+  .seg button{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text-muted);transition:all .15s}
+  .seg button.on{background:var(--bg-hover);color:var(--text);box-shadow:var(--sh)}
+
+  /* ---- generate caption ---- */
+  .gen-field{margin-bottom:14px}
+  .gen-field label{font-weight:600;font-size:12px;display:block;margin-bottom:6px;color:var(--text-dim);letter-spacing:.03em;text-transform:uppercase}
+  .gen-field select,.gen-field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:13px;background:var(--bg);color:var(--text)}
+  .gen-field select:focus,.gen-field input:focus{outline:none;border-color:var(--accent)}
+  .gen-field select option{background:var(--bg-raised);color:var(--text)}
+  .gen-result{border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);line-height:1.6;transition:border-color .2s}
+  .gen-result:hover{border-color:rgba(212,165,116,.2)}
+  .gen-result .acts{display:flex;gap:8px;margin-top:12px}
+
+  /* ---- photo editor ---- */
+  .pe-canvas{height:300px;background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--r-md);display:grid;place-items:center;color:var(--text-muted);position:relative}
+  .pe-rail{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pe-rail .t{padding:9px 14px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12px;font-weight:600;color:var(--text-dim);transition:all .15s}
+  .pe-rail .t:hover{border-color:var(--accent);color:var(--accent)}
+  .slider{width:100%;margin:8px 0;accent-color:var(--accent)}
+
+  /* ---- stepper ---- */
+  .stepper{display:flex;gap:8px;margin-bottom:24px}
+  .step{flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg-card);font-size:13px;font-weight:600;color:var(--text-muted);transition:all .2s}
+  .step .n{width:24px;height:24px;border-radius:50%;background:var(--bg-hover);color:var(--text-muted);display:grid;place-items:center;font-size:11px;transition:all .2s}
+  .step.active{border-color:var(--accent);color:var(--accent)}
+  .step.active .n{background:var(--accent);color:var(--bg)}
+  .step.done .n{background:var(--success);color:var(--bg)}
+  .opt-panel{margin-bottom:16px}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border-light)}
+  .toggle-row:last-child{border:none}
+  .toggle-row .d{font-size:12px;color:var(--text-muted)}
+  .sw{width:40px;height:22px;border-radius:var(--r-full);background:var(--border);position:relative;flex-shrink:0;cursor:pointer;transition:background .2s}
+  .sw.on{background:var(--accent)}
+  .sw::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--text);top:2px;left:2px;transition:.2s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .sw.on::after{left:20px}
+  .wm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:90px}
+  .wm-grid div{aspect-ratio:1;border:1px solid var(--border);border-radius:4px;transition:all .15s;cursor:pointer}
+  .wm-grid div:hover{border-color:var(--accent)}
+  .wm-grid div.on{background:var(--accent);border-color:var(--accent)}
+  .upgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:14px}
+  .upgrid .u{aspect-ratio:1;border-radius:var(--r-md);background:var(--bg-hover);position:relative;display:grid;place-items:center;color:var(--text-muted)}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+  .ba div{height:120px;display:grid;place-items:center;color:var(--text-muted);font-size:12px;font-weight:600}
+  .ba .before{background:var(--bg-hover)} .ba .after{background:var(--accent-muted);border-left:1px solid var(--border)}
+  .progress{height:6px;border-radius:var(--r-full);background:var(--border);overflow:hidden;margin:16px 0}
+  .progress i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--accent),var(--accent-hover));border-radius:var(--r-full)}
+
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:13px 22px;border-radius:var(--r-md);font-size:13px;font-weight:600;box-shadow:var(--sh-lg);z-index:80;animation:slideUp .3s var(--ease)}
+
+  /* ---- page-load animations ---- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .content>section{animation:fadeUp .4s var(--ease)}
+
+  @media(max-width:900px){.auth-brand{display:none}.composer{grid-template-columns:1fr}.comp-prev{border-top:1px solid var(--border-light)}}
+</style>
+</head>
+<body>
+
+<!-- ============ SIGNUP ============ -->
+<div id="signup">
+  <div class="auth-form">
+    <div class="auth-card">
+      <div class="logo">◉ Tripwheel</div>
+      <h1>Create your account</h1>
+      <p class="sub">Start your 14-day free trial. No card required.</p>
+      <div class="field"><label>Name</label><input type="text" placeholder="Jane Traveler"></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="jane@company.com"></div>
+      <div class="field"><label>Company</label><input type="text" placeholder="Wander Co."></div>
+      <div class="field"><label>Password</label>
+        <div class="pwd-wrap"><input type="password" placeholder="••••••••" value="traveler123"><button>Show</button></div>
+        <div class="strength"><i></i></div><div class="hint">Strong — at least 8 characters</div>
+      </div>
+      <div class="field"><label>Confirm password</label>
+        <div class="pwd-wrap"><input type="password" placeholder="••••••••" value="traveler123"><button>Show</button></div>
+        <div class="hint" style="color:var(--success)">✓ Passwords match</div>
+      </div>
+      <div class="check-row"><input type="checkbox" checked> <span>I agree to the <a href="#">Terms</a> & <a href="#">Privacy Policy</a></span></div>
+      <button class="btn btn-primary" style="width:100%" onclick="enterApp()">Create account</button>
+      <div class="divider">or</div>
+      <div class="oauth">
+        <button class="btn btn-ghost" style="width:100%" onclick="enterApp()">Continue with Google</button>
+        <button class="btn btn-ghost" style="width:100%" onclick="enterApp()">Continue with Apple</button>
+      </div>
+      <div class="auth-foot">Already have an account? <a href="#" onclick="enterApp();return false">Log in</a></div>
+    </div>
+  </div>
+  <div class="auth-brand">
+    <div class="logo">◉ Tripwheel</div>
+    <h2>Run your trips and your socials in one place.</h2>
+    <ul><li>Schedule & publish to Facebook and Instagram</li><li>Bulk-edit and watermark photos with AI</li><li>More trip tools on the way</li></ul>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="sb-brand"><span class="mark">◉</span> Tripwheel</div>
+    <nav class="sb-nav">
+      <button class="nav-item active" data-screen="dashboard" onclick="go('dashboard',this)"><span class="ico">▦</span> Dashboard</button>
+      <button class="nav-item" data-screen="social" onclick="go('social',this)"><span class="ico">◎</span> Social Media</button>
+      <button class="nav-item" data-screen="photo" onclick="go('photo',this)"><span class="ico">▣</span> Photo Tool</button>
+      <div class="nav-label">Coming soon</div>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">🗺</span> Itinerary Builder <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">📋</span> Trip Listing <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">🛎</span> Bookings <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">💳</span> Payments <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">📊</span> Reports <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">👥</span> Team <span class="badge-soon">Soon</span></button>
+      <button class="nav-item disabled" title="Coming soon"><span class="ico">⚙</span> Settings <span class="badge-soon">Soon</span></button>
+    </nav>
+    <div class="sb-foot">
+      <div class="userchip"><div class="avatar">JT</div><div class="meta"><b>Jane Traveler</b><span>Wander Co.</span></div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="seg" style="margin:0 0 0 8px"><button id="vm-new" onclick="setMode('new')">New account</button><button id="vm-active" class="on" onclick="setMode('active')">Active account</button></div>
+      <div class="spacer"></div>
+      <div class="search">⌕ Search…</div>
+      <button class="icon-btn">🔔</button>
+      <button class="icon-btn">?</button>
+      <button class="btn btn-primary btn-sm" onclick="openComposer()">＋ Create post</button>
+    </header>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section id="dashboard">
+
+      <!-- dashboard EMPTY -->
+      <div id="dash-empty" class="hidden">
+        <div style="margin-bottom:24px"><div style="font-family:var(--display);font-size:22px;font-weight:700">Welcome to Tripwheel, Jane</div><div style="color:var(--text-dim);margin-top:4px">Let's get your workspace set up — it takes about 2 minutes.</div></div>
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+          <div class="stat"><div class="lbl">Scheduled posts</div><div class="num">0</div><div class="trend" style="color:var(--text-muted)">Nothing yet</div></div>
+          <div class="stat"><div class="lbl">Published this week</div><div class="num">0</div><div class="trend" style="color:var(--text-muted)">Nothing yet</div></div>
+          <div class="stat"><div class="lbl">Connected accounts</div><div class="num">0</div><div class="trend" style="color:var(--text-muted)">None connected</div></div>
+          <div class="stat"><div class="lbl">Photos processed</div><div class="num">0</div><div class="trend" style="color:var(--text-muted)">Nothing yet</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:2fr 1fr">
+          <div class="panel">
+            <div class="panel-head"><h3>Get started</h3><span style="color:var(--text-muted);font-size:12px">0 of 3 complete</span></div>
+            <div class="panel-body" style="padding-top:4px">
+              <div class="row"><div class="thumb" style="background:var(--accent-muted);color:var(--accent)">①</div><div class="grow"><div class="cap">Connect a social account</div><div class="meta">Link Facebook or Instagram to start scheduling.</div></div><button class="btn btn-primary btn-sm" onclick="go('social',navByScreen('social'));openConnect()">Connect</button></div>
+              <div class="row"><div class="thumb">②</div><div class="grow"><div class="cap">Schedule your first post</div><div class="meta">Write a caption, add a photo, pick a time.</div></div><button class="btn btn-ghost btn-sm" onclick="openComposer()">Create post</button></div>
+              <div class="row"><div class="thumb">③</div><div class="grow"><div class="cap">Run your first photo job</div><div class="meta">Bulk-enhance and watermark your trip photos.</div></div><button class="btn btn-ghost btn-sm" onclick="go('photo',navByScreen('photo'))">Open Photo Tool</button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Connected accounts</h3></div>
+            <div class="panel-body">
+              <div class="empty" style="margin:10px auto;gap:10px"><div class="art" style="width:48px;height:48px;font-size:20px">◎</div><p style="font-size:13px">No accounts yet.</p><button class="btn btn-ghost btn-sm" onclick="go('social',navByScreen('social'));openConnect()">Connect a channel</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-label" style="padding-left:0;margin-top:28px">More tools on the way</div>
+        <div class="teaser">
+          <div class="card"><div class="ico">🗺</div><div class="t">Itinerary Builder <span class="badge-soon">Soon</span></div><p>Plan day-by-day trip itineraries.</p></div>
+          <div class="card"><div class="ico">📋</div><div class="t">Trip Listing <span class="badge-soon">Soon</span></div><p>Publish and manage your listings.</p></div>
+          <div class="card"><div class="ico">🛎</div><div class="t">Bookings <span class="badge-soon">Soon</span></div><p>Track reservations & availability.</p></div>
+          <div class="card"><div class="ico">💳</div><div class="t">Payments <span class="badge-soon">Soon</span></div><p>Collect deposits and balances.</p></div>
+        </div>
+      </div>
+
+      <!-- dashboard POPULATED -->
+      <div id="dash-full">
+        <div style="margin-bottom:24px"><div style="font-family:var(--display);font-size:22px;font-weight:700">Good morning, Jane</div><div style="color:var(--text-dim);margin-top:4px">Friday, June 19, 2026</div></div>
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+          <div class="stat"><div class="lbl">Scheduled posts</div><div class="num">12</div><div class="trend">▲ 3 this week</div></div>
+          <div class="stat"><div class="lbl">Published this week</div><div class="num">8</div><div class="trend">▲ 12%</div></div>
+          <div class="stat"><div class="lbl">Connected accounts</div><div class="num">2</div><div class="trend" style="color:var(--text-dim)">FB · IG</div></div>
+          <div class="stat"><div class="lbl">Photos processed</div><div class="num">340</div><div class="trend">▲ 56 today</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:2fr 1fr">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="panel">
+              <div class="panel-head"><h3>Upcoming posts</h3><a href="#" onclick="go('social',navByScreen('social'));return false">View all</a></div>
+              <div class="panel-body" style="padding-top:4px">
+                <div class="row"><div class="thumb">🏖</div><div class="grow"><div class="cap">Sunset over Santorini — book now!</div><div class="meta"><span class="chan ig">IG</span> Today, 6:00 PM</div></div><span class="pill scheduled">Scheduled</span></div>
+                <div class="row"><div class="thumb">🏔</div><div class="grow"><div class="cap">3 days in the Alps — new itinerary</div><div class="meta"><span class="chan fb">FB</span> Tomorrow, 9:00 AM</div></div><span class="pill scheduled">Scheduled</span></div>
+                <div class="row"><div class="thumb">🌴</div><div class="grow"><div class="cap">Bali retreat — early bird pricing</div><div class="meta"><span class="chan fb">FB</span><span class="chan ig">IG</span> Draft</div></div><span class="pill draft">Draft</span></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Recent photo jobs</h3><a href="#" onclick="go('photo',navByScreen('photo'));return false">View all</a></div>
+              <div class="panel-body" style="padding-top:4px">
+                <div class="row"><div class="thumb">▣</div><div class="grow"><div class="cap">Santorini gallery — 48 images</div><div class="meta">Watermarked · Auto-enhanced</div></div><span class="pill published">Done</span></div>
+                <div class="row"><div class="thumb">▣</div><div class="grow"><div class="cap">Alps batch — 22 images</div><div class="meta">Processing 14/22…</div></div><span class="pill scheduled">Running</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="panel">
+              <div class="panel-head"><h3>Connected accounts</h3></div>
+              <div class="panel-body" style="padding-top:4px">
+                <div class="row"><span class="chan fb" style="width:30px;height:30px;border-radius:8px">FB</span><div class="grow"><div class="cap">Wander Co.</div><div class="meta">Facebook Page</div></div><span style="color:var(--success)">●</span></div>
+                <div class="row"><span class="chan ig" style="width:30px;height:30px;border-radius:8px">IG</span><div class="grow"><div class="cap">@wanderco</div><div class="meta">Instagram</div></div><span style="color:var(--success)">●</span></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Quick actions</h3></div>
+              <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+                <button class="btn btn-ghost" onclick="openComposer()">＋ Create post</button>
+                <button class="btn btn-ghost" onclick="go('photo',navByScreen('photo'))">▣ Bulk-process photos</button>
+                <button class="btn btn-ghost" onclick="go('social',navByScreen('social'))">◎ Connect an account</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-label" style="padding-left:0;margin-top:28px">More tools on the way</div>
+        <div class="teaser">
+          <div class="card"><div class="ico">🗺</div><div class="t">Itinerary Builder <span class="badge-soon">Soon</span></div><p>Plan day-by-day trip itineraries.</p></div>
+          <div class="card"><div class="ico">📋</div><div class="t">Trip Listing <span class="badge-soon">Soon</span></div><p>Publish and manage your listings.</p></div>
+          <div class="card"><div class="ico">🛎</div><div class="t">Bookings <span class="badge-soon">Soon</span></div><p>Track reservations & availability.</p></div>
+          <div class="card"><div class="ico">💳</div><div class="t">Payments <span class="badge-soon">Soon</span></div><p>Collect deposits and balances.</p></div>
+          <div class="card"><div class="ico">📊</div><div class="t">Reports <span class="badge-soon">Soon</span></div><p>Revenue, occupancy & post performance.</p></div>
+          <div class="card"><div class="ico">👥</div><div class="t">Team <span class="badge-soon">Soon</span></div><p>Invite teammates and set roles.</p></div>
+          <div class="card"><div class="ico">⚙</div><div class="t">Settings <span class="badge-soon">Soon</span></div><p>Workspace, billing & integrations.</p></div>
+        </div>
+      </div>
+      </section>
+
+      <!-- SOCIAL -->
+      <section id="social" class="hidden">
+        <div class="page-head"><div class="ttl">Social Media</div><button class="btn btn-primary btn-sm" onclick="openComposer()">＋ Create post</button></div>
+        <div class="tabs">
+          <button class="tab active" onclick="socialTab('queue',this)">Queue</button>
+          <button class="tab" onclick="socialTab('channels',this)">Channels</button>
+          <button class="tab" onclick="socialTab('calendar',this)">Calendar</button>
+          <button class="tab" onclick="socialTab('analytics',this)">Analytics</button>
+          <div style="flex:1"></div>
+          <div class="seg" style="align-self:center;margin-bottom:6px"><button id="ss-1" onclick="setSocialState('nochannel')">No channels</button><button id="ss-2" onclick="setSocialState('noposts')">Connected, no posts</button><button id="ss-3" class="on" onclick="setSocialState('hasposts')">Active</button></div>
+        </div>
+
+        <!-- STATE 1: no channels -->
+        <div id="social-empty" class="hidden">
+          <div class="empty">
+            <div class="art">◎</div>
+            <h3>Connect a channel to get started</h3>
+            <p>Link your Facebook and Instagram accounts to schedule and publish posts.</p>
+            <button class="btn btn-primary" onclick="openConnect()">Connect a channel</button>
+            <a href="#">See how it works</a>
+          </div>
+        </div>
+
+        <!-- queue -->
+        <div id="tab-queue">
+          <!-- STATE 2: connected, no posts -->
+          <div id="queue-empty" class="hidden">
+            <div class="filterbar">
+              <span style="color:var(--text-muted);font-size:12px">Publishing to</span>
+              <span class="chip on"><span class="chan fb" style="width:14px;height:14px;font-size:8px">f</span> Wander Co.</span>
+              <span class="chip on"><span class="chan ig" style="width:14px;height:14px;font-size:8px">◉</span> @wanderco</span>
+            </div>
+            <div class="empty">
+              <div class="art">🗓</div>
+              <h3>Your queue is empty</h3>
+              <p>Your accounts are connected. Schedule your first post and it'll show up here, grouped by day.</p>
+              <button class="btn btn-primary" onclick="openComposer()">Create your first post</button>
+              <a href="#">Import from a CSV</a>
+            </div>
+          </div>
+
+          <!-- STATE 3: has posts -->
+          <div id="queue-full">
+          <div class="filterbar">
+            <button class="chip on">All</button><button class="chip"><span class="chan fb" style="width:14px;height:14px;font-size:8px">f</span> Facebook</button><button class="chip"><span class="chan ig" style="width:14px;height:14px;font-size:8px">◉</span> Instagram</button>
+            <div class="spacer"></div>
+            <button class="chip">Status: All ▾</button>
+            <div class="seg"><button class="on">List</button><button onclick="socialTab('calendar',navByTab('Calendar'))">Calendar</button></div>
+          </div>
+          <div class="date-group">Today</div>
+          <div class="postcard"><div class="thumb">🏖</div><div class="grow"><div class="cap">Sunset over Santorini — book your summer escape now 🌅</div><div class="meta"><span class="chan ig">IG</span> 6:00 PM</div></div><span class="pill scheduled">Scheduled</span><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openComposer(true)">Edit</button><button class="icon-btn">⋯</button></div></div>
+          <div class="postcard"><div class="thumb">🍜</div><div class="grow"><div class="cap">Street food tour — 5 spots you can't miss</div><div class="meta"><span class="chan fb">FB</span> 8:30 PM</div></div><span class="pill scheduled">Scheduled</span><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openComposer(true)">Edit</button><button class="icon-btn">⋯</button></div></div>
+          <div class="date-group">Tomorrow</div>
+          <div class="postcard"><div class="thumb">🏔</div><div class="grow"><div class="cap">3 days in the Alps — our new guided itinerary is live</div><div class="meta"><span class="chan fb">FB</span> 9:00 AM</div></div><span class="pill scheduled">Scheduled</span><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openComposer(true)">Edit</button><button class="icon-btn">⋯</button></div></div>
+          <div class="postcard"><div class="thumb">🌴</div><div class="grow"><div class="cap">Bali retreat — early bird pricing ends Friday</div><div class="meta"><span class="chan fb">FB</span><span class="chan ig">IG</span> Not scheduled</div></div><span class="pill draft">Draft</span><div class="acts"><button class="btn btn-ghost btn-sm" onclick="openComposer(true)">Edit</button><button class="icon-btn">⋯</button></div></div>
+          <div class="date-group">Thu, Jun 25</div>
+          <div class="postcard"><div class="thumb">📸</div><div class="grow"><div class="cap">Throwback: client trip to Kyoto 🍁</div><div class="meta"><span class="chan ig">IG</span> Failed to publish — token expired</div></div><span class="pill failed">Failed</span><div class="acts"><button class="btn btn-ghost btn-sm">Retry</button><button class="icon-btn">⋯</button></div></div>
+          </div>
+        </div>
+
+        <!-- channels -->
+        <div id="tab-channels" class="hidden">
+          <div id="channels-empty" class="hidden">
+            <div class="empty"><div class="art">◎</div><h3>No channels connected</h3><p>Connect Facebook and Instagram to publish from Tripwheel.</p><button class="btn btn-primary" onclick="openConnect()">Connect a channel</button></div>
+          </div>
+          <div id="channels-full">
+            <div class="panel"><div class="panel-body">
+              <div class="row"><span class="chan fb" style="width:36px;height:36px;border-radius:10px">FB</span><div class="grow"><div class="cap">Wander Co.</div><div class="meta">Facebook Page · Connected</div></div><button class="btn btn-ghost btn-sm">Disconnect</button></div>
+              <div class="row"><span class="chan ig" style="width:36px;height:36px;border-radius:10px">IG</span><div class="grow"><div class="cap">@wanderco</div><div class="meta" style="color:var(--warning)">Instagram · Token expires in 3 days</div></div><button class="btn btn-ghost btn-sm">Reconnect</button></div>
+            </div></div>
+            <button class="btn btn-primary" style="margin-top:16px" onclick="openConnect()">＋ Connect a channel</button>
+          </div>
+        </div>
+
+        <!-- calendar / analytics placeholders -->
+        <div id="tab-calendar" class="hidden"><div class="empty"><div class="art">🗓</div><h3>Calendar view</h3><p>Week and month grid of scheduled posts. (Prototype placeholder)</p></div></div>
+        <div id="tab-analytics" class="hidden"><div class="empty"><div class="art">📈</div><h3>Analytics</h3><p>Reach, engagement and best-time-to-post insights. (Prototype placeholder)</p></div></div>
+      </section>
+
+      <!-- PHOTO -->
+      <section id="photo" class="hidden">
+        <div class="page-head"><div class="ttl">Photo Tool</div><button class="btn btn-primary btn-sm">＋ New job</button></div>
+        <div class="tabs">
+          <button class="tab active" onclick="photoTab('new',this)">New job</button>
+          <button class="tab" onclick="photoTab('history',this)">Job history</button>
+          <button class="tab" onclick="photoTab('watermarks',this)">Watermarks</button>
+        </div>
+
+        <div id="ptab-new">
+          <!-- Photo Tool EMPTY -->
+          <div id="photo-empty" class="hidden">
+            <div class="empty" style="max-width:520px">
+              <div class="art">▣</div>
+              <h3>Process your first batch</h3>
+              <p>Drop in your trip photos and Tripwheel will auto-enhance, crop, and watermark the whole batch in one go.</p>
+              <div class="dropzone" style="width:100%;padding:40px">＋ Drag images here or browse</div>
+              <p style="font-size:12px;color:var(--text-muted)">AI auto-enhance and smart watermarking included.</p>
+            </div>
+          </div>
+          <div id="newjob-full">
+          <div class="stepper">
+            <div class="step done"><span class="n">✓</span> Upload</div>
+            <div class="step active"><span class="n">2</span> Configure</div>
+            <div class="step"><span class="n">3</span> Review</div>
+            <div class="step"><span class="n">4</span> Export</div>
+          </div>
+          <div class="grid" style="grid-template-columns:1.4fr 1fr">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="panel"><div class="panel-head"><h3>AI automation</h3><span class="badge-soon" style="color:var(--accent);background:var(--accent-muted);border-color:rgba(212,165,116,.2)">AI</span></div><div class="panel-body" style="padding-top:4px">
+                <div class="toggle-row"><div><div>Auto-enhance</div><div class="d">Exposure, color & sharpness</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div>Auto-crop to subject</div><div class="d">Detect and center the focal point</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div>Background cleanup</div><div class="d">Remove or blur distractions</div></div><div class="sw" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div>Auto-tag & alt-text</div><div class="d">Generate captions for accessibility</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="toggle-row"><div><div>Smart watermark placement</div><div class="d">AI avoids covering the subject</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+              </div></div>
+              <div class="panel"><div class="panel-head"><h3>Processing</h3></div><div class="panel-body" style="padding-top:4px">
+                <div class="toggle-row"><div>Resize / resolution</div><span class="badge-soon">2048px</span></div>
+                <div class="toggle-row"><div>Format & compression</div><span class="badge-soon">WebP · 80%</span></div>
+                <div class="toggle-row"><div>Rename pattern</div><span class="badge-soon">{trip}-{index}</span></div>
+              </div></div>
+            </div>
+            <div class="panel"><div class="panel-head"><h3>Watermark</h3></div><div class="panel-body">
+              <div style="display:flex;gap:16px">
+                <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Position</div>
+                  <div class="wm-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div class="on"></div></div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Bottom-right</div>
+                </div>
+                <div class="grow" style="flex:1">
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Opacity</div><input class="slider" type="range" value="70">
+                  <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Scale</div><input class="slider" type="range" value="40">
+                </div>
+              </div>
+              <div class="pe-canvas" style="height:120px;margin-top:14px"><span style="position:absolute;bottom:10px;right:14px;color:var(--text);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.5)">◉ Wander Co.</span>Preview</div>
+            </div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px">
+            <button class="btn btn-ghost">← Back</button>
+            <button class="btn btn-primary" onclick="photoReview()">Continue to review →</button>
+          </div>
+
+          <!-- review -->
+          <div id="photo-review" class="hidden" style="margin-top:24px">
+            <div class="panel"><div class="panel-head"><h3>Review · 48 images</h3><span style="color:var(--text-muted);font-size:12px">5 operations · ~18 MB output</span></div><div class="panel-body">
+              <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="ba"><div class="before">Before</div><div class="after">After</div></div>
+                <div class="ba"><div class="before">Before</div><div class="after">After</div></div>
+                <div class="ba"><div class="before">Before</div><div class="after">After</div></div>
+              </div>
+              <div class="progress"><i></i></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--text-muted);font-size:13px">Processing 30 of 48 · ~40s left</span>
+              <div style="display:flex;gap:10px"><button class="btn btn-ghost btn-sm">Download all (.zip)</button><button class="btn btn-primary btn-sm" onclick="go('social',navByScreen('social'))">Push to composer</button></div></div>
+            </div></div>
+          </div>
+          </div>
+        </div>
+
+        <div id="ptab-history" class="hidden">
+          <div class="panel"><div class="panel-body">
+            <div class="row"><div class="thumb">▣</div><div class="grow"><div class="cap">Santorini gallery</div><div class="meta">48 images · Watermark · Auto-enhance · Jun 18</div></div><span class="pill published">Done</span><button class="btn btn-ghost btn-sm">Re-run</button></div>
+            <div class="row"><div class="thumb">▣</div><div class="grow"><div class="cap">Alps batch</div><div class="meta">22 images · Auto-crop · Jun 19</div></div><span class="pill scheduled">Running</span><button class="btn btn-ghost btn-sm">View</button></div>
+            <div class="row"><div class="thumb">▣</div><div class="grow"><div class="cap">Kyoto archive</div><div class="meta">120 images · 3 failed · Jun 12</div></div><span class="pill failed">Partial</span><button class="btn btn-ghost btn-sm">Retry 3</button></div>
+          </div></div>
+        </div>
+        <div id="ptab-watermarks" class="hidden">
+          <div class="teaser" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+            <div class="card" style="border-style:solid"><div class="pe-canvas" style="height:80px"><span style="font-weight:700">◉ Wander Co.</span></div><div class="t" style="margin-top:10px">Primary logo <span class="badge-soon" style="color:var(--accent);background:var(--accent-muted)">Default</span></div></div>
+            <div class="card" style="border-style:solid"><div class="pe-canvas" style="height:80px"><span style="font-weight:700;opacity:.6">© wanderco.com</span></div><div class="t" style="margin-top:10px">Text mark</div></div>
+            <div class="card" style="display:grid;place-items:center;min-height:130px;color:var(--text-muted);border-style:solid">＋ New watermark</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div id="m-connect" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head"><h3>Connect a channel</h3><button class="x" onclick="close_('m-connect')">×</button></div>
+    <div class="modal-body">
+      <div class="chan-opt"><div class="lg" style="background:#1877f2">f</div><div class="grow"><div style="font-weight:600">Facebook</div><div style="color:var(--text-muted);font-size:13px">Pages you manage</div></div><button class="btn btn-primary btn-sm" onclick="connectChannel('Facebook')">Connect</button></div>
+      <div class="chan-opt"><div class="lg" style="background:#e1306c">◉</div><div class="grow"><div style="font-weight:600">Instagram</div><div style="color:var(--text-muted);font-size:13px">Business or creator account</div></div><button class="btn btn-primary btn-sm" onclick="connectChannel('Instagram')">Connect</button></div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:10px">You'll be redirected to authorize Tripwheel, then return here.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="close_('m-connect')">Done</button></div>
+  </div>
+</div>
+
+<div id="m-composer" class="overlay hidden">
+  <div class="modal wide">
+    <div class="modal-head"><h3 id="compTitle">Create post</h3><button class="x" onclick="close_('m-composer')">×</button></div>
+    <div class="composer">
+      <div class="comp-edit">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Post to</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px"><button class="chip on"><span class="chan fb" style="width:14px;height:14px;font-size:8px">f</span> Facebook</button><button class="chip on"><span class="chan ig" style="width:14px;height:14px;font-size:8px">◉</span> Instagram</button></div>
+        <textarea class="cap" id="capText" placeholder="Write your caption…">Sunset over Santorini — book your summer escape now 🌅</textarea>
+        <div class="comp-tool"><div class="mini">😊</div><div class="mini">#</div><div class="mini">@</div><div class="mini">🔗</div><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openGen()">✦ Generate caption</button></div>
+        <div class="thumbstrip"><div class="t">🏖<span class="edit" onclick="openEditor()">Edit</span></div><div class="t">🌅<span class="edit" onclick="openEditor()">Edit</span></div></div>
+        <div class="dropzone">＋ Drag images here or browse</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:600">When to publish</div>
+        <div class="radio-row">
+          <label><input type="radio" name="sch" checked> Add to queue</label>
+          <label><input type="radio" name="sch"> Schedule for…</label>
+          <label><input type="radio" name="sch"> Post now</label>
+          <label><input type="radio" name="sch"> Save as draft</label>
+        </div>
+      </div>
+      <div class="comp-prev">
+        <div class="seg"><button class="on">Facebook</button><button>Instagram</button></div>
+        <div class="prev-card" style="margin-top:14px">
+          <div class="ph"><div class="avatar" style="background:#1877f2;width:28px;height:28px;font-size:11px">W</div><div><div style="font-weight:600;font-size:13px">Wander Co.</div><div style="font-size:11px;color:var(--text-muted)">Scheduled · Today 6:00 PM</div></div></div>
+          <div class="img">🏖</div>
+          <div class="body" id="prevText">Sunset over Santorini — book your summer escape now 🌅</div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:12px">Live preview updates as you type.</p>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="close_('m-composer')">Save draft</button><button class="btn btn-primary" onclick="close_('m-composer');toast('Post added to queue')">Add to queue</button></div>
+  </div>
+</div>
+
+<div id="m-gen" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head"><h3>✦ Generate caption</h3><button class="x" onclick="close_('m-gen')">×</button></div>
+    <div class="modal-body">
+      <div class="gen-field"><label>What's this post about?</label><input value="Summer special on our Santorini sunset tour"></div>
+      <div style="display:flex;gap:12px">
+        <div class="gen-field" style="flex:1"><label>Tone</label><select><option>Friendly</option><option>Professional</option><option>Playful</option><option>Inspirational</option></select></div>
+        <div class="gen-field" style="flex:1"><label>Length</label><select><option>Short</option><option selected>Medium</option><option>Long</option></select></div>
+      </div>
+      <div style="display:flex;gap:18px;margin-bottom:16px"><label style="display:flex;gap:6px;font-size:13px;color:var(--text-dim)"><input type="checkbox" checked> Hashtags</label><label style="display:flex;gap:6px;font-size:13px;color:var(--text-dim)"><input type="checkbox" checked> Emoji</label></div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:16px" onclick="document.getElementById('gen-results').classList.remove('hidden')">Generate</button>
+      <div id="gen-results" class="hidden">
+        <div class="gen-result">Chase the golden hour 🌅 Our Santorini sunset tour is back for summer — limited spots, unlimited views. Book now and watch the Aegean light up. #Santorini #SunsetTour #GreeceTravel
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="useCap(this)">Use this</button><button class="btn btn-ghost btn-sm">Regenerate</button></div>
+        </div>
+        <div class="gen-result">Some sunsets you remember forever. ✨ Join our Santorini sunset tour this summer and make this one yours. Early summer dates open now. #VisitGreece #IslandLife
+          <div class="acts"><button class="btn btn-primary btn-sm" onclick="useCap(this)">Use this</button><button class="btn btn-ghost btn-sm">Regenerate</button></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted)">AI-generated — review before publishing.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="m-editor" class="overlay hidden">
+  <div class="modal wide">
+    <div class="modal-head"><h3>Edit photo — santorini-01.jpg</h3><button class="x" onclick="close_('m-editor')">×</button></div>
+    <div class="modal-body">
+      <div class="pe-canvas">🏖 image canvas</div>
+      <div class="pe-rail">
+        <div class="t">Crop ▾ (1:1 · 4:5 · 16:9 · 9:16)</div><div class="t">Rotate</div><div class="t">Flip</div><div class="t">Filters</div><div class="t">Text overlay</div><div class="t">＋ Watermark</div>
+      </div>
+      <div style="display:flex;gap:28px;margin-top:18px">
+        <div style="flex:1"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Brightness</div><input class="slider" type="range" value="55"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Contrast</div><input class="slider" type="range" value="50"></div>
+        <div style="flex:1"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Saturation</div><input class="slider" type="range" value="60"><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600">Warmth</div><input class="slider" type="range" value="48"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="close_('m-editor')">Reset</button><button class="btn btn-primary" onclick="close_('m-editor');toast('Edits applied')">Apply</button></div>
+  </div>
+</div>
+
+<script>
+  function enterApp(){document.getElementById('signup').classList.add('hidden');document.getElementById('app').classList.remove('hidden');setMode('new');go('dashboard',navByScreen('dashboard'));}
+  function connectChannel(name){close_('m-connect');setSocialState('noposts');go('social',navByScreen('social'));toast(name+' connected — schedule your first post');}
+  const titles={dashboard:'Dashboard',social:'Social Media',photo:'Photo Tool'};
+  function navByScreen(s){return document.querySelector('.nav-item[data-screen="'+s+'"]');}
+  function navByTab(){return null;}
+  function go(screen,el){
+    ['dashboard','social','photo'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+    document.getElementById(screen).classList.remove('hidden');
+    document.getElementById('pageTitle').textContent=titles[screen];
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    if(el&&el.classList)el.classList.add('active'); else navByScreen(screen).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  let socialState='hasposts', photoEmpty=false;
+  function setMode(m){
+    const isNew = m==='new';
+    document.getElementById('vm-new').classList.toggle('on',isNew);
+    document.getElementById('vm-active').classList.toggle('on',!isNew);
+    document.getElementById('dash-empty').classList.toggle('hidden',!isNew);
+    document.getElementById('dash-full').classList.toggle('hidden',isNew);
+    setSocialState(isNew?'nochannel':'hasposts');
+    photoEmpty=isNew;
+    document.getElementById('photo-empty').classList.toggle('hidden',!isNew);
+    document.getElementById('newjob-full').classList.toggle('hidden',isNew);
+  }
+  function setSocialState(s){
+    socialState=s;
+    document.getElementById('ss-1').classList.toggle('on',s==='nochannel');
+    document.getElementById('ss-2').classList.toggle('on',s==='noposts');
+    document.getElementById('ss-3').classList.toggle('on',s==='hasposts');
+    document.getElementById('queue-empty').classList.toggle('hidden',s!=='noposts');
+    document.getElementById('queue-full').classList.toggle('hidden',s!=='hasposts');
+    document.getElementById('channels-empty').classList.toggle('hidden',s!=='nochannel');
+    document.getElementById('channels-full').classList.toggle('hidden',s==='nochannel');
+    socialTab(s==='nochannel'?'__empty':'queue', s==='nochannel'?null:document.querySelector('#social .tab'));
+  }
+  function socialTab(t,el){
+    ['queue','channels','calendar','analytics'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden'));
+    document.querySelectorAll('#social .tab').forEach(n=>n.classList.remove('active'));
+    if(t==='__empty'){ document.getElementById('social-empty').classList.remove('hidden'); return; }
+    document.getElementById('social-empty').classList.add('hidden');
+    document.getElementById('tab-'+t).classList.remove('hidden');
+    if(el)el.classList.add('active');
+  }
+  function photoTab(t,el){
+    ['new','history','watermarks'].forEach(x=>document.getElementById('ptab-'+x).classList.add('hidden'));
+    document.getElementById('ptab-'+t).classList.remove('hidden');
+    if(t==='new'){
+      document.getElementById('photo-empty').classList.toggle('hidden',!photoEmpty);
+      document.getElementById('newjob-full').classList.toggle('hidden',photoEmpty);
+    }
+    document.querySelectorAll('#photo .tab').forEach(n=>n.classList.remove('active'));
+    if(el)el.classList.add('active');
+  }
+  function photoReview(){document.getElementById('photo-review').classList.remove('hidden');document.getElementById('photo-review').scrollIntoView({behavior:'smooth'});}
+  function openComposer(edit){document.getElementById('compTitle').textContent=edit?'Edit post':'Create post';open_('m-composer');}
+  function openConnect(){open_('m-connect');}
+  function openGen(){open_('m-gen');document.getElementById('gen-results').classList.add('hidden');}
+  function openEditor(){open_('m-editor');}
+  function open_(id){document.getElementById(id).classList.remove('hidden');}
+  function close_(id){document.getElementById(id).classList.add('hidden');}
+  function useCap(btn){
+    const txt=btn.closest('.gen-result').childNodes[0].textContent.trim();
+    document.getElementById('capText').value=txt;document.getElementById('prevText').textContent=txt;
+    close_('m-gen');toast('Caption added');
+  }
+  function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
+  document.addEventListener('input',e=>{if(e.target.id==='capText')document.getElementById('prevText').textContent=e.target.value;});
+  document.querySelectorAll('.pwd-wrap button').forEach(b=>b.onclick=function(){const i=this.previousElementSibling;i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'Show':'Hide';});
+</script>
+</body>
+</html>

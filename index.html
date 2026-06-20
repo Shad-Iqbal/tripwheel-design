@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tripwheel — Version Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(98% 0.003 250);
+      --surface: oklch(100% 0 0);
+      --surface-2: oklch(97% 0.004 250);
+      --border: oklch(91% 0.008 250);
+      --border-subtle: oklch(95% 0.005 250);
+      --text: oklch(16% 0.02 250);
+      --text-2: oklch(45% 0.015 250);
+      --text-3: oklch(62% 0.01 250);
+      --primary: oklch(52% 0.14 250);
+      --primary-soft: oklch(95% 0.03 250);
+      --success: oklch(58% 0.16 145);
+      --success-soft: oklch(95% 0.04 145);
+      --warning: oklch(72% 0.18 75);
+      --warning-soft: oklch(96% 0.05 75);
+      --muted: oklch(94% 0.006 250);
+      --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
+      --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.06);
+      --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.08);
+      --r-sm: 4px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --r-xl: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .hero {
+      margin-bottom: 40px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--text-2);
+      max-width: 56ch;
+    }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .meta-pill strong { color: var(--text); font-weight: 600; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toolbar-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-3);
+      align-self: center;
+      margin-right: 4px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-btn:hover { border-color: var(--primary); color: var(--text); }
+    .filter-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .instructions {
+      padding: 16px 18px;
+      background: var(--primary-soft);
+      border: 1px solid oklch(88% 0.04 250);
+      border-radius: var(--r-lg);
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 28px;
+    }
+
+    .instructions code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .entry.hidden { display: none; }
+
+    .entry-head {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .entry-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .version-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-soft);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .date {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .badge {
+      margin-left: auto;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .badge.latest {
+      background: var(--success-soft);
+      color: var(--success);
+      border: 1px solid oklch(85% 0.08 145);
+    }
+
+    .badge.stable {
+      background: var(--muted);
+      color: var(--text-3);
+      border: 1px solid var(--border);
+    }
+
+    .badge.experiment {
+      background: var(--warning-soft);
+      color: oklch(45% 0.12 75);
+      border: 1px solid oklch(88% 0.08 75);
+    }
+
+    .badge.archived {
+      background: var(--surface-2);
+      color: var(--text-3);
+      border: 1px solid var(--border);
+    }
+
+    .entry-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .entry-desc {
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .entry-body {
+      padding: 0 22px 22px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin: 18px 0 10px;
+    }
+
+    .changelog {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .changelog li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .changelog li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.55;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--r-md);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .link-btn:hover {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    .link-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .link-btn.primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .shot {
+      border: 1px dashed var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      background: var(--surface-2);
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .shot:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shot img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      background: var(--muted);
+      cursor: zoom-in;
+    }
+
+    .shot-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 14px;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 11px;
+    }
+
+    .shot-placeholder svg {
+      width: 28px;
+      height: 28px;
+      opacity: 0.35;
+    }
+
+    .shot-caption {
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-3);
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface);
+    }
+
+    .chat-ref {
+      font-size: 12px;
+      color: var(--text-3);
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .chat-ref a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .chat-ref a:hover { text-decoration: underline; }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .doc-card {
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+
+    .doc-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .doc-card p {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-bottom: 12px;
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-3);
+      text-align: center;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-backdrop {
+      position: absolute;
+      inset: 0;
+      background: oklch(0% 0 0 / 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      cursor: zoom-out;
+    }
+
+    .lightbox-panel {
+      position: relative;
+      z-index: 1;
+      max-width: min(96vw, 1400px);
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.96);
+      transition: transform 0.2s ease;
+    }
+
+    .lightbox.open .lightbox-panel {
+      transform: scale(1);
+    }
+
+    .lightbox-img-wrap {
+      overflow: auto;
+      max-height: calc(92vh - 52px);
+      background: var(--surface-2);
+    }
+
+    .lightbox-panel img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+    }
+
+    .lightbox-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface);
+    }
+
+    .lightbox-caption {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+
+    .lightbox-close {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      background: var(--surface-2);
+      color: var(--text-2);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .lightbox-close:hover {
+      background: var(--muted);
+      color: var(--text);
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 32px 16px 64px; }
+      .badge { margin-left: 0; }
+      .entry-top { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-eyebrow"><span class="dot"></span> Tripwheel Design</div>
+      <h1>Version Log</h1>
+      <p class="hero-sub">
+        A living changelog of Tripwheel UI prototypes, design explorations, and related docs.
+        Compiled from project files and recent design sessions.
+      </p>
+      <div class="meta-bar">
+        <span class="meta-pill"><strong>Owner</strong> Shad · shad@tripwheel.io</span>
+        <span class="meta-pill"><strong>Latest</strong> v0.4.2-states</span>
+        <span class="meta-pill"><strong>Updated</strong> Jun 20, 2026</span>
+        <span class="meta-pill"><strong>Entries</strong> 11 versions + docs</span>
+      </div>
+    </header>
+
+    <div class="instructions">
+      <strong>Screenshots captured Jun 20, 2026</strong> via headless browser at 1440px.
+      Click any thumbnail to view enlarged. Add more to <code>assets/screenshots/</code> as needed.
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-label">Show:</span>
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="prototype">Prototypes</button>
+      <button class="filter-btn" data-filter="experiment">Experiments</button>
+      <button class="filter-btn" data-filter="docs">Docs</button>
+    </div>
+
+    <div class="timeline">
+
+      <!-- v0.4.2-states -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.4.2-states</span>
+            <span class="date">Jun 19–20, 2026</span>
+            <span class="badge latest">Latest</span>
+          </div>
+          <h2 class="entry-title">Full prototype with empty states & state navigator</h2>
+          <p class="entry-desc">
+            Primary interactive prototype. Multi-screen app shell with toggleable onboarding/empty states,
+            bottom-right prototype FAB, and polish from recent sessions.
+          </p>
+          <div class="tags">
+            <span class="tag">Empty states</span>
+            <span class="tag">Proto FAB</span>
+            <span class="tag">Multi-screen</span>
+            <span class="tag">Inter</span>
+            <span class="tag">Light mode</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>Copied from v0.4.1-mnmx; added empty states for dashboard, social, photo tool</li>
+            <li>Bottom-right floating state navigator (Account: New/Active · Social: No channels/No posts/Active)</li>
+            <li>Stat cards: inline value + trend badge in <code>.sc-value-row</code>; reduced card height</li>
+            <li>Composer: Schedule post / Save draft wired with toast feedback</li>
+            <li>Schedule post advances prototype to Active account + Active social state</li>
+            <li>Search field: icon-first, expands on click; ⌘K support; collapses on outside click / Esc</li>
+            <li>UI spec updated → <code>docs/specs/v0.4.2.md</code> (v1 spec kept at <code>docs/specs/v1.md</code>)</li>
+          </ul>
+
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/v042-dashboard-active.png" alt="Dashboard active state" loading="lazy">
+              <div class="shot-caption">Dashboard · Active</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v042-dashboard-empty.png" alt="Dashboard onboarding empty state" loading="lazy">
+              <div class="shot-caption">Dashboard · New / onboarding</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v042-social-states.png" alt="Social screen with prototype state navigator" loading="lazy">
+              <div class="shot-caption">Social · state navigator</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v042-stat-cards.png" alt="KPI stat cards with inline trend badges" loading="lazy">
+              <div class="shot-caption">KPI stat cards layout</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.4.2-states.html" target="_blank">↗ Open prototype</a>
+            <a class="link-btn" href="docs/specs/v0.4.2.md" target="_blank">UI spec v0.4.2</a>
+            <a class="link-btn" href="docs/design-system.md" target="_blank">Design system</a>
+          </div>
+
+          <div class="section-label" style="margin-top:16px">Source sessions</div>
+          <div class="chat-ref">
+            Built from v0.4.1 + redesign reference ·
+            <a href="#">Empty states + navigator session</a> ·
+            <a href="#">Stat cards + composer + search polish</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Redesign -->
+      <article class="entry" data-type="experiment">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">redesign</span>
+            <span class="date">Jun 20, 2026</span>
+            <span class="badge experiment">Reference</span>
+          </div>
+          <h2 class="entry-title">Clean & focused redesign direction</h2>
+          <p class="entry-desc">
+            Linear-like OKLCH token set, Plus Jakarta Sans + Inter, floating prototype controls,
+            and empty-state patterns that were ported into v0.4.2.
+          </p>
+          <div class="tags">
+            <span class="tag">OKLCH</span>
+            <span class="tag">Plus Jakarta Sans</span>
+            <span class="tag">Proto FAB</span>
+            <span class="tag">Phosphor icons</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>Established OKLCH color system documented in DESIGN.md</li>
+            <li>Social queue empty/active state toggles via bottom-right FAB</li>
+            <li>Served as reference for v0.4.2 state navigator implementation</li>
+          </ul>
+
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/redesign-social.png" alt="Redesign social queue with FAB open" loading="lazy">
+              <div class="shot-caption">Social queue · redesign</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/redesign-fab.png" alt="Prototype FAB state controls" loading="lazy">
+              <div class="shot-caption">Prototype FAB controls</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="experiments/redesign.html" target="_blank">↗ Open redesign</a>
+            <a class="link-btn" href="docs/design-system.md" target="_blank">Design system</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.4.1-mnmx -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.4.1-mnmx</span>
+            <span class="date">Jun 19, 2026</span>
+            <span class="badge stable">Stable base</span>
+          </div>
+          <h2 class="entry-title">Full multi-screen prototype (minimal chrome)</h2>
+          <p class="entry-desc">
+            Complete signup → dashboard → social → photo → job history flow.
+            Prototype top bar removed; AI caption drawer fixed; signup brand panel refined.
+          </p>
+          <div class="tags">
+            <span class="tag">Signup split layout</span>
+            <span class="tag">Modals</span>
+            <span class="tag">Caption drawer</span>
+            <span class="tag">No proto bar</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>Removed prototype navigation bar entirely for cleaner presentation</li>
+            <li>Fixed AI caption drawer: <code>hidden</code> attribute now respected; added backdrop</li>
+            <li>Signup brand panel: compass + stat grid illustration; logo moved to form side</li>
+            <li>Signup layout: sticky brand column, scrollable form column</li>
+            <li>Evolved from earlier v0.1-mnmx iterations (same lineage, re-versioned)</li>
+          </ul>
+
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/v041-signup.png" alt="Signup split layout" loading="lazy">
+              <div class="shot-caption">Signup · split layout</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v041-social-queue.png" alt="Social media queue" loading="lazy">
+              <div class="shot-caption">Social · queue</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.4.1-mnmx.html" target="_blank">↗ Open v0.4.1</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.3.2 -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.3.2</span>
+            <span class="date">Jun 19, 2026</span>
+            <span class="badge archived">Archived</span>
+          </div>
+          <h2 class="entry-title">Serif typography & merged tool headers</h2>
+          <p class="entry-desc">
+            Editorial direction with Newsreader + Figtree. Consolidated Social Media and Photo Tool
+            headers into a single topbar row (title · tabs · CTA). Search hidden for now.
+          </p>
+          <div class="tags">
+            <span class="tag">Newsreader</span>
+            <span class="tag">Figtree</span>
+            <span class="tag">Merged headers</span>
+            <span class="tag">Landing-style signup</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>Display font: Fraunces/Manrope → Newsreader/Figtree</li>
+            <li>Removed duplicate in-page tool headers; tabs moved to topbar center</li>
+            <li>Photo tab renamed "New job" → "Upload" to avoid CTA duplication</li>
+            <li>Brand footnote shows "v0.9 · Early access" on signup panel</li>
+          </ul>
+
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/v032-social-header.png" alt="Merged social media header" loading="lazy">
+              <div class="shot-caption">Merged social header</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.3.2.html" target="_blank">↗ Open v0.3.2</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v2 dark -->
+      <article class="entry" data-type="experiment">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v2</span>
+            <span class="date">Jun 19, 2026</span>
+            <span class="badge experiment">Experiment</span>
+          </div>
+          <h2 class="entry-title">Dark editorial theme</h2>
+          <p class="entry-desc">
+            Warm dark palette with gold accent. Playfair Display + DM Sans for a luxury travel feel.
+          </p>
+          <div class="tags">
+            <span class="tag">Dark mode</span>
+            <span class="tag">Playfair Display</span>
+            <span class="tag">Gold accent</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/v2-dashboard.png" alt="v2 dark dashboard" loading="lazy">
+              <div class="shot-caption">Dashboard · dark editorial</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v2-social.png" alt="v2 dark social queue" loading="lazy">
+              <div class="shot-caption">Social · queue</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="experiments/v2-dark.html" target="_blank">↗ Open v2</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v1.x early -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v1 → v1.2</span>
+            <span class="date">Jun 19, 2026</span>
+            <span class="badge archived">Archived</span>
+          </div>
+          <h2 class="entry-title">Initial UI prototype iterations</h2>
+          <p class="entry-desc">
+            First HTML prototypes companion to tripwheel-ui-spec.md. Neutral Buffer-like palette,
+            system font stack, core screen structure established.
+          </p>
+          <div class="tags">
+            <span class="tag">UI spec companion</span>
+            <span class="tag">Neutral palette</span>
+            <span class="tag">System fonts</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Update log</div>
+          <ul class="changelog">
+            <li>v1 / v1.1 / v1.2: incremental screen and component refinements</li>
+            <li>Established app shell: sidebar, topbar, signup, dashboard, social, photo</li>
+            <li>Documented in tripwheel-ui-spec.md</li>
+          </ul>
+
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/v1-signup.png" alt="v1 signup" loading="lazy">
+              <div class="shot-caption">v1 · Signup</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v1-dashboard.png" alt="v1 dashboard" loading="lazy">
+              <div class="shot-caption">v1 · Dashboard</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v11-dashboard.png" alt="v1.1 dashboard" loading="lazy">
+              <div class="shot-caption">v1.1 · Dashboard</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/v12-social.png" alt="v1.2 social queue" loading="lazy">
+              <div class="shot-caption">v1.2 · Social queue</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn" href="prototypes/v1-base.html" target="_blank">↗ v1 base</a>
+            <a class="link-btn" href="prototypes/v1.1.html" target="_blank">↗ v1.1</a>
+            <a class="link-btn" href="prototypes/v1.2.html" target="_blank">↗ v1.2</a>
+            <a class="link-btn" href="docs/specs/v1.md" target="_blank">UI spec v1</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Piko exploration -->
+      <article class="entry" data-type="experiment">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">piko · screen-01</span>
+            <span class="date">Jun 19, 2026</span>
+            <span class="badge experiment">Exploration</span>
+          </div>
+          <h2 class="entry-title">Social queue: Minimal vs Structured</h2>
+          <p class="entry-desc">
+            Two directions for the Social Media queue screen — Linear-like minimal vs Stripe-like structured.
+          </p>
+          <div class="tags">
+            <span class="tag">OKLCH tokens</span>
+            <span class="tag">A/B directions</span>
+          </div>
+        </div>
+        <div class="entry-body">
+          <div class="section-label">Screenshots</div>
+          <div class="screenshots">
+            <div class="shot">
+              <img src="assets/screenshots/piko-minimal.png" alt="Piko minimal social queue" loading="lazy">
+              <div class="shot-caption">Minimal · Linear-like</div>
+            </div>
+            <div class="shot">
+              <img src="assets/screenshots/piko-structured.png" alt="Piko structured social queue" loading="lazy">
+              <div class="shot-caption">Structured · Stripe-like</div>
+            </div>
+          </div>
+
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn" href="experiments/piko/minimal.html" target="_blank">↗ Minimal</a>
+            <a class="link-btn" href="experiments/piko/structured.html" target="_blank">↗ Structured</a>
+            <a class="link-btn" href="experiments/piko/index.html" target="_blank">↗ Piko index</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Docs section -->
+      <article class="entry" data-type="docs">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">docs</span>
+            <span class="date">Ongoing</span>
+            <span class="badge stable">Reference</span>
+          </div>
+          <h2 class="entry-title">Specs, research & copy</h2>
+          <p class="entry-desc">Written artifacts supporting product design and validation.</p>
+        </div>
+        <div class="entry-body">
+          <div class="docs-grid">
+            <div class="doc-card">
+              <h3>UI Spec v0.4.2</h3>
+              <p>Current spec — empty states, Proto FAB, stat cards, composer flows. Companion to v0.4.2-states prototype.</p>
+              <a class="link-btn primary" href="docs/specs/v0.4.2.md" target="_blank">↗ Open</a>
+            </div>
+            <div class="doc-card">
+              <h3>UI Spec v1</h3>
+              <p>Original screen-by-screen hierarchy (Jun 2026). Companion to v1 prototypes. Superseded by v0.4.2.</p>
+              <a class="link-btn" href="docs/specs/v1.md" target="_blank">↗ Open v1</a>
+            </div>
+            <div class="doc-card">
+              <h3>Design System</h3>
+              <p>OKLCH tokens, typography, radius, shadows, tone. Screens in scope.</p>
+              <a class="link-btn" href="docs/design-system.md" target="_blank">↗ Open</a>
+            </div>
+            <div class="doc-card">
+              <h3>Design Tokens</h3>
+              <p>JSON token source. Brand colors still TODO in tokens file.</p>
+              <a class="link-btn" href="tokens/design-tokens.json" target="_blank">↗ Open</a>
+            </div>
+            <div class="doc-card">
+              <h3>Research Plan</h3>
+              <p>User research plan, qual interviews, landing page validation.</p>
+              <a class="link-btn" href="docs/research/tripwheel-research-plan.md" target="_blank">↗ Open</a>
+            </div>
+            <div class="doc-card">
+              <h3>Landing Page Copy</h3>
+              <p>Marketing copy for tripwheel landing page.</p>
+              <a class="link-btn" href="docs/research/tripwheel-landing-page-copy.md" target="_blank">↗ Open</a>
+            </div>
+            <div class="doc-card">
+              <h3>Qual Interview Script</h3>
+              <p>Script for travel-professional discovery interviews.</p>
+              <a class="link-btn" href="docs/research/tripwheel-qual-script.md" target="_blank">↗ Open</a>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <footer>
+      Tripwheel · shad@tripwheel.io · Generated Jun 20, 2026<br>
+      Add new versions at the top of the timeline when shipping the next prototype.
+    </footer>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Enlarged screenshot">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <div class="lightbox-panel">
+      <div class="lightbox-img-wrap">
+        <img id="lightbox-img" src="" alt="">
+      </div>
+      <div class="lightbox-foot">
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+        <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxBackdrop = document.getElementById('lightbox-backdrop');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+    function openLightbox(src, caption, alt) {
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || caption || 'Screenshot';
+      lightboxCaption.textContent = caption || '';
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      lightboxClose.focus();
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      lightboxImg.src = '';
+    }
+
+    document.querySelectorAll('.shot img').forEach(img => {
+      img.addEventListener('click', () => {
+        const caption = img.closest('.shot')?.querySelector('.shot-caption')?.textContent?.trim() || '';
+        openLightbox(img.src, caption, img.alt);
+      });
+    });
+
+    lightboxBackdrop.addEventListener('click', closeLightbox);
+    lightboxClose.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.entry').forEach(entry => {
+          if (filter === 'all') {
+            entry.classList.remove('hidden');
+          } else {
+            entry.classList.toggle('hidden', entry.dataset.type !== filter);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

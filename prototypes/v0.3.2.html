@@ -1,0 +1,2263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tripwheel — Run your trips and your socials in one place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-ui); background: var(--bg); color: var(--text);
+  font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; }
+input, textarea, select { font: inherit; color: inherit; }
+input:focus, textarea:focus, select:focus, button:focus { outline: none; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { display: block; max-width: 100%; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+svg { display: block; }
+::selection { background: var(--accent-soft); color: var(--accent-hover); }
+.hidden { display: none !important; }
+
+:root {
+  --bg: #f5f1ea; --bg-subtle: #efeae0; --surface: #ffffff; --surface-2: #faf7f0;
+  --border: #e6dfd1; --border-strong: #d4cab5;
+  --text: #1a1a18; --text-2: #4a4f49; --text-3: #767b71; --text-muted: #9aa097;
+  --accent: #b04a2c; --accent-hover: #963a20; --accent-soft: #f7ebe2; --accent-border: #e5bda9;
+  --success: #2d6a3d; --success-soft: #e4efe6;
+  --warning: #a8651a; --warning-soft: #f5ebd9;
+  --error: #9a2f25; --error-soft: #f5e0dc;
+  --info: #3a6478; --info-soft: #e2edf2;
+  --shadow-sm: 0 1px 2px rgba(26,26,24,0.04);
+  --shadow-md: 0 2px 6px rgba(26,26,24,0.05), 0 8px 24px rgba(26,26,24,0.04);
+  --shadow-lg: 0 4px 12px rgba(26,26,24,0.06), 0 24px 48px rgba(26,26,24,0.08);
+  --shadow-xl: 0 8px 24px rgba(26,26,24,0.08), 0 40px 80px rgba(26,26,24,0.10);
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sidebar-w: 244px; --sidebar-w-collapsed: 68px; --topbar-h: 64px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 15px; border-radius: var(--r-md);
+  font-weight: 600; font-size: 13.5px; line-height: 1;
+  transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .1s;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.btn:active { transform: translateY(.5px); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(176,74,44,.18), inset 0 1px 0 rgba(255,255,255,.12); }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--bg-subtle); border-color: var(--text-3); }
+.btn-ghost { color: var(--text-2); }
+.btn-ghost:hover { background: var(--bg-subtle); color: var(--text); }
+.btn-danger { background: var(--error); color: #fff; }
+.btn-danger:hover { background: #7d2620; }
+.btn-lg { padding: 12px 22px; font-size: 14.5px; }
+.btn-sm { padding: 6px 10px; font-size: 12.5px; }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--r-sm);
+  color: var(--text-2); transition: background .15s, color .15s;
+}
+.btn-icon:hover { background: var(--bg-subtle); color: var(--text); }
+
+.field { margin-bottom: 14px; }
+.label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+.input, .textarea, .select {
+  width: 100%; padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  font-size: 14px; color: var(--text);
+  transition: border-color .15s, box-shadow .15s, background .15s; outline: none;
+}
+.input:hover, .textarea:hover, .select:hover { border-color: var(--text-3); }
+.input:focus, .textarea:focus, .select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input::placeholder, .textarea::placeholder { color: var(--text-muted); }
+.textarea { resize: vertical; min-height: 96px; line-height: 1.55; }
+.input-error { border-color: var(--error) !important; }
+.input-error:focus { box-shadow: 0 0 0 3px var(--error-soft) !important; }
+.helper { font-size: 12px; color: var(--text-3); margin-top: 5px; }
+.helper-error { color: var(--error); }
+.input-wrap { position: relative; }
+.input-wrap .input { padding-right: 40px; }
+.input-toggle {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-3); border-radius: var(--r-sm);
+}
+.input-toggle:hover { color: var(--text); background: var(--bg-subtle); }
+.input-check { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--success); }
+
+.checkbox { display: inline-flex; align-items: flex-start; gap: 9px; cursor: pointer; user-select: none; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.checkbox input { position: absolute; opacity: 0; pointer-events: none; }
+.cb-mark { flex-shrink: 0; width: 17px; height: 17px; border: 1.5px solid var(--border-strong); border-radius: 4px; background: var(--surface); display: inline-flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; margin-top: 1px; }
+.checkbox input:checked + .cb-mark { background: var(--accent); border-color: var(--accent); }
+.checkbox input:checked + .cb-mark::after { content: ''; width: 9px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(0,-1px); }
+.checkbox input:focus + .cb-mark { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.tg-mark { width: 34px; height: 20px; border-radius: 999px; background: var(--border-strong); position: relative; transition: background .18s; }
+.tg-mark::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.15); transition: transform .18s; }
+.toggle input:checked + .tg-mark { background: var(--accent); }
+.toggle input:checked + .tg-mark::after { transform: translateX(14px); }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+.pill-scheduled { background: var(--info-soft); color: var(--info); }
+.pill-draft { background: var(--bg-subtle); color: var(--text-3); border-color: var(--border); }
+.pill-published { background: var(--success-soft); color: var(--success); }
+.pill-failed { background: var(--error-soft); color: var(--error); }
+.pill-processing { background: var(--warning-soft); color: var(--warning); }
+.pill-accent { background: var(--accent-soft); color: var(--accent); }
+
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot-success { background: var(--success); box-shadow: 0 0 0 2px var(--success-soft); }
+.dot-warning { background: var(--warning); box-shadow: 0 0 0 2px var(--warning-soft); }
+.dot-error { background: var(--error); box-shadow: 0 0 0 2px var(--error-soft); }
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.panel-header h3 { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--text); }
+.panel-link { font-size: 12.5px; font-weight: 600; color: var(--accent); }
+.panel-link:hover { text-decoration: none; color: var(--accent-hover); }
+.panel-body { padding: 8px; }
+.panel-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-md); transition: background .12s; }
+.panel-row + .panel-row { border-top: 1px solid var(--border); margin-top: 1px; }
+.panel-row + .panel-row:hover { border-top-color: transparent; }
+.panel-row:hover { background: var(--surface-2); }
+
+.brand-mark { display: inline-flex; align-items: center; gap: 9px; color: var(--text); }
+.brand-mark:hover { text-decoration: none; }
+.brand-mark .logo-mark { width: 26px; height: 26px; flex-shrink: 0; color: var(--accent); }
+.brand-word { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: -0.015em; color: var(--text); }
+
+.signup-view { min-height: 100vh; display: flex; background: var(--bg); }
+.signup-grid { display: grid; grid-template-columns: 1fr 1fr; width: 100%; min-height: 100vh; }
+.signup-form-side { display: flex; align-items: center; justify-content: center; padding: 48px 32px; }
+.signup-form-wrap { width: 100%; max-width: 420px; }
+.signup-back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-3); margin-bottom: 36px; font-weight: 500; }
+.signup-back-link:hover { color: var(--text); text-decoration: none; }
+.signup-header { margin-bottom: 28px; }
+.signup-header h1 { font-family: var(--font-display); font-weight: 600; font-size: 32px; line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.015em; }
+.signup-header p { margin: 0; font-size: 14px; color: var(--text-3); }
+.signup-form .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.signup-divider { display: flex; align-items: center; gap: 14px; margin: 22px 0; color: var(--text-muted); font-size: 12px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+.signup-divider::before, .signup-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.signup-social { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.signup-footer { text-align: center; font-size: 13px; color: var(--text-3); margin-top: 24px; }
+.pw-strength { display: flex; gap: 4px; margin-top: 7px; }
+.pw-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background .2s; }
+.pw-bar.weak { background: var(--error); }
+.pw-bar.fair { background: var(--warning); }
+.pw-bar.strong { background: var(--success); }
+.pw-label { font-size: 11.5px; margin-top: 5px; color: var(--text-3); font-weight: 500; }
+
+.signup-brand-side { position: relative; overflow: hidden; }
+.brand-panel { position: absolute; inset: 0; }
+.brand-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.brand-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,22,18,.35) 0%, rgba(28,22,18,.55) 50%, rgba(28,22,18,.92) 100%), linear-gradient(135deg, rgba(176,74,44,.25) 0%, rgba(28,22,18,.1) 60%); }
+.brand-content { position: absolute; inset: 0; padding: 40px; display: flex; flex-direction: column; justify-content: space-between; color: #fff; }
+.brand-content .brand-mark { color: #fff; }
+.brand-content .brand-mark .logo-mark { color: #fff; }
+.brand-content .brand-word { color: #fff; }
+.brand-headline h2 { font-family: var(--font-display); font-weight: 400; font-size: 36px; line-height: 1.08; margin: 0 0 22px; letter-spacing: -0.025em; color: #fff; }
+.brand-headline h2 em { font-style: italic; font-weight: 500; color: #f5c8a8; }
+.brand-features { display: flex; flex-direction: column; gap: 10px; }
+.brand-features li { display: flex; align-items: center; gap: 11px; font-size: 14px; color: rgba(255,255,255,.88); font-weight: 500; }
+.brand-features li::before { content: ''; width: 18px; height: 1px; background: rgba(255,255,255,.5); flex-shrink: 0; }
+.brand-footnote { position: absolute; bottom: 40px; right: 40px; font-size: 11.5px; color: rgba(255,255,255,.55); font-weight: 500; }
+
+.app-shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; transition: grid-template-columns .2s ease; }
+.app-shell.collapsed { grid-template-columns: var(--sidebar-w-collapsed) 1fr; }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 30; }
+.sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 18px 20px; border-bottom: 1px solid var(--border); height: var(--topbar-h); }
+.app-shell.collapsed .sidebar-brand .brand-word { opacity: 0; pointer-events: none; }
+.app-shell.collapsed .sidebar-brand { padding: 18px 22px; justify-content: center; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 16px 12px; }
+.nav-section-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; padding: 14px 10px 6px; }
+.nav-section-label:first-child { padding-top: 0; }
+.app-shell.collapsed .nav-section-label { text-align: center; font-size: 9px; padding: 14px 0 6px; }
+.app-shell.collapsed .nav-section-label span { display: none; }
+.app-shell.collapsed .nav-section-label::before { content: '·'; font-size: 16px; color: var(--text-muted); }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: var(--r-md); color: var(--text-2); font-size: 13.5px; font-weight: 500; margin-bottom: 1px; transition: background .12s, color .12s; cursor: pointer; }
+.nav-item:hover { background: var(--bg-subtle); color: var(--text); text-decoration: none; }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); }
+.nav-item.disabled { color: var(--text-muted); cursor: not-allowed; }
+.nav-item.disabled:hover { background: transparent; color: var(--text-muted); }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-3); }
+.nav-item.active .nav-icon, .nav-item:hover .nav-icon { color: inherit; }
+.nav-item.disabled .nav-icon { color: var(--text-muted); }
+.nav-label { flex: 1; }
+.app-shell.collapsed .nav-label { display: none; }
+.app-shell.collapsed .nav-item { justify-content: center; padding: 10px; }
+.nav-badge { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: var(--bg-subtle); color: var(--text-3); border: 1px solid var(--border); }
+.nav-item.disabled .nav-badge { background: transparent; border: 1px dashed var(--border-strong); padding: 1px 5px; }
+.app-shell.collapsed .nav-badge { display: none; }
+.sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--r-md); cursor: pointer; transition: background .12s; position: relative; }
+.user-chip:hover { background: var(--bg-subtle); }
+.app-shell.collapsed .user-chip { justify-content: center; padding: 8px 6px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.avatar-sm { width: 24px; height: 24px; font-size: 10px; }
+.user-meta { flex: 1; min-width: 0; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-work { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-shell.collapsed .user-meta { display: none; }
+.user-menu { position: absolute; bottom: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-md); padding: 4px; z-index: 40; opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .15s, transform .15s; }
+.user-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+.menu-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--r-sm); font-size: 13px; color: var(--text-2); cursor: pointer; transition: background .12s; }
+.menu-item:hover { background: var(--bg-subtle); color: var(--text); }
+
+.main-wrap { display: flex; flex-direction: column; min-width: 0; }
+.topbar { height: var(--topbar-h); border-bottom: 1px solid var(--border); background: rgba(245,241,234,.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 20; gap: 16px; }
+.topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-shrink: 0; }
+.topbar-center { flex: 1; display: flex; justify-content: center; min-width: 0; }
+.topbar-center.hidden { display: none; }
+.topbar-center .tool-tabs.hidden { display: none; }
+.sidebar-toggle { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-sm); color: var(--text-2); }
+.sidebar-toggle:hover { background: var(--bg-subtle); color: var(--text); }
+.page-title h1 { font-family: var(--font-display); font-weight: 600; font-size: 21px; margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
+.breadcrumb { font-size: 11.5px; color: var(--text-3); margin-top: 1px; font-weight: 500; }
+.breadcrumb.hidden { display: none; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.search-field { display: none; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 7px 10px; width: 280px; transition: border-color .15s, box-shadow .15s; }
+.search-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.search-field svg { color: var(--text-3); flex-shrink: 0; }
+.search-field input { border: none; background: none; padding: 0; flex: 1; font-size: 13px; min-width: 0; }
+.search-field input::placeholder { color: var(--text-muted); }
+kbd { font-family: var(--font-ui); font-size: 10.5px; font-weight: 600; background: var(--bg-subtle); color: var(--text-3); padding: 2px 5px; border-radius: 3px; border: 1px solid var(--border); }
+
+.content { flex: 1; padding: 28px 32px 60px; max-width: 1280px; width: 100%; margin: 0 auto; }
+.view { display: none; }
+.view-active { display: block; animation: viewIn .25s ease; }
+@keyframes viewIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.greeting-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+.greeting-title { font-family: var(--font-display); font-weight: 600; font-size: 28px; margin: 0 0 4px; letter-spacing: -0.015em; line-height: 1.1; }
+.greeting-sub { margin: 0; font-size: 13px; color: var(--text-3); }
+.workspace-switcher { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 6px 10px 6px 6px; cursor: pointer; transition: border-color .15s; }
+.workspace-switcher:hover { border-color: var(--text-3); }
+.ws-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.ws-meta { font-size: 11px; color: var(--text-3); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 18px 14px; position: relative; overflow: hidden; transition: border-color .15s; }
+.stat-card:hover { border-color: var(--border-strong); }
+.stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.stat-value { font-family: var(--font-display); font-weight: 500; font-size: 34px; letter-spacing: -0.025em; line-height: 1; margin-bottom: 8px; }
+.stat-trend { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.trend-up { color: var(--success); }
+.trend-neutral { color: var(--text-3); }
+.stat-spark { position: absolute; right: 14px; bottom: 14px; width: 64px; height: 28px; opacity: .55; }
+
+.dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+.dashboard-col-a, .dashboard-col-b { display: flex; flex-direction: column; gap: 16px; }
+.post-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--r-md); transition: background .12s; }
+.post-row + .post-row { border-top: 1px solid var(--border); }
+.post-row:hover { background: var(--surface-2); }
+.post-row + .post-row:hover { border-top-color: transparent; }
+.post-thumb { width: 44px; height: 44px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; background: var(--bg-subtle); }
+.post-content { flex: 1; min-width: 0; }
+.post-caption { font-size: 13px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 4px; }
+.post-meta { display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+.channel-icons { display: inline-flex; gap: 3px; }
+.ch-icon { width: 16px; height: 16px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; }
+.ch-fb { background: #1877f2; }
+.ch-ig { background: linear-gradient(135deg, #f58529, #dd2a7b 50%, #8134af); }
+
+.job-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--r-md); transition: background .12s; }
+.job-row + .job-row { border-top: 1px solid var(--border); }
+.job-row:hover { background: var(--surface-2); }
+.job-icon { width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.job-content { flex: 1; min-width: 0; }
+.job-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.job-meta { font-size: 11.5px; color: var(--text-3); }
+
+.account-row { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: var(--r-md); transition: background .12s; }
+.account-row + .account-row { border-top: 1px solid var(--border); }
+.account-row:hover { background: var(--surface-2); }
+.account-logo { width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+.al-fb { background: #1877f2; }
+.al-ig { background: linear-gradient(135deg, #f58529, #dd2a7b 50%, #8134af); }
+.account-content { flex: 1; min-width: 0; }
+.account-name { font-size: 13px; font-weight: 600; }
+.account-handle { font-size: 11.5px; color: var(--text-3); }
+.account-status { font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; color: var(--text-3); }
+.account-status.ok { color: var(--success); }
+.account-status.warn { color: var(--warning); }
+
+.action-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--r-md); text-align: left; width: 100%; transition: background .12s; }
+.action-row + .action-row { border-top: 1px solid var(--border); }
+.action-row:hover { background: var(--surface-2); }
+.action-icon { width: 36px; height: 36px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--border); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.action-content { flex: 1; }
+.action-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.action-desc { font-size: 11.5px; color: var(--text-3); }
+
+.section-label { font-family: var(--font-display); font-weight: 500; font-style: italic; font-size: 16px; color: var(--text-2); margin-bottom: 14px; }
+.teaser-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.teaser-card { background: var(--surface); border: 1px dashed var(--border-strong); border-radius: var(--r-lg); padding: 16px; opacity: .85; transition: opacity .15s, border-color .15s; }
+.teaser-card:hover { opacity: 1; border-color: var(--accent-border); }
+.teaser-icon { width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--bg-subtle); color: var(--text-3); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.teaser-name { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+.teaser-desc { font-size: 12px; color: var(--text-3); line-height: 1.45; margin-bottom: 12px; }
+.teaser-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--text-3); padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border-strong); background: transparent; transition: background .12s, color .12s; }
+.teaser-btn:hover { background: var(--bg-subtle); color: var(--text-2); }
+.teaser-btn.notified { color: var(--accent); border-color: var(--accent-border); background: var(--accent-soft); }
+
+.tool-header { display: none; }
+.tool-tabs { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 3px; gap: 2px; }
+.tool-tab { padding: 7px 14px; border-radius: var(--r-sm); font-size: 13px; font-weight: 600; color: var(--text-2); transition: background .12s, color .12s; }
+.tool-tab:hover { color: var(--text); }
+.tool-tab.active { background: var(--accent); color: #fff; }
+
+.social-content, .photo-content { display: none; }
+.social-content.active, .photo-content.active { display: block; animation: viewIn .2s; }
+
+.filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.filter-chips { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 3px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-sm); font-size: 12.5px; font-weight: 600; color: var(--text-2); transition: background .12s, color .12s; cursor: pointer; }
+.chip:hover { color: var(--text); }
+.chip.active { background: var(--bg-subtle); color: var(--text); }
+.filter-divider { width: 1px; height: 22px; background: var(--border); }
+
+.date-group { margin-bottom: 22px; }
+.date-group-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.date-group-title { font-family: var(--font-display); font-weight: 500; font-size: 15px; letter-spacing: -0.01em; }
+.add-post-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px dashed var(--border-strong); border-radius: var(--r-md); color: var(--text-3); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color .12s, color .12s, background .12s; margin-bottom: 6px; width: 100%; text-align: left; }
+.add-post-row:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-soft); }
+.post-card { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 6px; transition: border-color .12s, box-shadow .12s; }
+.post-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+.post-card .post-thumb { width: 52px; height: 52px; }
+.post-card-body { flex: 1; min-width: 0; }
+.post-card-caption { font-size: 13.5px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 6px; }
+.post-card-meta { display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+.post-card-actions { display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity .15s; }
+.post-card:hover .post-card-actions { opacity: 1; }
+.post-card.failed { border-color: var(--error-soft); }
+.retry-link { font-size: 11.5px; font-weight: 600; color: var(--error); margin-left: 6px; }
+.retry-link:hover { text-decoration: underline; }
+
+.calendar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.calendar-month { font-family: var(--font-display); font-weight: 500; font-size: 18px; letter-spacing: -0.01em; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.calendar-dow { padding: 10px 8px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; text-align: center; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+.calendar-day { min-height: 96px; padding: 8px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background .12s; }
+.calendar-day:nth-child(7n) { border-right: none; }
+.calendar-day:hover { background: var(--surface-2); }
+.calendar-day.outside { background: var(--bg-subtle); }
+.calendar-day.outside .calendar-date { color: var(--text-muted); }
+.calendar-day.today .calendar-date { background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+.calendar-date { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+.cal-post { font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-post.fb { background: #e7f0fe; color: #1877f2; }
+.cal-post.ig { background: #fbe4f1; color: #c3266c; }
+.cal-post.both { background: var(--accent-soft); color: var(--accent); }
+
+.channels-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.channel-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; }
+.channel-card-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.channel-card-info { flex: 1; }
+.channel-card-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.channel-card-handle { font-size: 12px; color: var(--text-3); }
+.channel-card-stats { display: flex; gap: 18px; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.ch-stat-value { font-family: var(--font-display); font-weight: 500; font-size: 18px; }
+.ch-stat-label { font-size: 11px; color: var(--text-3); }
+.channel-card-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.token-warn { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--warning); font-weight: 600; }
+
+.analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.chart-title { font-size: 14px; font-weight: 700; }
+.chart-legend { display: inline-flex; gap: 12px; font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+.chart-svg { width: 100%; height: 220px; }
+
+.steps-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 22px; }
+.step { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-3); }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; color: var(--text-3); transition: all .15s; }
+.step.active { color: var(--text); }
+.step.active .step-num { background: var(--accent); color: #fff; border-color: var(--accent); }
+.step.done .step-num { background: var(--success); color: #fff; border-color: var(--success); }
+.step-connector { width: 32px; height: 1px; background: var(--border-strong); }
+
+.dropzone { border: 2px dashed var(--border-strong); border-radius: var(--r-lg); padding: 48px 24px; text-align: center; background: var(--surface); transition: border-color .15s, background .15s; cursor: pointer; }
+.dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.dropzone-icon { width: 56px; height: 56px; margin: 0 auto 14px; color: var(--accent); }
+.dropzone-title { font-family: var(--font-display); font-weight: 500; font-size: 18px; margin: 0 0 4px; }
+.dropzone-desc { font-size: 13px; color: var(--text-3); margin: 0 0 16px; }
+.dropzone-actions { display: inline-flex; gap: 8px; align-items: center; }
+.dropzone-or { font-size: 12px; color: var(--text-muted); }
+
+.upload-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+.upload-thumb { position: relative; aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; background: var(--bg-subtle); border: 1px solid var(--border); }
+.upload-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.upload-thumb .remove-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; display: inline-flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .12s; }
+.upload-thumb:hover .remove-btn { opacity: 1; }
+.upload-thumb .edited-badge { position: absolute; bottom: 5px; left: 5px; font-size: 9.5px; font-weight: 700; padding: 2px 6px; background: var(--accent); color: #fff; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+
+.step-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+
+.pipeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pipeline-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; }
+.pipeline-panel-title { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.pipeline-panel-desc { font-size: 12px; color: var(--text-3); margin-bottom: 16px; }
+.pipeline-panel.full { grid-column: 1 / -1; }
+.pipeline-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.pipeline-row:last-child { border-bottom: none; }
+.pipeline-row-info { flex: 1; }
+.pipeline-row-name { font-size: 13px; font-weight: 600; }
+.pipeline-row-desc { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+.ai-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 700; padding: 2px 5px; background: var(--accent-soft); color: var(--accent); border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; margin-left: 6px; vertical-align: 1px; }
+
+.slider-row { margin: 10px 0; }
+.slider-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.slider-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+.slider-value { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 4px; background: var(--border-strong); border-radius: 2px; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 1px 3px rgba(176,74,44,.3); }
+input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
+
+.wm-config { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.wm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 120px; aspect-ratio: 1; background: var(--bg-subtle); border: 1px solid var(--border); padding: 4px; border-radius: var(--r-sm); }
+.wm-anchor { background: var(--surface); border-radius: 3px; cursor: pointer; transition: background .12s; border: 1px solid transparent; }
+.wm-anchor:hover { background: var(--accent-soft); }
+.wm-anchor.active { background: var(--accent); }
+.wm-auto-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--text-2); }
+.wm-preview { position: relative; border-radius: var(--r-md); overflow: hidden; background: var(--bg-subtle); aspect-ratio: 4/3; border: 1px solid var(--border); }
+.wm-preview img { width: 100%; height: 100%; object-fit: cover; }
+.wm-mark { position: absolute; background: rgba(255,255,255,.85); color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: all .15s; }
+
+.review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+.ba-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
+.ba-image { position: relative; aspect-ratio: 4/3; overflow: hidden; }
+.ba-image img { width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+.ba-image.before img { filter: brightness(.85) contrast(.9) saturate(.8); }
+.ba-tag { position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 700; padding: 2px 6px; background: rgba(0,0,0,.6); color: #fff; border-radius: 3px; text-transform: uppercase; letter-spacing: .04em; }
+.ba-tag.after { background: var(--accent); }
+.batch-summary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.summary-stat-value { font-family: var(--font-display); font-weight: 500; font-size: 24px; line-height: 1; }
+.summary-stat-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; margin-top: 4px; }
+.summary-ops { flex: 1; font-size: 12.5px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 6px; min-width: 200px; }
+.summary-op { padding: 3px 8px; background: var(--bg-subtle); border-radius: 4px; font-weight: 500; font-size: 11.5px; }
+
+.process-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 32px; text-align: center; }
+.process-icon { width: 64px; height: 64px; margin: 0 auto 16px; color: var(--accent); }
+.process-title { font-family: var(--font-display); font-weight: 500; font-size: 20px; margin: 0 0 6px; }
+.process-desc { font-size: 13px; color: var(--text-3); margin: 0 0 22px; }
+.progress-track { height: 8px; background: var(--bg-subtle); border-radius: 4px; overflow: hidden; margin-bottom: 10px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .3s ease; }
+.progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; max-width: 480px; margin: 0 auto; }
+.result-actions { display: flex; gap: 10px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+
+.job-history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); transition: border-color .12s, box-shadow .12s; flex-wrap: wrap; }
+.history-row:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+.history-icon { width: 40px; height: 40px; border-radius: var(--r-sm); background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.history-content { flex: 1; min-width: 200px; }
+.history-name { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+.history-meta { font-size: 11.5px; color: var(--text-3); display: flex; gap: 8px; flex-wrap: wrap; }
+.history-meta span:not(:last-child)::after { content: '·'; margin-left: 8px; color: var(--text-muted); }
+.history-actions { display: flex; gap: 6px; align-items: center; }
+
+.wm-cards-grid, .preset-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.wm-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.wm-card-preview { aspect-ratio: 3/2; background: var(--bg-subtle); position: relative; border-bottom: 1px solid var(--border); }
+.wm-card-preview img { width: 100%; height: 100%; object-fit: cover; }
+.wm-card-body { padding: 14px; }
+.wm-card-name { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+.wm-card-meta { font-size: 11.5px; color: var(--text-3); margin-bottom: 12px; }
+.wm-card-actions { display: flex; gap: 6px; justify-content: space-between; align-items: center; }
+.preset-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
+.preset-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.preset-desc { font-size: 12px; color: var(--text-3); margin-bottom: 12px; line-height: 1.5; }
+.preset-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.preset-tag { font-size: 10.5px; font-weight: 600; padding: 2px 6px; background: var(--bg-subtle); color: var(--text-2); border-radius: 3px; }
+.preset-actions { display: flex; gap: 6px; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(28,22,18,.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn .18s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-xl); max-height: 92vh; overflow: hidden; display: flex; flex-direction: column; animation: modalIn .22s ease; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.modal-title { font-family: var(--font-display); font-weight: 500; font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+.modal-body { flex: 1; overflow-y: auto; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-shrink: 0; background: var(--surface-2); }
+.modal-connect { width: 480px; max-width: 100%; }
+.modal-connect .modal-body { padding: 20px; }
+
+.channel-option { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: var(--r-md); margin-bottom: 10px; transition: border-color .12s, background .12s; }
+.channel-option:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.channel-option.connected { border-color: var(--success); background: var(--success-soft); }
+.co-info { flex: 1; }
+.co-name { font-size: 14px; font-weight: 700; }
+.co-desc { font-size: 12px; color: var(--text-3); }
+
+.modal-composer { width: min(1120px, 100%); height: 92vh; }
+.composer-body { display: grid; grid-template-columns: 1fr 1fr; flex: 1; overflow: hidden; }
+.composer-left, .composer-right { overflow-y: auto; padding: 20px; }
+.composer-left { border-right: 1px solid var(--border); }
+.composer-section { margin-bottom: 20px; }
+.composer-section-title { font-size: 11.5px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.channel-select { display: flex; gap: 8px; }
+.channel-select-btn { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--r-md); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-2); transition: all .12s; cursor: pointer; }
+.channel-select-btn:hover { border-color: var(--text-3); }
+.channel-select-btn.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.composer-toolbar { display: flex; align-items: center; gap: 4px; padding: 6px 4px; margin-top: 6px; }
+.toolbar-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-sm); color: var(--text-3); transition: background .12s, color .12s; }
+.toolbar-btn:hover { background: var(--bg-subtle); color: var(--text); }
+.ai-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-sm); background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600; transition: background .12s; }
+.ai-btn:hover { background: var(--accent-border); }
+.char-counter { font-size: 11.5px; color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; }
+.char-counter.warn { color: var(--warning); }
+.char-counter.over { color: var(--error); }
+
+.media-dropzone { border: 1.5px dashed var(--border-strong); border-radius: var(--r-md); padding: 18px; text-align: center; font-size: 12.5px; color: var(--text-3); cursor: pointer; transition: all .12s; }
+.media-dropzone:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.media-strip { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.media-strip-item { position: relative; width: 72px; height: 72px; border-radius: var(--r-sm); overflow: hidden; background: var(--bg-subtle); border: 1px solid var(--border); }
+.media-strip-item img { width: 100%; height: 100%; object-fit: cover; }
+.media-strip-item .strip-actions { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; opacity: 0; transition: opacity .12s; background: rgba(0,0,0,.5); }
+.media-strip-item:hover .strip-actions { opacity: 1; }
+.strip-btn { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.95); color: var(--text); display: inline-flex; align-items: center; justify-content: center; }
+
+.schedule-options { display: flex; flex-direction: column; gap: 4px; }
+.schedule-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; transition: all .12s; }
+.schedule-option:hover { border-color: var(--text-3); }
+.schedule-option.selected { border-color: var(--accent); background: var(--accent-soft); }
+.so-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; margin-top: 2px; position: relative; }
+.schedule-option.selected .so-radio { border-color: var(--accent); }
+.schedule-option.selected .so-radio::after { content: ''; position: absolute; inset: 3px; background: var(--accent); border-radius: 50%; }
+.so-text { flex: 1; }
+.so-title { font-size: 13px; font-weight: 600; }
+.so-desc { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+.datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+
+.preview-tabs { display: inline-flex; gap: 2px; background: var(--bg-subtle); border-radius: var(--r-md); padding: 3px; margin-bottom: 16px; }
+.preview-tab { padding: 6px 12px; border-radius: var(--r-sm); font-size: 12.5px; font-weight: 600; color: var(--text-3); cursor: pointer; transition: all .12s; display: inline-flex; align-items: center; gap: 6px; }
+.preview-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.preview-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; max-width: 420px; }
+.preview-header { display: flex; align-items: center; gap: 10px; padding: 12px; }
+.preview-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f58529, #dd2a7b 50%, #8134af); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.preview-account { flex: 1; }
+.preview-name { font-size: 13px; font-weight: 700; }
+.preview-sub { font-size: 11px; color: var(--text-3); }
+.preview-media { aspect-ratio: 1; background: var(--bg-subtle); position: relative; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; }
+.preview-media img { width: 100%; height: 100%; object-fit: cover; }
+.preview-caption { padding: 12px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+.preview-actions { display: flex; align-items: center; gap: 16px; padding: 8px 12px; border-top: 1px solid var(--border); color: var(--text-3); }
+.preview-meta { font-size: 11px; color: var(--text-3); padding: 0 12px 12px; }
+.preview-card.fb .preview-avatar { background: #1877f2; }
+.preview-card.fb .preview-media { aspect-ratio: 16/9; }
+
+.toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 200; pointer-events: none; }
+.toast { background: var(--text); color: #fff; padding: 11px 16px; border-radius: var(--r-md); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 380px; pointer-events: auto; animation: toastIn .22s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--error); }
+.toast.warn { background: var(--warning); }
+
+.tooltip { position: relative; }
+.tooltip::after { content: attr(data-tooltip); position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); background: var(--text); color: #fff; padding: 5px 9px; border-radius: var(--r-sm); font-size: 11.5px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 50; }
+.tooltip:hover::after { opacity: 1; }
+
+.confirm-dialog { width: 380px; max-width: 100%; }
+.confirm-dialog .modal-body { padding: 20px; }
+.confirm-dialog .modal-title { font-size: 16px; }
+.confirm-desc { font-size: 13px; color: var(--text-2); line-height: 1.55; margin: 8px 0 0; }
+
+.spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1100px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .teaser-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .analytics-grid { grid-template-columns: 1fr; }
+  .pipeline-grid { grid-template-columns: 1fr; }
+  .review-grid { grid-template-columns: repeat(2, 1fr); }
+  .wm-cards-grid, .preset-cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .signup-brand-side { display: none; }
+  .signup-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; width: var(--sidebar-w); transition: left .2s; z-index: 50; }
+  .app-shell.menu-open .sidebar { left: 0; }
+  .search-field { display: none; }
+  .content { padding: 18px 16px 40px; }
+  .composer-body { grid-template-columns: 1fr; }
+  .composer-right { display: none; }
+  .channels-list, .review-grid, .wm-cards-grid, .preset-cards-grid, .upload-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SIGNUP ============ -->
+<div id="signup-view" class="signup-view">
+  <div class="signup-grid">
+    <div class="signup-form-side">
+      <div class="signup-form-wrap">
+        <a href="#" class="signup-back-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Back to home
+        </a>
+        <header class="signup-header">
+          <h1>Create your account</h1>
+          <p>Start your 14-day free trial. No card required.</p>
+        </header>
+        <form id="signup-form" class="signup-form" novalidate>
+          <div class="field">
+            <label class="label" for="su-name">Name</label>
+            <input class="input" id="su-name" type="text" placeholder="Sofia Martinez" autocomplete="name" value="Sofia Martinez" />
+          </div>
+          <div class="field">
+            <label class="label" for="su-email">Email</label>
+            <input class="input" id="su-email" type="email" placeholder="you@company.com" autocomplete="email" value="sofia@wanderatlas.co" />
+            <div class="helper helper-error hidden" id="su-email-err">Enter a valid email address.</div>
+          </div>
+          <div class="field">
+            <label class="label" for="su-company">Company</label>
+            <input class="input" id="su-company" type="text" placeholder="Wander Atlas Co." autocomplete="organization" value="Wander Atlas Co." />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="su-pw">Password</label>
+              <div class="input-wrap">
+                <input class="input" id="su-pw" type="password" placeholder="At least 8 chars" autocomplete="new-password" value="atlas2024" />
+                <button type="button" class="input-toggle" data-toggle-pw="su-pw" aria-label="Show password">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="pw-strength">
+                <div class="pw-bar" id="pw-bar-1"></div>
+                <div class="pw-bar" id="pw-bar-2"></div>
+                <div class="pw-bar" id="pw-bar-3"></div>
+              </div>
+              <div class="pw-label" id="pw-label">Weak password</div>
+            </div>
+            <div class="field">
+              <label class="label" for="su-pw2">Confirm</label>
+              <div class="input-wrap">
+                <input class="input" id="su-pw2" type="password" placeholder="Repeat password" autocomplete="new-password" value="atlas2024" />
+                <span class="input-check hidden" id="pw2-check">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+              </div>
+              <div class="helper helper-error hidden" id="su-pw2-err">Passwords don't match.</div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" id="su-terms" checked />
+              <span class="cb-mark"></span>
+              <span>I agree to the <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="su-submit">Create account</button>
+        </form>
+        <div class="signup-divider"><span>or</span></div>
+        <div class="signup-social">
+          <button class="btn btn-secondary" onclick="enterApp()">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23Z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z"/></svg>
+            Continue with Google
+          </button>
+          <button class="btn btn-secondary" onclick="enterApp()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-3.07 2.51-4.55 2.62-4.62-1.43-2.09-3.66-2.38-4.45-2.41-1.88-.19-3.69 1.11-4.65 1.11-.97 0-2.45-1.09-4.02-1.06-2.06.03-3.98 1.21-5.04 3.06-2.16 3.74-.55 9.27 1.55 12.31 1.03 1.49 2.24 3.16 3.83 3.1 1.54-.06 2.12-1 3.98-1 1.85 0 2.38 1 4 .97 1.65-.03 2.7-1.51 3.71-3.01 1.17-1.73 1.65-3.41 1.68-3.5-.04-.02-3.22-1.24-3.25-4.91M14.06 3.42c.85-1.04 1.43-2.48 1.27-3.92-1.23.05-2.71.81-3.59 1.85-.79.92-1.48 2.39-1.29 3.8 1.37.11 2.77-.7 3.61-1.73"/></svg>
+            Continue with Apple
+          </button>
+        </div>
+        <p class="signup-footer">Already have an account? <a href="#" onclick="enterApp(); return false;">Log in</a></p>
+      </div>
+    </div>
+    <aside class="signup-brand-side">
+      <div class="brand-panel">
+        <img src="https://picsum.photos/seed/tripwheel-atlas-mountain/1400/1800" alt="" class="brand-bg" />
+        <div class="brand-overlay"></div>
+        <div class="brand-content">
+          <a href="#" class="brand-mark">
+            <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
+              <path d="M12 3v5.5M12 15.5V21M3 12h5.5M15.5 12H21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-word">Tripwheel</span>
+          </a>
+          <div class="brand-headline">
+            <h2>Run your trips <em>and</em> your socials in one place.</h2>
+            <ul class="brand-features">
+              <li>Schedule posts across Facebook and Instagram</li>
+              <li>Bulk-edit photos with AI auto-enhance &amp; watermarks</li>
+              <li>Itinerary, bookings, payments — coming soon</li>
+            </ul>
+          </div>
+        </div>
+        <div class="brand-footnote">v0.9 · Early access</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app-shell" class="app-shell hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <a href="#" class="brand-mark" data-go="dashboard">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="1.8" fill="currentColor"/>
+          <path d="M12 3v5.5M12 15.5V21M3 12h5.5M15.5 12H21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-word">Tripwheel</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label"><span>Tools</span></div>
+      <a class="nav-item active" data-go="dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" data-go="social">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+        <span class="nav-label">Social Media</span>
+      </a>
+      <a class="nav-item" data-go="photo">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+        <span class="nav-label">Photo Tool</span>
+      </a>
+
+      <div class="nav-section-label"><span>Coming soon</span></div>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l-6-6 6-6"/><path d="M3 12h14"/><path d="M21 5v14"/></svg>
+        <span class="nav-label">Itinerary Builder</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
+        <span class="nav-label">Trip Listing</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="nav-label">Bookings</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span class="nav-label">Payments</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+        <span class="nav-label">Reports</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2M16 21v-2a4 4 0 0 0-2-3.4"/></svg>
+        <span class="nav-label">Team</span><span class="nav-badge">Soon</span>
+      </a>
+      <a class="nav-item disabled tooltip" data-tooltip="Coming soon — we'll let you know.">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span class="nav-label">Settings</span><span class="nav-badge">Soon</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip" id="user-chip">
+        <div class="avatar">SM</div>
+        <div class="user-meta">
+          <div class="user-name">Sofia Martinez</div>
+          <div class="user-work">Wander Atlas Co.</div>
+        </div>
+        <div class="user-menu" id="user-menu">
+          <div class="menu-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="7" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg>
+            Profile
+          </div>
+          <div class="menu-item" id="logout-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg>
+            Log out
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="page-title">
+          <h1 id="page-title">Dashboard</h1>
+          <div class="breadcrumb" id="breadcrumb">Wander Atlas Co. · Dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-center hidden" id="topbar-center">
+        <div class="tool-tabs" id="social-tabs">
+          <button class="tool-tab active" data-social-tab="queue">Queue</button>
+          <button class="tool-tab" data-social-tab="calendar">Calendar</button>
+          <button class="tool-tab" data-social-tab="channels">Channels</button>
+          <button class="tool-tab" data-social-tab="analytics">Analytics</button>
+        </div>
+        <div class="tool-tabs hidden" id="photo-tabs">
+          <button class="tool-tab active" data-photo-tab="new">Upload</button>
+          <button class="tool-tab" data-photo-tab="history">Job history</button>
+          <button class="tool-tab" data-photo-tab="watermarks">Watermarks</button>
+          <button class="tool-tab" data-photo-tab="presets">Presets</button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-icon" aria-label="Notifications">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </button>
+        <button class="btn-icon" aria-label="Help">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.8" fill="currentColor"/></svg>
+        </button>
+        <button class="btn btn-primary" id="topbar-cta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Create post
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div id="view-dashboard" class="view view-active">
+        <div class="greeting-row">
+          <div>
+            <h2 class="greeting-title">Good morning, Sofia</h2>
+            <p class="greeting-sub">Tuesday, June 24 · Here's what's happening today</p>
+          </div>
+          <div class="workspace-switcher">
+            <div class="avatar avatar-sm">WA</div>
+            <div>
+              <div class="ws-name">Wander Atlas Co.</div>
+              <div class="ws-meta">Owner · 4 members</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Scheduled posts</div>
+            <div class="stat-value">18</div>
+            <div class="stat-trend trend-up">↑ 12% vs last week</div>
+            <svg class="stat-spark" viewBox="0 0 64 28" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M2 22 L10 18 L18 20 L26 12 L34 14 L42 8 L50 10 L58 4 L62 6"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Published this week</div>
+            <div class="stat-value">24</div>
+            <div class="stat-trend trend-up">↑ 8% vs last week</div>
+            <svg class="stat-spark" viewBox="0 0 64 28" fill="none" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round"><path d="M2 18 L10 14 L18 16 L26 10 L34 12 L42 8 L50 6 L58 4 L62 2"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Connected accounts</div>
+            <div class="stat-value">3</div>
+            <div class="stat-trend trend-neutral">2 Facebook · 1 Instagram</div>
+            <svg class="stat-spark" viewBox="0 0 64 28" fill="none" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"><path d="M2 14 L62 14"/></svg>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Photos processed</div>
+            <div class="stat-value">412</div>
+            <div class="stat-trend trend-up">↑ 34% vs last week</div>
+            <svg class="stat-spark" viewBox="0 0 64 28" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"><path d="M2 24 L10 22 L18 20 L26 16 L34 12 L42 10 L50 6 L58 4 L62 2"/></svg>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="dashboard-col-a">
+            <section class="panel">
+              <header class="panel-header">
+                <h3>Upcoming posts</h3>
+                <a href="#" class="panel-link" data-go="social">View all →</a>
+              </header>
+              <div class="panel-body">
+                <div class="post-row">
+                  <img class="post-thumb" src="https://picsum.photos/seed/post-atlas-sunset/80/80" alt="" />
+                  <div class="post-content">
+                    <div class="post-caption">Sunset over the Atlas Mountains. A few spots left for our September guided trek — link in bio.</div>
+                    <div class="post-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span><span class="ch-icon ch-ig">○</span></span><span>Today · 6:00 PM</span></div>
+                  </div>
+                  <span class="pill pill-scheduled">Scheduled</span>
+                </div>
+                <div class="post-row">
+                  <img class="post-thumb" src="https://picsum.photos/seed/post-sahara-dawn/80/80" alt="" />
+                  <div class="post-content">
+                    <div class="post-caption">Behind the scenes from last week's Sahara expedition. Swipe to see the dunes at dawn.</div>
+                    <div class="post-meta"><span class="channel-icons"><span class="ch-icon ch-ig">○</span></span><span>Tomorrow · 9:00 AM</span></div>
+                  </div>
+                  <span class="pill pill-scheduled">Scheduled</span>
+                </div>
+                <div class="post-row">
+                  <img class="post-thumb" src="https://picsum.photos/seed/post-lisbon-tile/80/80" alt="" />
+                  <div class="post-content">
+                    <div class="post-caption">Lisbon tile patterns we keep coming back to. Which is your favourite?</div>
+                    <div class="post-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span><span class="ch-icon ch-ig">○</span></span><span>Thu · 12:30 PM</span></div>
+                  </div>
+                  <span class="pill pill-draft">Draft</span>
+                </div>
+                <div class="post-row">
+                  <img class="post-thumb" src="https://picsum.photos/seed/post-marrakech-market/80/80" alt="" />
+                  <div class="post-content">
+                    <div class="post-caption">Souk colours, Marrakech. Tag a friend you'd take here.</div>
+                    <div class="post-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span></span><span>Thu · 4:00 PM</span></div>
+                  </div>
+                  <span class="pill pill-failed">Failed</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <header class="panel-header">
+                <h3>Recent photo jobs</h3>
+                <a href="#" class="panel-link" data-go="photo">View all →</a>
+              </header>
+              <div class="panel-body">
+                <div class="job-row">
+                  <div class="job-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                  <div class="job-content"><div class="job-name">Lisbon Day Trip Batch</div><div class="job-meta">48 images · Watermark applied · Auto-enhanced</div></div>
+                  <span class="pill pill-published">Complete</span>
+                  <span class="job-meta" style="flex-shrink:0">2h ago</span>
+                </div>
+                <div class="job-row">
+                  <div class="job-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                  <div class="job-content"><div class="job-name">Sahara Expedition Sept</div><div class="job-meta">124 images · Watermark · Subject crop</div></div>
+                  <span class="pill pill-published">Complete</span>
+                  <span class="job-meta" style="flex-shrink:0">Yesterday</span>
+                </div>
+                <div class="job-row">
+                  <div class="job-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                  <div class="job-content"><div class="job-name">Riad Interiors — Web export</div><div class="job-meta">32 images · Resized to 2048px · Compressed</div></div>
+                  <span class="pill pill-processing">Processing</span>
+                  <span class="job-meta" style="flex-shrink:0">3h ago</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="dashboard-col-b">
+            <section class="panel">
+              <header class="panel-header"><h3>Connected accounts</h3></header>
+              <div class="panel-body">
+                <div class="account-row">
+                  <div class="account-logo al-fb"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6 4.39 10.97 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8v8.44C19.61 23.04 24 18.07 24 12.07Z"/></svg></div>
+                  <div class="account-content"><div class="account-name">Wander Atlas Co.</div><div class="account-handle">Facebook Page · 12.4K followers</div></div>
+                  <div class="account-status ok"><span class="dot dot-success"></span>Connected</div>
+                </div>
+                <div class="account-row">
+                  <div class="account-logo al-ig"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 4.54a5.3 5.3 0 1 0 0 10.6 5.3 5.3 0 0 0 0-10.6Zm0 8.74a3.44 3.44 0 1 1 0-6.88 3.44 3.44 0 0 1 0 6.88Zm5.5-9.13a1.24 1.24 0 1 0 0 2.48 1.24 1.24 0 0 1 0-2.48Z"/></svg></div>
+                  <div class="account-content"><div class="account-name">@wanderatlas</div><div class="account-handle">Instagram Business · 8.7K followers</div></div>
+                  <div class="account-status warn"><span class="dot dot-warning"></span>Reconnect</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <header class="panel-header"><h3>Quick actions</h3></header>
+              <div class="panel-body">
+                <button class="action-row" data-action="create-post">
+                  <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div>
+                  <div class="action-content"><div class="action-title">Create post</div><div class="action-desc">Compose and schedule across channels</div></div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <button class="action-row" data-action="go-photo">
+                  <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                  <div class="action-content"><div class="action-title">Bulk-process photos</div><div class="action-desc">Enhance, watermark, and export</div></div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <button class="action-row" data-action="connect">
+                  <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+                  <div class="action-content"><div class="action-title">Connect an account</div><div class="action-desc">Link Facebook or Instagram</div></div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <section>
+          <div class="section-label">More tools on the way</div>
+          <div class="teaser-grid">
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18l-6-6 6-6"/><path d="M3 12h14"/><path d="M21 5v14"/></svg></div>
+              <div class="teaser-name">Itinerary Builder</div>
+              <div class="teaser-desc">Plan day-by-day trip itineraries.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg></div>
+              <div class="teaser-name">Trip Listing</div>
+              <div class="teaser-desc">Publish and manage your trip listings.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+              <div class="teaser-name">Bookings</div>
+              <div class="teaser-desc">Track reservations and availability.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+              <div class="teaser-name">Payments</div>
+              <div class="teaser-desc">Collect deposits and balances.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+              <div class="teaser-name">Reports</div>
+              <div class="teaser-desc">Revenue, occupancy, and post performance.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2M16 21v-2a4 4 0 0 0-2-3.4"/></svg></div>
+              <div class="teaser-name">Team</div>
+              <div class="teaser-desc">Invite teammates and set roles.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+            <div class="teaser-card">
+              <div class="teaser-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
+              <div class="teaser-name">Settings</div>
+              <div class="teaser-desc">Workspace, billing, and integrations.</div>
+              <button class="teaser-btn">Notify me</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== SOCIAL MEDIA ===== -->
+      <div id="view-social" class="view">
+
+        <!-- Queue -->
+        <div class="social-content active" data-social-content="queue">
+          <div class="filter-bar">
+            <div class="filter-chips">
+              <button class="chip active">All</button>
+              <button class="chip"><span class="ch-icon ch-fb" style="width:14px;height:14px">f</span> Facebook</button>
+              <button class="chip"><span class="ch-icon ch-ig" style="width:14px;height:14px">○</span> Instagram</button>
+            </div>
+            <div class="filter-divider"></div>
+            <div class="filter-chips">
+              <button class="chip active">All statuses</button>
+              <button class="chip">Scheduled</button>
+              <button class="chip">Draft</button>
+              <button class="chip">Published</button>
+              <button class="chip">Failed</button>
+            </div>
+          </div>
+
+          <div class="date-group">
+            <div class="date-group-header">
+              <div class="date-group-title">Today <span style="color:var(--text-3); font-weight:500; font-size:12px; font-family:var(--font-ui); font-style:normal;">· Tue, Jun 24</span></div>
+              <div style="font-size:12px;color:var(--text-3);font-weight:500;">2 posts</div>
+            </div>
+            <button class="add-post-row" data-action="create-post">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add post to today's queue
+            </button>
+            <div class="post-card">
+              <img class="post-thumb" src="https://picsum.photos/seed/post-atlas-sunset/120/120" alt="" />
+              <div class="post-card-body">
+                <div class="post-card-caption">Sunset over the Atlas Mountains. A few spots left for our September guided trek — link in bio 🏔️ #atlasmountains #morocco #wanderatlas</div>
+                <div class="post-card-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span><span class="ch-icon ch-ig">○</span></span><span>Today · 6:00 PM</span></div>
+              </div>
+              <div class="post-card-actions">
+                <span class="pill pill-scheduled">Scheduled</span>
+                <button class="btn-icon" data-action="edit-post" aria-label="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+                <button class="btn-icon" aria-label="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+            <div class="post-card">
+              <div style="width:52px;height:52px;border-radius:var(--r-sm);background:var(--bg-subtle);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text-muted);flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>
+              <div class="post-card-body">
+                <div class="post-card-caption">Quick reminder: our Marrakech food tour is back on the calendar for October. DM for early-bird pricing.</div>
+                <div class="post-card-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span></span><span>Today · 8:30 PM</span></div>
+              </div>
+              <div class="post-card-actions">
+                <span class="pill pill-scheduled">Scheduled</span>
+                <button class="btn-icon" data-action="edit-post" aria-label="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="date-group">
+            <div class="date-group-header">
+              <div class="date-group-title">Tomorrow <span style="color:var(--text-3); font-weight:500; font-size:12px; font-family:var(--font-ui); font-style:normal;">· Wed, Jun 25</span></div>
+              <div style="font-size:12px;color:var(--text-3);font-weight:500;">2 posts</div>
+            </div>
+            <button class="add-post-row" data-action="create-post">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add post to tomorrow's queue
+            </button>
+            <div class="post-card">
+              <img class="post-thumb" src="https://picsum.photos/seed/post-sahara-dawn/120/120" alt="" />
+              <div class="post-card-body">
+                <div class="post-card-caption">Behind the scenes from last week's Sahara expedition. Swipe to see the dunes at dawn →</div>
+                <div class="post-card-meta"><span class="channel-icons"><span class="ch-icon ch-ig">○</span></span><span>Tomorrow · 9:00 AM</span></div>
+              </div>
+              <div class="post-card-actions">
+                <span class="pill pill-scheduled">Scheduled</span>
+                <button class="btn-icon" data-action="edit-post" aria-label="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+              </div>
+            </div>
+            <div class="post-card failed">
+              <img class="post-thumb" src="https://picsum.photos/seed/post-marrakech-market/120/120" alt="" />
+              <div class="post-card-body">
+                <div class="post-card-caption">Souk colours, Marrakech. Tag a friend you'd take here.</div>
+                <div class="post-card-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span></span><span>Tomorrow · 4:00 PM · Token expired</span></div>
+              </div>
+              <div class="post-card-actions" style="opacity:1;">
+                <span class="pill pill-failed">Failed</span>
+                <a href="#" class="retry-link" onclick="event.preventDefault();toast('Retrying post…','success')">Retry</a>
+                <button class="btn-icon" data-action="edit-post" aria-label="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="date-group">
+            <div class="date-group-header">
+              <div class="date-group-title">Thu, Jun 26</div>
+              <div style="font-size:12px;color:var(--text-3);font-weight:500;">1 post</div>
+            </div>
+            <button class="add-post-row" data-action="create-post">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add post to Thursday's queue
+            </button>
+            <div class="post-card">
+              <img class="post-thumb" src="https://picsum.photos/seed/post-lisbon-tile/120/120" alt="" />
+              <div class="post-card-body">
+                <div class="post-card-caption">Lisbon tile patterns we keep coming back to. Which is your favourite?</div>
+                <div class="post-card-meta"><span class="channel-icons"><span class="ch-icon ch-fb">f</span><span class="ch-icon ch-ig">○</span></span><span>Thu · 12:30 PM</span></div>
+              </div>
+              <div class="post-card-actions">
+                <span class="pill pill-draft">Draft</span>
+                <button class="btn-icon" data-action="edit-post" aria-label="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="social-content" data-social-content="calendar">
+          <div class="calendar-wrap">
+            <div class="calendar-header">
+              <div class="calendar-month">June 2025</div>
+              <div style="display:inline-flex;gap:4px;">
+                <button class="btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+                <button class="btn btn-secondary btn-sm">Today</button>
+                <button class="btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+              </div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+              <div class="calendar-dow">Sun</div><div class="calendar-dow">Mon</div><div class="calendar-dow">Tue</div><div class="calendar-dow">Wed</div><div class="calendar-dow">Thu</div><div class="calendar-dow">Fri</div><div class="calendar-dow">Sat</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channels -->
+        <div class="social-content" data-social-content="channels">
+          <div class="channels-list">
+            <div class="channel-card">
+              <div class="channel-card-head">
+                <div class="account-logo al-fb" style="width:44px;height:44px"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6 4.39 10.97 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8v8.44C19.61 23.04 24 18.07 24 12.07Z"/></svg></div>
+                <div class="channel-card-info">
+                  <div class="channel-card-name">Wander Atlas Co.</div>
+                  <div class="channel-card-handle">Facebook Page · @wanderatlasco</div>
+                </div>
+                <span class="pill pill-published"><span class="dot dot-success"></span>Connected</span>
+              </div>
+              <div class="channel-card-stats">
+                <div><div class="ch-stat-value">12.4K</div><div class="ch-stat-label">Followers</div></div>
+                <div><div class="ch-stat-value">+248</div><div class="ch-stat-label">This month</div></div>
+                <div><div class="ch-stat-value">3.8%</div><div class="ch-stat-label">Engagement</div></div>
+              </div>
+              <div class="channel-card-actions">
+                <span style="font-size:11.5px;color:var(--text-3)">Token healthy · expires in 47 days</span>
+                <button class="btn btn-ghost btn-sm">Manage</button>
+              </div>
+            </div>
+            <div class="channel-card">
+              <div class="channel-card-head">
+                <div class="account-logo al-ig" style="width:44px;height:44px"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 4.54a5.3 5.3 0 1 0 0 10.6 5.3 5.3 0 0 0 0-10.6Zm0 8.74a3.44 3.44 0 1 1 0-6.88 3.44 3.44 0 0 1 0 6.88Zm5.5-9.13a1.24 1.24 0 1 0 0 2.48 1.24 1.24 0 0 1 0-2.48Z"/></svg></div>
+                <div class="channel-card-info">
+                  <div class="channel-card-name">@wanderatlas</div>
+                  <div class="channel-card-handle">Instagram Business</div>
+                </div>
+                <span class="pill pill-failed"><span class="dot dot-error"></span>Token expired</span>
+              </div>
+              <div class="channel-card-stats">
+                <div><div class="ch-stat-value">8.7K</div><div class="ch-stat-label">Followers</div></div>
+                <div><div class="ch-stat-value">+412</div><div class="ch-stat-label">This month</div></div>
+                <div><div class="ch-stat-value">5.2%</div><div class="ch-stat-label">Engagement</div></div>
+              </div>
+              <div class="channel-card-actions">
+                <div class="token-warn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg>Reconnect required</div>
+                <button class="btn btn-secondary btn-sm" data-action="connect">Reconnect</button>
+              </div>
+            </div>
+            <div class="channel-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:220px;">
+              <button class="btn btn-secondary" data-action="connect">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Connect another channel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="social-content" data-social-content="analytics">
+          <div class="analytics-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div class="chart-title">Engagement over time</div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Reach</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--info)"></span>Engagement</span>
+                </div>
+              </div>
+              <svg class="chart-svg" viewBox="0 0 600 220" preserveAspectRatio="none">
+                <defs><linearGradient id="gradReach" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.18"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+                <g stroke="var(--border)" stroke-width="1"><line x1="0" y1="40" x2="600" y2="40"/><line x1="0" y1="100" x2="600" y2="100"/><line x1="0" y1="160" x2="600" y2="160"/></g>
+                <path d="M0 180 L50 170 L100 150 L150 160 L200 130 L250 110 L300 120 L350 90 L400 70 L450 85 L500 55 L550 40 L600 30 L600 220 L0 220 Z" fill="url(#gradReach)"/>
+                <path d="M0 180 L50 170 L100 150 L150 160 L200 130 L250 110 L300 120 L350 90 L400 70 L450 85 L500 55 L550 40 L600 30" fill="none" stroke="var(--accent)" stroke-width="2"/>
+                <path d="M0 195 L50 188 L100 178 L150 182 L200 168 L250 158 L300 162 L350 148 L400 138 L450 142 L500 128 L550 118 L600 112" fill="none" stroke="var(--info)" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header"><div class="chart-title">Top post this week</div></div>
+              <img src="https://picsum.photos/seed/post-sahara-dawn/400/240" style="border-radius:var(--r-md);margin-bottom:12px;aspect-ratio:5/3;object-fit:cover;width:100%;" alt="" />
+              <div style="font-size:12.5px;color:var(--text-2);line-height:1.5;margin-bottom:12px;">Behind the scenes from last week's Sahara expedition. Swipe to see the dunes at dawn →</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div><div class="ch-stat-value" style="font-size:16px;">14.2K</div><div class="ch-stat-label">Reach</div></div>
+                <div><div class="ch-stat-value" style="font-size:16px;">1.8K</div><div class="ch-stat-label">Engagement</div></div>
+                <div><div class="ch-stat-value" style="font-size:16px;">312</div><div class="ch-stat-label">Saves</div></div>
+                <div><div class="ch-stat-value" style="font-size:16px;">48</div><div class="ch-stat-label">Shares</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Total reach</div><div class="stat-value">48.2K</div><div class="stat-trend trend-up">↑ 18% vs last week</div></div>
+            <div class="stat-card"><div class="stat-label">Engagement rate</div><div class="stat-value">4.6%</div><div class="stat-trend trend-up">↑ 0.4pp</div></div>
+            <div class="stat-card"><div class="stat-label">Link clicks</div><div class="stat-value">1.2K</div><div class="stat-trend" style="color:var(--error)">↓ 6% vs last week</div></div>
+            <div class="stat-card"><div class="stat-label">New followers</div><div class="stat-value">+747</div><div class="stat-trend trend-up">↑ 22% vs last week</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PHOTO TOOL ===== -->
+      <div id="view-photo" class="view">
+
+        <!-- New job -->
+        <div class="photo-content active" data-photo-content="new">
+          <div class="steps-bar">
+            <div class="step active" data-step="1"><span class="step-num">1</span> Upload</div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="2"><span class="step-num">2</span> Configure</div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="3"><span class="step-num">3</span> Review</div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="4"><span class="step-num">4</span> Export</div>
+          </div>
+
+          <div class="photo-step" data-photo-step="1">
+            <div class="dropzone" id="dropzone">
+              <div class="dropzone-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+              <h3 class="dropzone-title">Drag images here or browse</h3>
+              <p class="dropzone-desc">AI auto-enhance and watermark in one batch. JPG, PNG, WebP up to 50MB each.</p>
+              <div class="dropzone-actions">
+                <button class="btn btn-primary" id="browse-btn">Browse files</button>
+                <span class="dropzone-or">or</span>
+                <button class="btn btn-secondary">Import from source</button>
+              </div>
+            </div>
+            <div class="upload-grid" id="upload-grid"></div>
+            <div class="step-actions">
+              <div style="font-size:12.5px;color:var(--text-3);" id="upload-count">No files yet</div>
+              <button class="btn btn-primary" id="to-step-2" disabled>Continue → Configure</button>
+            </div>
+          </div>
+
+          <div class="photo-step hidden" data-photo-step="2">
+            <div class="pipeline-grid">
+              <div class="pipeline-panel">
+                <div class="pipeline-panel-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>Processing options</div>
+                <div class="pipeline-panel-desc">Standard pipeline applied to every file.</div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Resize / Resolution</div><div class="pipeline-row-desc">Long edge: 2048px · 72 DPI</div></div><button class="btn btn-ghost btn-sm">Edit</button></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Format &amp; Compression</div><div class="pipeline-row-desc">JPG · Quality 85</div></div><button class="btn btn-ghost btn-sm">Edit</button></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Crop / Aspect</div><div class="pipeline-row-desc">Original aspect ratio preserved</div></div><button class="btn btn-ghost btn-sm">Edit</button></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Rename pattern</div><div class="pipeline-row-desc">{trip}-{index} → lisbon-001, lisbon-002</div></div><button class="btn btn-ghost btn-sm">Edit</button></div>
+              </div>
+              <div class="pipeline-panel">
+                <div class="pipeline-panel-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/></svg>AI automation<span class="ai-badge">AI</span></div>
+                <div class="pipeline-panel-desc">Powered by on-device models.</div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Auto-enhance <span class="ai-badge">AI</span></div><div class="pipeline-row-desc">Exposure, color, and sharpness</div></div><label class="toggle"><input type="checkbox" checked /><span class="tg-mark"></span></label></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Auto-crop to subject <span class="ai-badge">AI</span></div><div class="pipeline-row-desc">Detects and frames main subject</div></div><label class="toggle"><input type="checkbox" /><span class="tg-mark"></span></label></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Background cleanup <span class="ai-badge">AI</span></div><div class="pipeline-row-desc">Remove distractions and noise</div></div><label class="toggle"><input type="checkbox" /><span class="tg-mark"></span></label></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Auto-tag &amp; alt-text <span class="ai-badge">AI</span></div><div class="pipeline-row-desc">Accessibility text + keywords</div></div><label class="toggle"><input type="checkbox" checked /><span class="tg-mark"></span></label></div>
+                <div class="pipeline-row"><div class="pipeline-row-info"><div class="pipeline-row-name">Smart watermark placement <span class="ai-badge">AI</span></div><div class="pipeline-row-desc">Avoids faces and subjects</div></div><label class="toggle"><input type="checkbox" checked /><span class="tg-mark"></span></label></div>
+              </div>
+              <div class="pipeline-panel full">
+                <div class="pipeline-panel-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Watermark</div>
+                <div class="pipeline-panel-desc">Applied to every exported image.</div>
+                <div class="wm-config">
+                  <div>
+                    <div class="pipeline-row" style="border:none;padding:6px 0;"><div class="pipeline-row-info"><div class="pipeline-row-name">Wander Atlas Logo</div><div class="pipeline-row-desc">PNG · 1200×400 · Default</div></div><button class="btn btn-ghost btn-sm">Change</button></div>
+                    <div class="slider-row"><div class="slider-head"><span class="slider-label">Opacity</span><span class="slider-value" id="wm-opacity-val">80%</span></div><input type="range" min="20" max="100" value="80" id="wm-opacity" /></div>
+                    <div class="slider-row"><div class="slider-head"><span class="slider-label">Scale</span><span class="slider-value" id="wm-scale-val">22%</span></div><input type="range" min="10" max="50" value="22" id="wm-scale" /></div>
+                    <div class="slider-row"><div class="slider-head"><span class="slider-label">Margin</span><span class="slider-value" id="wm-margin-val">24px</span></div><input type="range" min="0" max="80" value="24" id="wm-margin" /></div>
+                  </div>
+                  <div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:8px;">Position</div>
+                    <div class="wm-grid" id="wm-grid">
+                      <div class="wm-anchor" data-pos="top-left"></div><div class="wm-anchor" data-pos="top-center"></div><div class="wm-anchor" data-pos="top-right"></div>
+                      <div class="wm-anchor" data-pos="middle-left"></div><div class="wm-anchor" data-pos="middle-center"></div><div class="wm-anchor" data-pos="middle-right"></div>
+                      <div class="wm-anchor" data-pos="bottom-left"></div><div class="wm-anchor" data-pos="bottom-center"></div><div class="wm-anchor active" data-pos="bottom-right"></div>
+                    </div>
+                    <label class="wm-auto-row"><label class="toggle" style="margin-top:8px;"><input type="checkbox" id="wm-auto" /><span class="tg-mark"></span></label><span>Auto-placement <span class="ai-badge">AI</span></span></label>
+                  </div>
+                  <div style="grid-column:1/-1;">
+                    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:8px;">Live preview</div>
+                    <div class="wm-preview" id="wm-preview">
+                      <img src="https://picsum.photos/seed/wm-preview-image/600/450" alt="" />
+                      <div class="wm-mark" id="wm-mark" style="bottom:24px;right:24px;">WANDER ATLAS</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="step-actions">
+              <button class="btn btn-ghost" id="back-to-1">← Back</button>
+              <button class="btn btn-primary" id="to-step-3">Continue → Review</button>
+            </div>
+          </div>
+
+          <div class="photo-step hidden" data-photo-step="3">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div>
+                <div style="font-family:var(--font-display);font-weight:500;font-size:18px;letter-spacing:-0.01em;">Before / After</div>
+                <div style="font-size:12.5px;color:var(--text-3);margin-top:2px;">Hover an image to compare. Click to override individual edits.</div>
+              </div>
+            </div>
+            <div class="review-grid" id="review-grid"></div>
+            <div class="batch-summary">
+              <div><div class="summary-stat-value" id="review-count">6</div><div class="summary-stat-label">Images</div></div>
+              <div><div class="summary-stat-value">~3.4 MB</div><div class="summary-stat-label">Est. output</div></div>
+              <div><div class="summary-stat-value">~22s</div><div class="summary-stat-label">Est. time</div></div>
+              <div class="summary-ops">
+                <span class="summary-op">Auto-enhance</span>
+                <span class="summary-op">Smart watermark</span>
+                <span class="summary-op">Resize 2048px</span>
+                <span class="summary-op">JPG Q85</span>
+                <span class="summary-op">Auto-tag</span>
+                <span class="summary-op">Rename</span>
+              </div>
+            </div>
+            <div class="step-actions">
+              <button class="btn btn-ghost" id="back-to-2">← Back</button>
+              <button class="btn btn-primary" id="to-step-4">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7"/></svg>
+                Process images
+              </button>
+            </div>
+          </div>
+
+          <div class="photo-step hidden" data-photo-step="4">
+            <div class="process-card">
+              <div class="process-icon"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M21 12a9 9 0 1 1-6.2-8.55"/><path d="M9 12l2 2 4-4"/></svg></div>
+              <h3 class="process-title" id="process-title">Processing images…</h3>
+              <p class="process-desc" id="process-desc">Auto-enhance · Smart watermark · Resize · Rename</p>
+              <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+              <div class="progress-meta">
+                <span id="progress-count">0 processed</span>
+                <span id="progress-eta">~22s remaining</span>
+              </div>
+              <div class="result-actions hidden" id="result-actions">
+                <button class="btn btn-primary" onclick="toast('Downloading ZIP…','success')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>
+                  Download all (ZIP)
+                </button>
+                <button class="btn btn-secondary" onclick="toast('Saved to job history','success')">Save to job history</button>
+                <button class="btn btn-secondary" onclick="closeModals(); openComposer();">Push to Social composer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="photo-content" data-photo-content="history">
+          <div class="job-history-list">
+            <div class="history-row">
+              <div class="history-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+              <div class="history-content"><div class="history-name">Lisbon Day Trip Batch</div><div class="history-meta"><span>48 images</span><span>Auto-enhance · Watermark</span><span>JPG Q85</span><span>3.8 MB</span></div></div>
+              <span class="pill pill-published">Complete</span>
+              <span style="font-size:11.5px;color:var(--text-3);">2h ago</span>
+              <div class="history-actions">
+                <button class="btn btn-ghost btn-sm">Re-run</button>
+                <button class="btn btn-secondary btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
+              </div>
+            </div>
+            <div class="history-row">
+              <div class="history-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+              <div class="history-content"><div class="history-name">Sahara Expedition Sept</div><div class="history-meta"><span>124 images</span><span>Subject crop · Watermark</span><span>12.4 MB</span></div></div>
+              <span class="pill pill-published">Complete</span>
+              <span style="font-size:11.5px;color:var(--text-3);">Yesterday</span>
+              <div class="history-actions">
+                <button class="btn btn-ghost btn-sm">Re-run</button>
+                <button class="btn btn-secondary btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
+              </div>
+            </div>
+            <div class="history-row">
+              <div class="history-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+              <div class="history-content"><div class="history-name">Riad Interiors — Web export</div><div class="history-meta"><span>32 images</span><span>Resize 2048px · Compress</span><span>WebP Q80</span><span>2.1 MB</span></div></div>
+              <span class="pill pill-processing">Processing</span>
+              <span style="font-size:11.5px;color:var(--text-3);">3h ago</span>
+              <div class="history-actions"><button class="btn btn-ghost btn-sm">View progress</button></div>
+            </div>
+            <div class="history-row">
+              <div class="history-icon" style="background:var(--error-soft);color:var(--error);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+              <div class="history-content"><div class="history-name">Chefchaouen Blue Batch</div><div class="history-meta"><span>18 of 24 processed</span><span>6 failed · unsupported format</span></div></div>
+              <span class="pill pill-failed">Partial</span>
+              <span style="font-size:11.5px;color:var(--text-3);">2 days ago</span>
+              <div class="history-actions">
+                <button class="btn btn-ghost btn-sm">Retry failed</button>
+                <button class="btn btn-secondary btn-sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Download partial</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Watermarks -->
+        <div class="photo-content" data-photo-content="watermarks">
+          <div class="wm-cards-grid">
+            <div class="wm-card">
+              <div class="wm-card-preview"><img src="https://picsum.photos/seed/wm-preview-1/400/300" alt="" /><div class="wm-mark" style="bottom:8px;right:8px;">WANDER ATLAS</div></div>
+              <div class="wm-card-body">
+                <div class="wm-card-name">Wander Atlas Logo</div>
+                <div class="wm-card-meta">PNG · 1200×400 · Default</div>
+                <div class="wm-card-actions">
+                  <span class="pill pill-accent">Default</span>
+                  <div>
+                    <button class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+                    <button class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="wm-card">
+              <div class="wm-card-preview"><img src="https://picsum.photos/seed/wm-preview-2/400/300" alt="" /><div class="wm-mark" style="top:8px;left:8px;bottom:auto;right:auto;">ATLAS</div></div>
+              <div class="wm-card-body">
+                <div class="wm-card-name">Atlas Day Trips Mark</div>
+                <div class="wm-card-meta">SVG · Square · 240×240</div>
+                <div class="wm-card-actions">
+                  <button class="btn btn-ghost btn-sm">Set as default</button>
+                  <div>
+                    <button class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button>
+                    <button class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="wm-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:200px;">
+              <button class="btn btn-secondary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Upload watermark</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div class="photo-content" data-photo-content="presets">
+          <div class="preset-cards-grid">
+            <div class="preset-card">
+              <div class="preset-name">Instagram Square</div>
+              <div class="preset-desc">1:1 crop, 1080×1080, auto-enhance, watermark, JPG Q90.</div>
+              <div class="preset-tags"><span class="preset-tag">1:1</span><span class="preset-tag">1080px</span><span class="preset-tag">JPG</span><span class="preset-tag">Watermark</span></div>
+              <div class="preset-actions"><button class="btn btn-secondary btn-sm">Use preset</button><button class="btn btn-ghost btn-sm">Edit</button></div>
+            </div>
+            <div class="preset-card">
+              <div class="preset-name">Story Vertical</div>
+              <div class="preset-desc">9:16 crop, 1080×1920, no watermark, JPG Q92.</div>
+              <div class="preset-tags"><span class="preset-tag">9:16</span><span class="preset-tag">1080×1920</span><span class="preset-tag">JPG</span></div>
+              <div class="preset-actions"><button class="btn btn-secondary btn-sm">Use preset</button><button class="btn btn-ghost btn-sm">Edit</button></div>
+            </div>
+            <div class="preset-card">
+              <div class="preset-name">Web Hero</div>
+              <div class="preset-desc">16:9, 2400×1350, compress to WebP Q80, no watermark.</div>
+              <div class="preset-tags"><span class="preset-tag">16:9</span><span class="preset-tag">2400px</span><span class="preset-tag">WebP</span></div>
+              <div class="preset-actions"><button class="btn btn-secondary btn-sm">Use preset</button><button class="btn btn-ghost btn-sm">Edit</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ============ State ============ */
+const state = {
+  view: 'dashboard',
+  socialTab: 'queue',
+  photoTab: 'new',
+  photoStep: 1,
+  uploads: [],
+  channelsConnected: { fb: true, ig: true }
+};
+
+const PHOTO_SEEDS = ['lisbon-1','lisbon-2','lisbon-3','lisbon-4','lisbon-5','lisbon-6'];
+
+/* ============ Helpers ============ */
+function $(sel, root = document) { return root.querySelector(sel); }
+function $$(sel, root = document) { return [...root.querySelectorAll(sel)]; }
+function el(html) { const e = document.createElement('div'); e.innerHTML = html.trim(); return e.firstChild; }
+
+function toast(msg, type = '') {
+  const t = el(`<div class="toast ${type}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>${msg}</span></div>`);
+  $('#toast-container').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; t.style.transition = 'all .25s'; }, 2600);
+  setTimeout(() => t.remove(), 2900);
+}
+
+function closeModals() { $$('.modal-overlay').forEach(m => m.remove()); }
+
+/* ============ Signup → App ============ */
+function enterApp() {
+  $('#signup-view').classList.add('hidden');
+  $('#app-shell').classList.remove('hidden');
+  navigate('dashboard');
+  toast('Welcome to Tripwheel, Sofia', 'success');
+}
+
+function checkSignupValid() {
+  const name = $('#su-name').value.trim();
+  const email = $('#su-email').value.trim();
+  const company = $('#su-company').value.trim();
+  const pw = $('#su-pw').value;
+  const pw2 = $('#su-pw2').value;
+  const terms = $('#su-terms').checked;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const pwOk = pw.length >= 8;
+  const matchOk = pw2.length > 0 && pw === pw2;
+  return name && emailOk && company && pwOk && matchOk && terms;
+}
+
+function updatePwStrength() {
+  const pw = $('#su-pw').value;
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/\d/.test(pw) || /[^a-zA-Z0-9]/.test(pw)) score++;
+  const bars = [$('#pw-bar-1'), $('#pw-bar-2'), $('#pw-bar-3')];
+  const label = $('#pw-label');
+  bars.forEach(b => b.className = 'pw-bar');
+  if (pw.length === 0) { label.textContent = 'Use at least 8 characters'; return; }
+  if (score <= 1) { bars[0].classList.add('weak'); label.textContent = 'Weak password'; label.style.color = 'var(--error)'; }
+  else if (score === 2) { bars[0].classList.add('fair'); bars[1].classList.add('fair'); label.textContent = 'Fair password'; label.style.color = 'var(--warning)'; }
+  else { bars.forEach(b => b.classList.add('strong')); label.textContent = 'Strong password'; label.style.color = 'var(--success)'; }
+}
+
+function updatePw2Match() {
+  const pw = $('#su-pw').value;
+  const pw2 = $('#su-pw2').value;
+  const check = $('#pw2-check');
+  const err = $('#su-pw2-err');
+  if (pw2.length > 0 && pw === pw2) {
+    check.classList.remove('hidden');
+    err.classList.add('hidden');
+    $('#su-pw2').classList.remove('input-error');
+  } else {
+    check.classList.add('hidden');
+    if (pw2.length > 0) {
+      err.classList.remove('hidden');
+      $('#su-pw2').classList.add('input-error');
+    } else {
+      err.classList.add('hidden');
+      $('#su-pw2').classList.remove('input-error');
+    }
+  }
+}
+
+function validateEmail() {
+  const email = $('#su-email').value.trim();
+  const err = $('#su-email-err');
+  if (email.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.classList.add('hidden');
+    $('#su-email').classList.remove('input-error');
+  } else {
+    err.classList.remove('hidden');
+    $('#su-email').classList.add('input-error');
+  }
+}
+
+// Bind signup events
+ $('#signup-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  validateEmail();
+  updatePw2Match();
+  if (!checkSignupValid()) {
+    toast('Please fix the errors below', 'error');
+    return;
+  }
+  const btn = $('#su-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating account…';
+  setTimeout(() => { enterApp(); btn.disabled = false; btn.innerHTML = 'Create account'; }, 1200);
+});
+
+ $('#su-email').addEventListener('input', () => { validateEmail(); });
+ $('#su-pw').addEventListener('input', () => { updatePwStrength(); updatePw2Match(); });
+ $('#su-pw2').addEventListener('input', () => { updatePw2Match(); });
+ $('#su-terms').addEventListener('change', () => {});
+
+ $$('[data-toggle-pw]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = $('#' + btn.dataset.togglePw);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+});
+
+updatePwStrength();
+updatePw2Match();
+
+/* ============ Navigation ============ */
+function navigate(view) {
+  state.view = view;
+  $$('.nav-item[data-go]').forEach(n => n.classList.toggle('active', n.dataset.go === view));
+  $$('.view').forEach(v => v.classList.remove('view-active'));
+  $('#view-' + view).classList.add('view-active');
+
+  const titles = {
+    dashboard: ['Dashboard', 'Wander Atlas Co. · Dashboard'],
+    social: ['Social Media', 'Wander Atlas Co. · Social Media'],
+    photo: ['Photo Tool', 'Wander Atlas Co. · Photo Tool']
+  };
+  $('#page-title').textContent = titles[view][0];
+  $('#breadcrumb').textContent = titles[view][1];
+
+  const isToolView = view === 'social' || view === 'photo';
+  $('#topbar-center').classList.toggle('hidden', !isToolView);
+  $('#social-tabs').classList.toggle('hidden', view !== 'social');
+  $('#photo-tabs').classList.toggle('hidden', view !== 'photo');
+  $('#breadcrumb').classList.toggle('hidden', isToolView);
+
+  const cta = $('#topbar-cta');
+  if (view === 'dashboard' || view === 'social') {
+    cta.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Create post';
+    cta.style.display = '';
+  } else if (view === 'photo') {
+    cta.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> New job';
+    cta.style.display = '';
+  }
+}
+
+ $$('[data-go]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigate(item.dataset.go);
+  });
+});
+
+/* ============ Sidebar ============ */
+ $('#sidebar-toggle').addEventListener('click', () => {
+  if (window.innerWidth < 768) {
+    $('#app-shell').classList.toggle('menu-open');
+  } else {
+    $('#app-shell').classList.toggle('collapsed');
+  }
+});
+
+/* ============ User menu ============ */
+ $('#user-chip').addEventListener('click', (e) => {
+  if (e.target.id === 'logout-btn' || e.target.closest('#logout-btn')) return;
+  $('#user-menu').classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if (!$('#user-chip').contains(e.target)) $('#user-menu').classList.remove('open');
+});
+ $('#logout-btn').addEventListener('click', () => {
+  $('#app-shell').classList.add('hidden');
+  $('#signup-view').classList.remove('hidden');
+  $('#user-menu').classList.remove('open');
+  toast('Logged out', 'success');
+});
+
+/* ============ Topbar CTA ============ */
+ $('#topbar-cta').addEventListener('click', () => {
+  if (state.view === 'photo') {
+    state.photoStep = 1;
+    state.uploads = [];
+    renderUploads();
+    showPhotoStep(1);
+    switchPhotoTab('new');
+  } else {
+    openComposer();
+  }
+});
+
+/* ============ Social tabs ============ */
+ $$('#social-tabs .tool-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const t = tab.dataset.socialTab;
+    state.socialTab = t;
+    $$('#social-tabs .tool-tab').forEach(x => x.classList.toggle('active', x === tab));
+    $$('.social-content').forEach(c => c.classList.toggle('active', c.dataset.socialContent === t));
+    if (t === 'calendar') renderCalendar();
+  });
+});
+
+/* ============ Photo tabs ============ */
+function switchPhotoTab(t) {
+  state.photoTab = t;
+  $$('#photo-tabs .tool-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.photoTab === t));
+  $$('.photo-content').forEach(c => c.classList.toggle('active', c.dataset.photoContent === t));
+}
+ $$('#photo-tabs .tool-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchPhotoTab(tab.dataset.photoTab));
+});
+
+/* ============ Photo: Upload ============ */
+const dropzone = $('#dropzone');
+const fileInput = el('<input type="file" multiple accept="image/*" style="display:none" />');
+document.body.appendChild(fileInput);
+
+dropzone.addEventListener('click', () => fileInput.click());
+ $('#browse-btn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+fileInput.addEventListener('change', (e) => {
+  handleFiles(e.target.files);
+  fileInput.value = '';
+});
+
+['dragenter','dragover'].forEach(ev => dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+
+function handleFiles(files) {
+  [...files].forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(f);
+    state.uploads.push({ name: f.name, url, size: f.size });
+  });
+  // If empty, seed with sample images for demo
+  if (state.uploads.length === 0 && files.length === 0) {
+    seedSampleUploads();
+  }
+  renderUploads();
+  if (state.uploads.length > 0) {
+    toast(`${state.uploads.length} image${state.uploads.length > 1 ? 's' : ''} ready`, 'success');
+  }
+}
+
+function seedSampleUploads() {
+  PHOTO_SEEDS.forEach((seed, i) => {
+    state.uploads.push({ name: `lisbon-${String(i+1).padStart(3,'0')}.jpg`, url: `https://picsum.photos/seed/${seed}/400/400`, size: 2400000 + i*100000 });
+  });
+}
+
+function renderUploads() {
+  const grid = $('#upload-grid');
+  grid.innerHTML = '';
+  state.uploads.forEach((u, i) => {
+    const t = el(`<div class="upload-thumb">
+      <img src="${u.url}" alt="" />
+      <div class="edited-badge">Ready</div>
+      <button class="remove-btn" aria-label="Remove"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>`);
+    t.querySelector('.remove-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.uploads.splice(i, 1);
+      renderUploads();
+    });
+    grid.appendChild(t);
+  });
+  const count = state.uploads.length;
+  $('#upload-count').textContent = count === 0 ? 'No files yet' : `${count} image${count > 1 ? 's' : ''} · ${(count * 2.4).toFixed(1)} MB total`;
+  $('#to-step-2').disabled = count === 0;
+}
+
+ $('#to-step-2').addEventListener('click', () => { if (state.uploads.length === 0) seedSampleUploads(); renderUploads(); showPhotoStep(2); });
+ $('#back-to-1').addEventListener('click', () => showPhotoStep(1));
+ $('#to-step-3').addEventListener('click', () => { renderReview(); showPhotoStep(3); });
+ $('#back-to-2').addEventListener('click', () => showPhotoStep(2));
+ $('#to-step-4').addEventListener('click', () => { showPhotoStep(4); runProcessing(); });
+
+function showPhotoStep(n) {
+  state.photoStep = n;
+  $$('.photo-step').forEach(s => s.classList.add('hidden'));
+  $(`.photo-step[data-photo-step="${n}"]`).classList.remove('hidden');
+  $$('.step').forEach(s => {
+    const num = parseInt(s.dataset.step);
+    s.classList.toggle('active', num === n);
+    s.classList.toggle('done', num < n);
+  });
+}
+
+/* ============ Photo: Watermark controls ============ */
+const wmOpacity = $('#wm-opacity'), wmScale = $('#wm-scale'), wmMargin = $('#wm-margin');
+const wmMark = $('#wm-mark');
+function updateWmPreview() {
+  const op = wmOpacity.value / 100;
+  const sc = wmScale.value / 100;
+  const mg = wmMargin.value;
+  $('#wm-opacity-val').textContent = wmOpacity.value + '%';
+  $('#wm-scale-val').textContent = wmScale.value + '%';
+  $('#wm-margin-val').textContent = mg + 'px';
+  wmMark.style.opacity = op;
+  wmMark.style.fontSize = (11 * sc + 6) + 'px';
+  // Position based on selected anchor
+  const active = $('.wm-anchor.active');
+  if (active) {
+    const pos = active.dataset.pos;
+    wmMark.style.top = pos.includes('top') ? mg + 'px' : pos.includes('middle') ? '50%' : 'auto';
+    wmMark.style.bottom = pos.includes('bottom') ? mg + 'px' : pos.includes('middle') ? 'auto' : '';
+    wmMark.style.left = pos.includes('left') ? mg + 'px' : pos.includes('center') ? '50%' : 'auto';
+    wmMark.style.right = pos.includes('right') ? mg + 'px' : pos.includes('center') ? 'auto' : '';
+    wmMark.style.transform = pos.includes('middle') || pos.includes('center') ? 'translate(50%, 50%)' : 'none';
+    if (pos === 'middle-center') wmMark.style.transform = 'translate(-50%, -50%)';
+    if (pos === 'middle-left' || pos === 'middle-right') wmMark.style.transform = 'translateY(50%)';
+    if (pos === 'top-center' || pos === 'bottom-center') wmMark.style.transform = 'translateX(-50%)';
+    if (pos.includes('center') || pos.includes('middle')) {
+      wmMark.style.left = pos.includes('center') ? '50%' : wmMark.style.left;
+      wmMark.style.right = pos.includes('center') ? 'auto' : wmMark.style.right;
+    }
+  }
+}
+[wmOpacity, wmScale, wmMargin].forEach(s => s.addEventListener('input', updateWmPreview));
+ $$('#wm-grid .wm-anchor').forEach(a => {
+  a.addEventListener('click', () => {
+    $$('#wm-grid .wm-anchor').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    updateWmPreview();
+  });
+});
+updateWmPreview();
+
+/* ============ Photo: Review ============ */
+function renderReview() {
+  const grid = $('#review-grid');
+  grid.innerHTML = '';
+  const seeds = state.uploads.length > 0 ? state.uploads.map(u => u.url) : PHOTO_SEEDS.map(s => `https://picsum.photos/seed/${s}/400/300`);
+  // Limit to 6 for display
+  const list = seeds.slice(0, 6);
+  list.forEach((url, i) => {
+    const card = el(`<div class="ba-card">
+      <div class="ba-image ${i % 2 === 0 ? 'before' : ''}">
+        <img src="${url}" alt="" />
+        <span class="ba-tag ${i % 2 === 0 ? '' : 'after'}">${i % 2 === 0 ? 'Before' : 'After'}</span>
+      </div>
+    </div>`);
+    grid.appendChild(card);
+  });
+  $('#review-count').textContent = list.length;
+}
+
+/* ============ Photo: Processing ============ */
+function runProcessing() {
+  const fill = $('#progress-fill');
+  const count = $('#progress-count');
+  const eta = $('#progress-eta');
+  const title = $('#process-title');
+  const desc = $('#process-desc');
+  const total = state.uploads.length || 6;
+  let processed = 0;
+  fill.style.width = '0%';
+  count.textContent = `0 of ${total} processed`;
+  eta.textContent = '~22s remaining';
+  title.textContent = `Processing ${total} images…`;
+  desc.textContent = 'Auto-enhance · Smart watermark · Resize · Rename';
+  $('#result-actions').classList.add('hidden');
+
+  const interval = setInterval(() => {
+    processed++;
+    const pct = (processed / total) * 100;
+    fill.style.width = pct + '%';
+    count.textContent = `${processed} of ${total} processed`;
+    eta.textContent = `~${Math.max(0, Math.round((total - processed) * 3.5))}s remaining`;
+    if (processed >= total) {
+      clearInterval(interval);
+      title.textContent = 'All images processed';
+      desc.textContent = `${total} images enhanced, watermarked, and exported.`;
+      eta.textContent = 'Complete';
+      $('#result-actions').classList.remove('hidden');
+      toast(`${total} images processed successfully`, 'success');
+    }
+  }, 700);
+}
+
+/* ============ Calendar ============ */
+function renderCalendar() {
+  const grid = $('#calendar-grid');
+  // Keep DOW headers
+  const dows = grid.querySelectorAll('.calendar-dow');
+  grid.innerHTML = '';
+  dows.forEach(d => grid.appendChild(d));
+  // June 2025 starts on Sunday (Jun 1 = Sun)
+  // Show 5 weeks: May 25 - Jul 5
+  const today = 24;
+  const posts = {
+    24: [{type:'both', text:'6:00 PM · Atlas sunset'}],
+    25: [{type:'ig', text:'9:00 AM · Sahara'}, {type:'fb', text:'4:00 PM · Marrakech'}],
+    26: [{type:'both', text:'12:30 PM · Lisbon'}],
+    28: [{type:'ig', text:'Story drop'}],
+    30: [{type:'fb', text:'Monthly recap'}],
+    2: [{type:'both', text:'Atlas trek'}],
+    5: [{type:'ig', text:'Riad interiors'}]
+  };
+  const days = [
+    {day: 25, outside: true}, {day: 26, outside: true}, {day: 27, outside: true}, {day: 28, outside: true}, {day: 29, outside: true}, {day: 30, outside: true}, {day: 1},
+    {day: 2}, {day: 3}, {day: 4}, {day: 5}, {day: 6}, {day: 7}, {day: 8},
+    {day: 9}, {day: 10}, {day: 11}, {day: 12}, {day: 13}, {day: 14}, {day: 15},
+    {day: 16}, {day: 17}, {day: 18}, {day: 19}, {day: 20}, {day: 21}, {day: 22},
+    {day: 23}, {day: 24, today: true}, {day: 25}, {day: 26}, {day: 27}, {day: 28}, {day: 29},
+    {day: 30}, {day: 1, outside: true}, {day: 2, outside: true}, {day: 3, outside: true}, {day: 4, outside: true}, {day: 5, outside: true}, {day: 6, outside: true}
+  ];
+  days.forEach(d => {
+    const dayEl = el(`<div class="calendar-day ${d.outside ? 'outside' : ''} ${d.today ? 'today' : ''}">
+      <div class="calendar-date">${d.day}</div>
+    </div>`);
+    if (posts[d.day] && !d.outside) {
+      posts[d.day].forEach(p => {
+        dayEl.appendChild(el(`<div class="cal-post ${p.type}">${p.text}</div>`));
+      });
+    }
+    grid.appendChild(dayEl);
+  });
+}
+
+/* ============ Global action handler ============ */
+document.addEventListener('click', (e) => {
+  const action = e.target.closest('[data-action]');
+  if (!action) return;
+  const a = action.dataset.action;
+  if (a === 'create-post') { e.preventDefault(); openComposer(); }
+  else if (a === 'edit-post') { e.preventDefault(); openComposer(true); }
+  else if (a === 'go-photo') { e.preventDefault(); navigate('photo'); }
+  else if (a === 'connect') { e.preventDefault(); openConnectModal(); }
+});
+
+/* ============ Teaser notify buttons ============ */
+ $$('.teaser-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('notified')) {
+      btn.classList.remove('notified');
+      btn.textContent = 'Notify me';
+    } else {
+      btn.classList.add('notified');
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Notified';
+      toast("We'll let you know when it launches", 'success');
+    }
+  });
+});
+
+/* ============ Connect channel modal ============ */
+function openConnectModal() {
+  const m = el(`<div class="modal-overlay">
+    <div class="modal modal-connect">
+      <div class="modal-header">
+        <h2 class="modal-title">Connect a channel</h2>
+        <button class="btn-icon" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="channel-option" data-channel="fb">
+          <div class="account-logo al-fb" style="width:40px;height:40px"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6 4.39 10.97 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8v8.44C19.61 23.04 24 18.07 24 12.07Z"/></svg></div>
+          <div class="co-info"><div class="co-name">Facebook</div><div class="co-desc">Connect a Page you manage</div></div>
+          <button class="btn btn-secondary co-btn">Connect</button>
+        </div>
+        <div class="channel-option" data-channel="ig">
+          <div class="account-logo al-ig" style="width:40px;height:40px"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 4.54a5.3 5.3 0 1 0 0 10.6 5.3 5.3 0 0 0 0-10.6Zm0 8.74a3.44 3.44 0 1 1 0-6.88 3.44 3.44 0 0 1 0 6.88Zm5.5-9.13a1.24 1.24 0 1 0 0 2.48 1.24 1.24 0 0 1 0-2.48Z"/></svg></div>
+          <div class="co-info"><div class="co-name">Instagram</div><div class="co-desc">Connect a Business or Creator account</div></div>
+          <button class="btn btn-secondary co-btn">Connect</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span style="font-size:12px;color:var(--text-3);">We never store your passwords.</span>
+        <button class="btn btn-primary" id="connect-done">Done</button>
+      </div>
+    </div>
+  </div>`);
+  $('#modal-root').appendChild(m);
+  m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[aria-label="Close"]')) m.remove(); });
+  m.querySelectorAll('.channel-option').forEach(opt => {
+    opt.querySelector('.co-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const ch = opt.dataset.channel;
+      opt.classList.add('connected');
+      opt.querySelector('.co-btn').outerHTML = '<span class="pill pill-published"><span class="dot dot-success"></span>Connected</span>';
+      toast(`${ch === 'fb' ? 'Facebook' : 'Instagram'} connected`, 'success');
+    });
+  });
+  $('#connect-done').addEventListener('click', () => { m.remove(); });
+}
+
+/* ============ Composer modal ============ */
+function openComposer(editMode = false) {
+  const m = el(`<div class="modal-overlay">
+    <div class="modal modal-composer">
+      <div class="modal-header">
+        <h2 class="modal-title">${editMode ? 'Edit post' : 'Create post'}</h2>
+        <button class="btn-icon" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="composer-body">
+        <div class="composer-left">
+          <div class="composer-section">
+            <div class="composer-section-title">Channels</div>
+            <div class="channel-select">
+              <button class="channel-select-btn selected" data-ch="fb"><span class="ch-icon ch-fb" style="width:18px;height:18px">f</span> Facebook</button>
+              <button class="channel-select-btn selected" data-ch="ig"><span class="ch-icon ch-ig" style="width:18px;height:18px">○</span> Instagram</button>
+            </div>
+          </div>
+          <div class="composer-section">
+            <div class="composer-section-title">Caption</div>
+            <textarea class="textarea" id="caption-input" placeholder="What's this post about?">${editMode ? 'Sunset over the Atlas Mountains. A few spots left for our September guided trek — link in bio 🏔️ #atlasmountains #morocco #wanderatlas' : ''}</textarea>
+            <div class="composer-toolbar">
+              <button class="toolbar-btn" aria-label="Emoji"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+              <button class="toolbar-btn" aria-label="Hashtag"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></button>
+              <button class="toolbar-btn" aria-label="Mention"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></button>
+              <button class="toolbar-btn" aria-label="Link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+              <div style="flex:1"></div>
+              <button class="ai-btn" id="ai-caption-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/></svg> Generate caption</button>
+              <span class="char-counter" id="char-counter">0 / 2200</span>
+            </div>
+          </div>
+          <div class="composer-section">
+            <div class="composer-section-title">Media</div>
+            <div class="media-dropzone" id="media-dropzone">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:6px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+              <div>Drag images here or click to browse</div>
+            </div>
+            <div class="media-strip" id="media-strip">
+              <div class="media-strip-item"><img src="https://picsum.photos/seed/post-atlas-sunset/120/120" alt="" /><div class="strip-actions"><button class="strip-btn" aria-label="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></button><button class="strip-btn" aria-label="Remove"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div></div>
+            </div>
+          </div>
+          <div class="composer-section">
+            <div class="composer-section-title">First comment (optional)</div>
+            <input class="input" placeholder="Add hashtags or extra context" />
+          </div>
+          <div class="composer-section">
+            <div class="composer-section-title">Scheduling</div>
+            <div class="schedule-options">
+              <div class="schedule-option selected" data-sched="queue"><div class="so-radio"></div><div class="so-text"><div class="so-title">Add to queue</div><div class="so-desc">Next available slot: Today, 6:00 PM</div></div></div>
+              <div class="schedule-option" data-sched="schedule"><div class="so-radio"></div><div class="so-text"><div class="so-title">Schedule for…</div><div class="so-desc">Pick a specific date and time</div></div></div>
+              <div class="schedule-option" data-sched="now"><div class="so-radio"></div><div class="so-text"><div class="so-title">Post now</div><div class="so-desc">Publish immediately to selected channels</div></div></div>
+              <div class="schedule-option" data-sched="draft"><div class="so-radio"></div><div class="so-text"><div class="so-title">Save draft</div><div class="so-desc">Come back to it later</div></div></div>
+            </div>
+            <div class="datetime-row hidden" id="datetime-row">
+              <input class="input" type="date" value="2025-06-25" />
+              <input class="input" type="time" value="09:00" />
+            </div>
+          </div>
+        </div>
+        <div class="composer-right">
+          <div class="preview-tabs">
+            <button class="preview-tab active" data-preview="ig"><span class="ch-icon ch-ig" style="width:14px;height:14px">○</span> Instagram</button>
+            <button class="preview-tab" data-preview="fb"><span class="ch-icon ch-fb" style="width:14px;height:14px">f</span> Facebook</button>
+          </div>
+          <div id="preview-container"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div>
+          ${editMode ? '<span style="font-size:11.5px;color:var(--text-3);">Last saved 2 min ago</span>' : ''}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" id="composer-draft">Save draft</button>
+          <button class="btn btn-primary" id="composer-schedule">Add to queue</button>
+        </div>
+      </div>
+    </div>
+  </div>`);
+  $('#modal-root').appendChild(m);
+
+  const captionInput = $('#caption-input');
+  const counter = $('#char-counter');
+  const updateCounter = () => {
+    const len = captionInput.value.length;
+    counter.textContent = `${len} / 2200`;
+    counter.classList.toggle('warn', len > 2000 && len <= 2200);
+    counter.classList.toggle('over', len > 2200);
+    renderPreview();
+  };
+  captionInput.addEventListener('input', updateCounter);
+
+  let previewChannel = 'ig';
+  function renderPreview() {
+    const text = captionInput.value || 'Your caption will appear here…';
+    const cont = $('#preview-container');
+    if (previewChannel === 'ig') {
+      cont.innerHTML = `<div class="preview-card">
+        <div class="preview-header"><div class="preview-avatar">WA</div><div class="preview-account"><div class="preview-name">wanderatlas</div><div class="preview-sub">Sahara, Morocco</div></div></div>
+        <div class="preview-media"><img src="https://picsum.photos/seed/post-atlas-sunset/400/400" alt="" /></div>
+        <div class="preview-actions"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+        <div class="preview-caption"><strong style="margin-right:6px;">wanderatlas</strong>${text}</div>
+        <div class="preview-meta">2 hours ago</div>
+      </div>`;
+    } else {
+      cont.innerHTML = `<div class="preview-card fb">
+        <div class="preview-header"><div class="preview-avatar">W</div><div class="preview-account"><div class="preview-name">Wander Atlas Co.</div><div class="preview-sub">2 min · 🌍</div></div></div>
+        <div class="preview-media"><img src="https://picsum.photos/seed/post-atlas-sunset/400/225" alt="" /></div>
+        <div class="preview-caption">${text}</div>
+        <div class="preview-actions" style="border-top:1px solid var(--border);padding:8px 12px;font-size:12px;color:var(--text-3);font-weight:600;">👍 Like  💬 Comment  ↗ Share</div>
+      </div>`;
+    }
+  }
+  renderPreview();
+
+  m.querySelectorAll('.preview-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      m.querySelectorAll('.preview-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      previewChannel = t.dataset.preview;
+      renderPreview();
+    });
+  });
+
+  m.querySelectorAll('.channel-select-btn').forEach(b => {
+    b.addEventListener('click', () => b.classList.toggle('selected'));
+  });
+
+  m.querySelectorAll('.schedule-option').forEach(o => {
+    o.addEventListener('click', () => {
+      m.querySelectorAll('.schedule-option').forEach(x => x.classList.remove('selected'));
+      o.classList.add('selected');
+      $('#datetime-row').classList.toggle('hidden', o.dataset.sched !== 'schedule');
+      const btn = $('#composer-schedule');
+      const labels = { queue: 'Add to queue', schedule: 'Schedule post', now: 'Post now', draft: 'Save draft' };
+      btn.textContent = labels[o.dataset.sched];
+    });
+  });
+
+  $('#ai-caption-btn').addEventListener('click', () => openGenerateCaption(captionInput));
+
+  $('#composer-schedule').addEventListener('click', () => {
+    closeModals();
+    toast('Post scheduled successfully', 'success');
+  });
+  $('#composer-draft').addEventListener('click', () => {
+    closeModals();
+    toast('Draft saved', 'success');
+  });
+
+  m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[aria-label="Close"]')) m.remove(); });
+  updateCounter();
+}
+
+/* ============ Generate caption modal ============ */
+function openGenerateCaption(captionInput) {
+  const m = el(`<div class="modal-overlay">
+    <div class="modal" style="width:460px;max-width:100%;max-height:80vh;">
+      <div class="modal-header">
+        <h2 class="modal-title">Generate caption</h2>
+        <button class="btn-icon" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" style="padding:18px;">
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">What's this post about?</label>
+          <textarea class="textarea" id="gc-prompt" placeholder="e.g., A sunset over the Atlas Mountains during our September trek" style="min-height:60px;">A sunset over the Atlas Mountains during our September trek</textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">Tone</label>
+            <div style="display:flex;gap:4px;" id="gc-tone">
+              <button class="chip" data-v="Friendly">Friendly</button>
+              <button class="chip active" data-v="Professional">Pro</button>
+              <button class="chip" data-v="Inspirational">Inspiring</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">Length</label>
+            <div style="display:flex;gap:4px;" id="gc-length">
+              <button class="chip" data-v="Short">Short</button>
+              <button class="chip active" data-v="Medium">Medium</button>
+              <button class="chip" data-v="Long">Long</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;margin-bottom:14px;">
+          <label class="toggle"><input type="checkbox" checked /><span class="tg-mark"></span><span style="font-size:12.5px;">Include hashtags</span></label>
+          <label class="toggle"><input type="checkbox" checked /><span class="tg-mark"></span><span style="font-size:12.5px;">Include emoji</span></label>
+        </div>
+        <button class="btn btn-primary btn-block" id="gc-generate"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/></svg> Generate</button>
+        <div id="gc-results" style="margin-top:14px;"></div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:12px;text-align:center;">AI-generated — review before publishing</div>
+      </div>
+    </div>
+  </div>`);
+  $('#modal-root').appendChild(m);
+
+  m.querySelectorAll('#gc-tone .chip, #gc-length .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      const sibs = c.parentElement.querySelectorAll('.chip');
+      sibs.forEach(s => s.classList.remove('active'));
+      c.classList.add('active');
+    });
+  });
+
+  m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[aria-label="Close"]')) m.remove(); });
+
+  $('#gc-generate').addEventListener('click', () => {
+    const btn = $('#gc-generate');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Generating…';
+    setTimeout(() => {
+      const results = [
+        'Golden hour over the Atlas Mountains 🏔️ Our September trek is filling up fast — a few spots left for those who want to chase this view. Link in bio.\n\n#atlasmountains #morocco #sunsethike #wanderatlas #trekking',
+        'Some sunsets stay with you long after the trail ends. The Atlas range in autumn light is one of them.\n\nSpots open for our September guided trek → wanderatlas.co/sept',
+        'The mountains are calling, and September is the perfect time to answer ☀️ Atlas range at golden hour — and yes, you can be there.\n\nOnly 4 spots left for our fall trek. DM to reserve.'
+      ];
+      const cont = $('#gc-results');
+      cont.innerHTML = '';
+      results.forEach((r, i) => {
+        const card = el(`<div style="border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:8px;background:var(--surface-2);">
+          <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:10px;white-space:pre-wrap;">${r}</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-primary btn-sm gc-use">Use this</button>
+            <button class="btn btn-ghost btn-sm gc-copy">Copy</button>
+            <button class="btn btn-ghost btn-sm gc-regen">Regenerate</button>
+          </div>
+        </div>`);
+        card.querySelector('.gc-use').addEventListener('click', () => {
+          captionInput.value = r;
+          captionInput.dispatchEvent(new Event('input'));
+          m.remove();
+          toast('Caption added', 'success');
+        });
+        card.querySelector('.gc-copy').addEventListener('click', () => {
+          navigator.clipboard?.writeText(r);
+          toast('Copied to clipboard', 'success');
+        });
+        cont.appendChild(card);
+      });
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/></svg> Generate again';
+    }, 1100);
+  });
+}
+
+/* ============ ESC to close modals ============ */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModals();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    $('.search-field input')?.focus();
+  }
+});
+
+/* ============ Init ============ */
+renderCalendar();
+</script>
+</body>
+</html>

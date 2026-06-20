@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tripwheel — Social Media Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary: oklch(52% 0.14 250);
+  --color-primary-fg: oklch(98% 0.005 250);
+  --color-accent: oklch(62% 0.18 250);
+  --color-bg: oklch(98.5% 0.004 250);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-raised: oklch(99% 0.003 250);
+  --color-border: oklch(91% 0.008 250);
+  --color-border-subtle: oklch(95% 0.005 250);
+  --color-muted: oklch(95% 0.006 250);
+  --color-text: oklch(16% 0.02 250);
+  --color-text-2: oklch(45% 0.015 250);
+  --color-text-3: oklch(62% 0.01 250);
+  --color-success: oklch(58% 0.16 145);
+  --color-warning: oklch(72% 0.18 75);
+  --color-danger: oklch(55% 0.2 25);
+  --color-info: oklch(58% 0.14 250);
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.06);
+  --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.08);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 252px;
+  min-width: 252px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-mark svg { width: 18px; height: 18px; }
+
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.sidebar-section {
+  padding: 12px 12px 4px;
+}
+
+.sidebar-section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-3);
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: var(--color-muted);
+  color: var(--color-text);
+}
+
+.nav-item.active {
+  background: oklch(52% 0.14 250 / 0.08);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.nav-item.active .nav-icon { color: var(--color-primary); }
+
+.nav-item.disabled {
+  color: var(--color-text-3);
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-3);
+  flex-shrink: 0;
+}
+
+.nav-item.active .nav-icon { color: var(--color-primary); }
+
+.coming-soon-tag {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-3);
+  background: var(--color-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: auto;
+}
+
+/* Sidebar widget */
+.sidebar-widget {
+  margin: 8px 12px;
+  padding: 14px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.widget-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-3);
+  margin-bottom: 6px;
+}
+
+.widget-value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.widget-progress-track {
+  height: 4px;
+  background: var(--color-muted);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.widget-progress-fill {
+  height: 100%;
+  width: 82%;
+  background: var(--color-primary);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.widget-subtext {
+  font-size: 11.5px;
+  color: var(--color-text-3);
+  margin-top: 6px;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  flex-shrink: 0;
+}
+
+.user-info { min-width: 0; }
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-org {
+  font-size: 11.5px;
+  color: var(--color-text-3);
+}
+
+/* ── Main content ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.page-header {
+  padding: 24px 32px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--color-primary);
+  color: var(--color-primary-fg);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover { background: var(--color-accent); }
+
+.btn-primary svg { width: 15px; height: 15px; }
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  gap: 0;
+  margin: 20px 32px 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-item {
+  flex: 1;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.stat-item:last-child { border-right: none; }
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-dot.scheduled { background: var(--color-info); }
+.stat-dot.published { background: var(--color-success); }
+.stat-dot.draft { background: var(--color-warning); }
+.stat-dot.failed { background: var(--color-danger); }
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  color: var(--color-text-3);
+  font-weight: 500;
+}
+
+.stat-content { display: flex; flex-direction: column; gap: 1px; }
+
+/* Tabs */
+.tabs-row {
+  display: flex;
+  gap: 0;
+  margin: 20px 32px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-item {
+  padding: 10px 20px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+
+.tab-item:hover { color: var(--color-text-2); }
+
+.tab-item.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Filter bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px 0;
+}
+
+.segmented-control {
+  display: inline-flex;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.seg-btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-2);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+
+.seg-btn:hover { color: var(--color-text); }
+
+.seg-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-select {
+  padding: 7px 32px 7px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.filter-spacer { flex: 1; }
+
+.view-toggle {
+  display: inline-flex;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.view-btn {
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-3);
+  transition: all 0.15s;
+}
+
+.view-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.view-btn svg { width: 16px; height: 16px; }
+
+/* Posts panel */
+.posts-panel {
+  margin: 16px 32px 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.date-group-header {
+  padding: 12px 20px;
+  background: var(--color-surface-raised);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-3);
+}
+
+.post-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  gap: 16px;
+  transition: background 0.1s;
+}
+
+.post-row:last-child { border-bottom: none; }
+.post-row:hover { background: var(--color-surface-raised); }
+
+.post-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+}
+
+.post-thumb.santorini {
+  background: linear-gradient(135deg, oklch(65% 0.15 30), oklch(55% 0.18 250));
+}
+
+.post-thumb.streetfood {
+  background: linear-gradient(135deg, oklch(60% 0.12 75), oklch(50% 0.14 40));
+}
+
+.post-thumb.alps {
+  background: linear-gradient(135deg, oklch(80% 0.04 250), oklch(55% 0.08 200));
+}
+
+.post-thumb.bali {
+  background: linear-gradient(135deg, oklch(58% 0.16 145), oklch(50% 0.12 170));
+}
+
+.post-thumb.kyoto {
+  background: linear-gradient(135deg, oklch(60% 0.18 25), oklch(55% 0.14 50));
+}
+
+.post-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-caption {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-3);
+}
+
+.channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.channel-badge.ig { color: oklch(52% 0.18 330); }
+.channel-badge.fb { color: oklch(48% 0.14 250); }
+
+.channel-badge svg { width: 13px; height: 13px; }
+
+.meta-sep {
+  width: 3px;
+  height: 3px;
+  background: var(--color-border);
+  border-radius: 50%;
+}
+
+.post-time {
+  font-size: 12.5px;
+  color: var(--color-text-2);
+  white-space: nowrap;
+  min-width: 70px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.status-pill.scheduled {
+  background: oklch(58% 0.14 250 / 0.1);
+  color: var(--color-info);
+}
+
+.status-pill.draft {
+  background: oklch(72% 0.18 75 / 0.12);
+  color: oklch(55% 0.14 75);
+}
+
+.status-pill.failed {
+  background: oklch(55% 0.2 25 / 0.1);
+  color: var(--color-danger);
+}
+
+.status-pill .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Actions */
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-2);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  background: var(--color-muted);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.action-btn.danger {
+  color: var(--color-danger);
+  border-color: oklch(55% 0.2 25 / 0.2);
+}
+
+.action-btn.danger:hover {
+  background: oklch(55% 0.2 25 / 0.06);
+}
+
+.more-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-text-3);
+  font-size: 16px;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+
+.more-btn:hover {
+  background: var(--color-muted);
+  color: var(--color-text-2);
+}
+
+/* Failed row */
+.post-row.failed-row {
+  background: oklch(55% 0.2 25 / 0.02);
+}
+
+.failed-reason {
+  font-size: 11.5px;
+  color: var(--color-danger);
+  font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 3a14.5 14.5 0 0 1 0 18M12 3a14.5 14.5 0 0 0 0 18M3.5 9h17M3.5 15h17"/>
+      </svg>
+    </div>
+    <span class="logo-text">Tripwheel</span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Main</div>
+    <a class="nav-item" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></span>
+      Social Media
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
+      Photo Tool
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Coming soon</div>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+      Itinerary Builder
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+      Trip Listing
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+      Bookings
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+      Payments
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
+      Reports
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      Team
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+    <a class="nav-item disabled" href="#">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      Settings
+      <span class="coming-soon-tag">Soon</span>
+    </a>
+  </div>
+
+  <!-- Widget -->
+  <div class="sidebar-widget">
+    <div class="widget-label">Next post</div>
+    <div class="widget-value">2h 14m</div>
+    <div class="widget-progress-track">
+      <div class="widget-progress-fill"></div>
+    </div>
+    <div class="widget-subtext">Sunset over Santorini — IG</div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-avatar">JT</div>
+    <div class="user-info">
+      <div class="user-name">Jane Traveler</div>
+      <div class="user-org">Wander Co.</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <!-- Page header -->
+  <div class="page-header">
+    <h1 class="page-title">Social Media</h1>
+    <button class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Create post
+    </button>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-dot scheduled"></div>
+      <div class="stat-content">
+        <div class="stat-number">12</div>
+        <div class="stat-label">Scheduled</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-dot published"></div>
+      <div class="stat-content">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Published this week</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-dot draft"></div>
+      <div class="stat-content">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Drafts</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-dot failed"></div>
+      <div class="stat-content">
+        <div class="stat-number">1</div>
+        <div class="stat-label">Failed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-row">
+    <div class="tab-item active">Queue</div>
+    <div class="tab-item">Channels</div>
+    <div class="tab-item">Calendar</div>
+    <div class="tab-item">Analytics</div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="segmented-control">
+      <button class="seg-btn active">All</button>
+      <button class="seg-btn">Facebook</button>
+      <button class="seg-btn">Instagram</button>
+    </div>
+
+    <select class="filter-select">
+      <option>All statuses</option>
+      <option>Scheduled</option>
+      <option>Draft</option>
+      <option>Published</option>
+      <option>Failed</option>
+    </select>
+
+    <select class="filter-select">
+      <option>Sort by: Newest</option>
+      <option>Sort by: Oldest</option>
+      <option>Sort by: Channel</option>
+    </select>
+
+    <div class="filter-spacer"></div>
+
+    <div class="view-toggle">
+      <button class="view-btn active" title="List view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </button>
+      <button class="view-btn" title="Calendar view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Posts panel -->
+  <div class="posts-panel">
+    <!-- TODAY -->
+    <div class="date-group-header">Today &mdash; Thu, Jun 19</div>
+
+    <div class="post-row">
+      <div class="post-thumb santorini"></div>
+      <div class="post-body">
+        <div class="post-caption">Sunset over Santorini — book your summer escape now 🌅</div>
+        <div class="post-meta">
+          <span class="channel-badge ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            IG
+          </span>
+          <span class="meta-sep"></span>
+          <span>Sunset over Santorini...</span>
+        </div>
+      </div>
+      <div class="post-time">6:00 PM</div>
+      <div class="status-pill scheduled">
+        <span class="pill-dot"></span>
+        Scheduled
+      </div>
+      <div class="post-actions">
+        <button class="action-btn">Edit</button>
+        <button class="action-btn">Reschedule</button>
+        <button class="more-btn">&hellip;</button>
+      </div>
+    </div>
+
+    <div class="post-row">
+      <div class="post-thumb streetfood"></div>
+      <div class="post-body">
+        <div class="post-caption">Street food tour — 5 spots you can't miss</div>
+        <div class="post-meta">
+          <span class="channel-badge fb">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            FB
+          </span>
+          <span class="meta-sep"></span>
+          <span>Street food tour...</span>
+        </div>
+      </div>
+      <div class="post-time">8:30 PM</div>
+      <div class="status-pill scheduled">
+        <span class="pill-dot"></span>
+        Scheduled
+      </div>
+      <div class="post-actions">
+        <button class="action-btn">Edit</button>
+        <button class="action-btn">Reschedule</button>
+        <button class="more-btn">&hellip;</button>
+      </div>
+    </div>
+
+    <!-- TOMORROW -->
+    <div class="date-group-header">Tomorrow &mdash; Fri, Jun 20</div>
+
+    <div class="post-row">
+      <div class="post-thumb alps"></div>
+      <div class="post-body">
+        <div class="post-caption">3 days in the Alps — our new guided itinerary is live</div>
+        <div class="post-meta">
+          <span class="channel-badge fb">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            FB
+          </span>
+          <span class="meta-sep"></span>
+          <span>3 days in the Alps...</span>
+        </div>
+      </div>
+      <div class="post-time">9:00 AM</div>
+      <div class="status-pill scheduled">
+        <span class="pill-dot"></span>
+        Scheduled
+      </div>
+      <div class="post-actions">
+        <button class="action-btn">Edit</button>
+        <button class="action-btn">Reschedule</button>
+        <button class="more-btn">&hellip;</button>
+      </div>
+    </div>
+
+    <div class="post-row">
+      <div class="post-thumb bali"></div>
+      <div class="post-body">
+        <div class="post-caption">Bali retreat — early bird pricing ends Friday</div>
+        <div class="post-meta">
+          <span class="channel-badge fb">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            FB
+          </span>
+          <span style="margin: 0 2px; color: var(--color-text-3)">+</span>
+          <span class="channel-badge ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            IG
+          </span>
+          <span class="meta-sep"></span>
+          <span>Bali retreat...</span>
+        </div>
+      </div>
+      <div class="post-time" style="color: var(--color-text-3); font-style: italic;">Not scheduled</div>
+      <div class="status-pill draft">
+        <span class="pill-dot"></span>
+        Draft
+      </div>
+      <div class="post-actions">
+        <button class="action-btn">Edit</button>
+        <button class="action-btn">Schedule</button>
+        <button class="more-btn">&hellip;</button>
+      </div>
+    </div>
+
+    <!-- THU, JUN 25 -->
+    <div class="date-group-header">Thu, Jun 25</div>
+
+    <div class="post-row failed-row">
+      <div class="post-thumb kyoto"></div>
+      <div class="post-body">
+        <div class="post-caption">Throwback: client trip to Kyoto 🍁</div>
+        <div class="post-meta">
+          <span class="channel-badge ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            IG
+          </span>
+          <span class="meta-sep"></span>
+          <span class="failed-reason">Failed — token expired</span>
+        </div>
+      </div>
+      <div class="post-time" style="color: var(--color-danger);">Failed</div>
+      <div class="status-pill failed">
+        <span class="pill-dot"></span>
+        Failed
+      </div>
+      <div class="post-actions">
+        <button class="action-btn danger">Retry</button>
+        <button class="action-btn danger">Remove</button>
+        <button class="more-btn">&hellip;</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
