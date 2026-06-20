@@ -38,8 +38,14 @@ tripwheel-design/
 
 Static site — no build step. Connect this repo in Vercel; it serves `index.html` at the root.
 
+**Password gate:** set env var `DVL_PASSWORD` in Vercel (Project → Settings → Environment Variables). Unauthenticated visitors are redirected to `/auth.html`. Cookie lasts 7 days. Leave unset locally to skip auth.
+
 ```bash
-# Optional local preview
+# Optional local preview (with auth)
+echo 'DVL_PASSWORD=your-password' >> .env.local
+npx vercel dev
+
+# Static preview without auth
 npx serve .
 ```
 
