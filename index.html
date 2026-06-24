@@ -601,36 +601,38 @@
         <div class="entry-head">
           <div class="entry-top">
             <span class="version-tag">v0.4.3-states</span>
-            <span class="date">Jun 20, 2026</span>
+            <span class="date">Jun 24, 2026</span>
             <span class="badge latest">Latest</span>
           </div>
-          <h2 class="entry-title">Page-based topbar breadcrumbs & panel polish</h2>
+          <h2 class="entry-title">Minimal dashboard — focused empty & active states</h2>
           <p class="entry-desc">
-            Iteration on v0.4.2 app shell header logic: hierarchical breadcrumbs without duplicate page titles,
-            plus a fix for double borders on nested empty states inside panels.
+            Dashboard stripped to what matters. Empty state is just the Get started card to cut cognitive
+            load for new accounts; active state drops the coming-soon grid and redundant quick actions.
+            Builds on v0.4.2's page-based topbar breadcrumbs and panel polish.
           </p>
           <div class="tags">
-            <span class="tag">Topbar</span>
-            <span class="tag">Breadcrumbs</span>
+            <span class="tag">Minimal</span>
             <span class="tag">Empty states</span>
-            <span class="tag">Panel polish</span>
+            <span class="tag">Dashboard</span>
+            <span class="tag">Cognitive load</span>
+            <span class="tag">Breadcrumbs</span>
           </div>
         </div>
         <div class="entry-body">
           <div class="section-label">Update log</div>
           <ul class="changelog">
+            <li>Dashboard empty state: reduced to greeting + single Get started card (560px). Removed zero-value stat row, empty Connected accounts panel, and "More tools" grid</li>
+            <li>Dashboard active state: removed 7-card "More tools on the way" grid and the redundant Quick actions panel (duplicated topbar Create post + Connected accounts)</li>
+            <li>Kept in active view: KPI row, Upcoming posts, Recent photo jobs, Connected accounts</li>
             <li>Topbar: page-based breadcrumb hierarchy — path in <code>.bc</code>, current page in <code>.tb-title</code> only (no duplicate titles)</li>
-            <li>Dashboard: workspace name in breadcrumb; main title = Dashboard</li>
-            <li>Tool pages: <code>Tools /</code> breadcrumb + tool name as main title (Social Media, Photo Tool)</li>
-            <li>Nested pages: full path in breadcrumb (e.g. <code>Tools / Photo Tool /</code>) + leaf title below (Job history)</li>
-            <li>Fixed overlapping borders on dashboard Connected accounts empty state — strip frame from <code>.panel &gt; .empty-state</code></li>
+            <li>Fixed overlapping borders on nested empty states — strip frame from <code>.panel &gt; .empty-state</code></li>
           </ul>
 
           <div class="section-label">Links</div>
           <div class="links">
             <a class="link-btn primary" href="prototypes/v0.4.3-states.html" target="_blank">↗ Open prototype</a>
+            <a class="link-btn" href="docs/specs/v0.4.3.md" target="_blank">UI spec v0.4.3</a>
             <a class="link-btn" href="prototypes/v0.4.2-states.html" target="_blank">Previous · v0.4.2</a>
-            <a class="link-btn" href="docs/specs/v0.4.2.md" target="_blank">UI spec v0.4.2</a>
           </div>
 
           <div class="section-label" style="margin-top:16px">Source sessions</div>

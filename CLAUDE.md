@@ -13,7 +13,7 @@ Product design workspace for Tripwheel. Tokens, prototypes, specs, and the versi
 | What | Where |
 |---|---|
 | Version log (site home) | `index.html` |
-| UI specs | `docs/specs/` (v0.4.2 current · v1 archived) |
+| UI specs | `docs/specs/` (v0.4.3 current · v0.4.2 prev · v1 archived) |
 | Design system doc | `docs/design-system.md` |
 | Research & copy | `docs/research/` |
 | Brand tokens | `tokens/design-tokens.json` |

@@ -10,8 +10,9 @@ Product design workspace for [Tripwheel](https://tripwheel.io) — prototypes, s
 | What | Path |
 |---|---|
 | Version log (homepage) | [`index.html`](index.html) |
-| Latest prototype | [`prototypes/v0.4.2-states.html`](prototypes/v0.4.2-states.html) |
-| UI spec (current) | [`docs/specs/v0.4.2.md`](docs/specs/v0.4.2.md) |
+| Latest prototype | [`prototypes/v0.4.3-states.html`](prototypes/v0.4.3-states.html) |
+| UI spec (current) | [`docs/specs/v0.4.3.md`](docs/specs/v0.4.3.md) |
+| UI spec v0.4.2 (prev) | [`docs/specs/v0.4.2.md`](docs/specs/v0.4.2.md) |
 | UI spec v1 (archived) | [`docs/specs/v1.md`](docs/specs/v1.md) |
 | Design system | [`docs/design-system.md`](docs/design-system.md) |
 | Tokens | [`tokens/design-tokens.json`](tokens/design-tokens.json) |
