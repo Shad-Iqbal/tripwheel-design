@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tripwheel — Itinerary Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --n-0:#ffffff;--n-50:#fafafa;--n-100:#f4f4f5;--n-150:#ececef;--n-200:#dddddd;
+  --n-300:#d4d4d8;--n-400:#a1a1aa;--n-500:#71717a;--n-600:#52525b;--n-700:#3f3f46;
+  --n-800:#27272a;--n-900:#18181b;
+  --indigo:#4F46E5;--indigo-dark:#3730A3;--indigo-light:#818CF8;--indigo-50:#EEF2FF;
+  --indigo-100:#E0E7FF;
+  --s-ok-50:#ecfdf5;--s-ok-500:#10b981;--s-ok-600:#059669;
+  --s-warn-50:#fffbeb;--s-warn-500:#f59e0b;--s-warn-600:#d97706;
+  --s-err-50:#fef2f2;--s-err-500:#ef4444;--s-err-600:#dc2626;
+  --s-info-50:#eff6ff;--s-info-500:#3b82f6;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s7:28px;
+  --s8:32px;--s10:40px;--s12:48px;--s16:64px;
+  --r-sm:6px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-2xl:20px;--r-full:9999px;
+  --sh-xs:0 1px 2px rgba(0,0,0,.03);
+  --sh-sm:0 2px 8px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.02);
+  --sh-md:0 4px 16px rgba(0,0,0,.05),0 2px 6px rgba(0,0,0,.03);
+  --sh-lg:0 8px 30px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.03);
+  --sh-xl:0 16px 40px rgba(0,0,0,.08),0 6px 16px rgba(0,0,0,.04);
+  --font-sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-display:"Plus Jakarta Sans",sans-serif;
+  --bw:0.5px;--border:#dddddd;--border-hover:#cccccc;
+  --topbar-h:60px;--rail-w:40%;--map-w:60%;
+  --nb-higashiyama:#10b981;--nb-gion:#8b5cf6;--nb-dotonbori:#f59e0b;
+  --nb-arashiyama:#06b6d4;--nb-namba:#ec4899;--nb-kyoto-stn:#6366f1;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--n-900);
+  background:var(--n-50);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+ul{margin:0;padding:0;list-style:none}
+h1,h2,h3,h4,h5,h6{margin:0;font-weight:600;letter-spacing:-0.01em}
+p{margin:0}img{display:block;max-width:100%}
+::selection{background:var(--indigo-100);color:var(--indigo-dark)}
+
+/* Header */
+.app-header{
+  height:var(--topbar-h);background:rgba(255,255,255,.88);
+  backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:var(--bw) solid var(--border);
+  display:flex;align-items:center;gap:var(--s4);
+  padding:0 var(--s6);position:sticky;top:0;z-index:100;flex-shrink:0;
+}
+.brand-mark{
+  width:24px;height:24px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--indigo),var(--indigo-dark));
+  display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;
+  font-weight:700;font-size:12px;
+}
+.brand-mark svg{width:14px;height:14px}
+.brand-wordmark{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--n-900);letter-spacing:-0.02em}
+.trip-sep{width:1px;height:20px;background:var(--n-200)}
+.trip-title{font-size:14px;font-weight:600;color:var(--n-700);cursor:pointer;transition:color .12s}
+.trip-title:hover{color:var(--indigo)}
+.header-spacer{flex:1}
+.collab-avatars{display:flex;align-items:center;gap:0}
+.collab-avatar{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--n-0);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:11px;
+  margin-left:-6px;transition:transform .15s ease;cursor:pointer;
+}
+.collab-avatar:first-child{margin-left:0}
+.collab-avatar:hover{transform:translateY(-2px);z-index:10}
+.collab-avatar.you{background:linear-gradient(135deg,var(--indigo),var(--indigo-dark))}
+.collab-avatar.mei{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.collab-avatar.sam{background:linear-gradient(135deg,#10b981,#06b6d4)}
+.offline-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);
+  background:var(--s-ok-50);color:var(--s-ok-600);font-size:12px;font-weight:600;
+  cursor:pointer;position:relative;transition:background .12s;
+}
+.offline-chip:hover{background:#dcfce7}
+.offline-chip .oc-dot{width:6px;height:6px;border-radius:50%;background:var(--s-ok-500)}
+.offline-chip .oc-tooltip{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--n-900);color:var(--n-100);font-size:12px;font-weight:400;
+  padding:8px 12px;border-radius:var(--r-md);white-space:nowrap;z-index:200;
+  box-shadow:var(--sh-md);
+}
+.offline-chip:hover .oc-tooltip{display:block}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:0 14px;height:34px;border-radius:var(--r-md);
+  font-weight:500;font-size:13px;line-height:1;white-space:nowrap;
+  transition:all .15s ease;
+}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btn-primary{background:var(--indigo);color:#fff}
+.btn-primary:hover{background:var(--indigo-dark)}
+.btn-secondary{background:var(--n-0);color:var(--n-800);border:var(--bw) solid var(--border)}
+.btn-secondary:hover{background:var(--n-50);border-color:var(--border-hover)}
+.btn-ghost{color:var(--n-700);background:transparent}
+.btn-ghost:hover{background:var(--n-100);color:var(--n-900)}
+.btn-sm{height:28px;padding:0 10px;font-size:12px;border-radius:var(--r-sm)}
+
+/* Main layout */
+.itin-layout{
+  display:flex;height:calc(100vh - var(--topbar-h));overflow:hidden;
+}
+.left-rail{
+  width:var(--rail-w);min-width:380px;max-width:520px;
+  background:var(--n-0);border-right:var(--bw) solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.map-canvas{flex:1;position:relative;background:var(--n-100)}
+#map{position:absolute;inset:0;z-index:1}
+.map-overlay-top{
+  position:absolute;top:var(--s4);left:50%;transform:translateX(-50%);z-index:400;
+  display:flex;gap:var(--s2);align-items:center;
+}
+.map-pill{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-full);
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border:var(--bw) solid var(--border);font-size:12px;font-weight:500;color:var(--n-700);
+  box-shadow:var(--sh-sm);cursor:pointer;transition:all .12s;
+}
+.map-pill:hover{border-color:var(--border-hover);color:var(--n-900)}
+.map-pill.active{background:var(--indigo-50);color:var(--indigo-dark);border-color:var(--indigo-light)}
+.map-pill svg{width:13px;height:13px}
+
+/* Day tabs */
+.day-tabs{
+  display:flex;gap:2px;padding:var(--s4) var(--s4) 0;flex-shrink:0;
+  overflow-x:auto;border-bottom:var(--bw) solid var(--border);
+}
+.day-tab{
+  padding:8px 14px;border-radius:var(--r-md) var(--r-md) 0 0;
+  font-size:13px;font-weight:500;color:var(--n-600);white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .12s;cursor:pointer;
+  margin-bottom:-1px;flex-shrink:0;
+}
+.day-tab:hover{color:var(--n-900)}
+.day-tab.active{color:var(--indigo-dark);border-bottom-color:var(--indigo);background:var(--indigo-50)}
+.day-tab .dt-weather{font-size:11px;margin-left:4px;opacity:.7}
+.day-tab .dt-count{font-size:11px;font-weight:600;color:inherit;opacity:.6;margin-left:4px}
+
+/* Day content scroll */
+.day-content{flex:1;overflow-y:auto;padding:var(--s4) var(--s5) var(--s8)}
+.day-header{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s5)}
+.day-header h2{font-family:var(--font-display);font-size:18px;font-weight:700;font-size:17px}
+.day-header .day-date{font-size:12px;color:var(--n-500);margin-top:1px}
+.anchor-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:var(--r-full);
+  background:var(--indigo-50);color:var(--indigo-dark);font-size:11px;font-weight:600;gap:4px;
+}
+.owner-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--n-500)}
+.owner-badge .ob-av{width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center}
+.weather-toggle{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:var(--r-full);font-size:11px;font-weight:500;
+  background:var(--n-100);color:var(--n-600);cursor:pointer;transition:all .12s;
+  border:var(--bw) solid transparent;
+}
+.weather-toggle:hover{background:var(--n-150)}
+.weather-toggle.rainy{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+
+/* Stop cards */
+.stop-list{display:flex;flex-direction:column;gap:var(--s3)}
+.stop-card{
+  background:var(--n-0);border:var(--bw) solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;transition:all .15s ease;cursor:pointer;position:relative;
+}
+.stop-card:hover{border-color:var(--border-hover);box-shadow:var(--sh-sm)}
+.stop-card.highlighted{border-color:var(--indigo-light);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.stop-card.suggested{border-style:dashed;opacity:.7}
+.stop-card.suggested:hover{opacity:1}
+.stop-transit{
+  display:flex;align-items:center;gap:6px;padding:6px var(--s4);
+  font-size:11.5px;color:var(--n-500);background:var(--n-50);
+  border-bottom:var(--bw) solid var(--border);
+}
+.stop-transit .st-icon{width:14px;height:14px;opacity:.6}
+.stop-transit .st-mode{
+  padding:1px 6px;border-radius:var(--r-sm);font-size:10px;font-weight:600;
+  background:var(--n-100);color:var(--n-600);text-transform:uppercase;letter-spacing:.04em;
+}
+.stop-body{display:flex;gap:var(--s3);padding:var(--s3)}
+.stop-photo{
+  width:72px;height:72px;border-radius:var(--r-md);flex-shrink:0;overflow:hidden;
+  background:var(--n-100);position:relative;
+}
+.stop-photo img{width:100%;height:100%;object-fit:cover}
+.stop-photo .sp-placeholder{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:var(--n-100);color:var(--n-400);
+}
+.stop-info{flex:1;min-width:0}
+.stop-name{font-size:14px;font-weight:600;color:var(--n-900);line-height:1.3}
+.stop-cat{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+  padding:1px 6px;border-radius:var(--r-sm);margin-left:6px;vertical-align:middle;
+}
+.stop-cat.food{background:#fff7ed;color:#c2410c}
+.stop-cat.sight{background:var(--indigo-50);color:var(--indigo-dark)}
+.stop-cat.transit{background:var(--n-100);color:var(--n-600)}
+.stop-cat.hotel{background:var(--s-ok-50);color:var(--s-ok-600)}
+.stop-blurb{font-size:12px;color:var(--n-500);margin-top:3px;line-height:1.45;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stop-meta{display:flex;align-items:center;gap:var(--s2);margin-top:6px}
+.stop-time{font-size:11.5px;color:var(--n-600);font-weight:500}
+.stop-dur{font-size:11px;color:var(--n-400)}
+.stop-actions{display:flex;align-items:center;gap:2px;margin-left:auto;opacity:0;transition:opacity .12s}
+.stop-card:hover .stop-actions{opacity:1}
+.stop-actions .sa-btn{
+  width:26px;height:26px;border-radius:var(--r-sm);
+  display:flex;align-items:center;justify-content:center;color:var(--n-500);
+}
+.stop-actions .sa-btn:hover{background:var(--n-100);color:var(--n-900)}
+.stop-actions .sa-btn svg{width:14px;height:14px}
+.stop-handle{
+  position:absolute;left:0;top:0;bottom:0;width:24px;
+  display:flex;align-items:center;justify-content:center;color:var(--n-300);
+  opacity:0;transition:opacity .12s;cursor:grab;
+  border-right:var(--bw) solid var(--border);background:var(--n-50);
+}
+.stop-card:hover .stop-handle{opacity:1}
+.stop-handle svg{width:12px;height:12px}
+.stop-card.dragging{opacity:.5;box-shadow:var(--sh-md)}
+.stop-vote-row{
+  display:flex;align-items:center;gap:var(--s2);padding:4px var(--s4) var(--s3);
+  flex-wrap:wrap;
+}
+.vote-btn{
+  display:flex;align-items:center;gap:4px;padding:3px 7px;border-radius:var(--r-sm);
+  font-size:11.5px;color:var(--n-500);transition:all .12s;
+}
+.vote-btn:hover{background:var(--n-100);color:var(--n-900)}
+.vote-btn.voted{color:var(--indigo-dark);background:var(--indigo-50)}
+.vote-btn svg{width:12px;height:12px}
+.comment-chip{
+  display:flex;align-items:center;gap:4px;padding:3px 7px;border-radius:var(--r-sm);
+  font-size:11.5px;color:var(--n-500);cursor:pointer;transition:all .12s;
+}
+.comment-chip:hover{background:var(--n-100);color:var(--n-900)}
+.comment-chip svg{width:12px;height:12px}
+.comment-bubble{
+  display:flex;align-items:flex-start;gap:6px;padding:6px 8px;margin-top:4px;
+  background:var(--n-50);border-radius:var(--r-sm);font-size:11.5px;color:var(--n-700);
+  line-height:1.4;
+}
+.comment-bubble .cb-av{width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.comment-bubble .cb-name{font-weight:600;color:var(--n-800);font-size:11px}
+
+/* Empty slot / AI fill */
+.empty-slot{
+  border:2px dashed var(--border);border-radius:var(--r-lg);padding:var(--s6);
+  text-align:center;transition:all .15s;cursor:pointer;background:var(--n-50);
+}
+.empty-slot:hover{border-color:var(--indigo-light);background:var(--indigo-50)}
+.empty-slot .es-icon{
+  width:40px;height:40px;border-radius:var(--r-lg);margin:0 auto var(--s3);
+  background:var(--indigo-50);color:var(--indigo);
+  display:flex;align-items:center;justify-content:center;
+}
+.empty-slot .es-icon svg{width:20px;height:20px}
+.empty-slot .es-title{font-size:14px;font-weight:600;color:var(--n-700)}
+.empty-slot .es-sub{font-size:12px;color:var(--n-400);margin-top:4px}
+
+/* AI shimmer */
+.ai-shimmer{
+  display:none;flex-direction:column;gap:var(--s3);padding:var(--s5);
+}
+.ai-shimmer.active{display:flex}
+.ai-shimmer .sh-line{
+  height:14px;border-radius:var(--r-sm);
+  background:linear-gradient(90deg,var(--n-100) 25%,var(--n-200) 50%,var(--n-100) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;
+}
+.ai-shimmer .sh-line:nth-child(1){width:60%}
+.ai-shimmer .sh-line:nth-child(2){width:90%}
+.ai-shimmer .sh-line:nth-child(3){width:75%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.ai-thinking-label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--indigo);font-weight:500}
+.ai-thinking-label .atl-dot{width:6px;height:6px;border-radius:50%;background:var(--indigo);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Suggestion cards */
+.suggestion-list{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s4)}
+.suggestion-card{
+  background:var(--n-0);border:var(--bw) solid var(--indigo-light);border-radius:var(--r-lg);
+  overflow:hidden;transition:all .15s;position:relative;
+  box-shadow:0 0 0 3px rgba(79,70,229,.06);
+}
+.suggestion-card:hover{box-shadow:0 0 0 4px rgba(79,70,229,.1);border-color:var(--indigo)}
+.suggestion-rank{
+  position:absolute;top:8px;left:8px;z-index:5;
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+}
+.suggestion-rank.r1{background:#fbbf24}
+.suggestion-rank.r2{background:#94a3b8}
+.suggestion-rank.r3{background:#b45309}
+.sug-header{display:flex;gap:var(--s3);padding:var(--s3)}
+.sug-photo{width:80px;height:80px;border-radius:var(--r-md);flex-shrink:0;overflow:hidden}
+.sug-photo img{width:100%;height:100%;object-fit:cover}
+.sug-info{flex:1;min-width:0}
+.sug-name{font-size:14px;font-weight:600;color:var(--n-900)}
+.sug-why{font-size:11.5px;color:var(--indigo-dark);font-weight:500;margin-top:3px}
+.sug-blurb{font-size:12px;color:var(--n-500);margin-top:4px;line-height:1.4}
+.sug-transit{font-size:11px;color:var(--n-400);margin-top:4px}
+.sug-actions{display:flex;gap:var(--s2);padding:0 var(--s3) var(--s3)}
+.sug-actions .btn{flex:1;height:30px;font-size:12px}
+
+/* Gap fill */
+.gap-fill-btn{
+  display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--r-md);
+  background:transparent;border:1px dashed var(--border);font-size:12px;font-weight:500;
+  color:var(--n-500);cursor:pointer;transition:all .12s;width:100%;justify-content:center;
+}
+.gap-fill-btn:hover{border-color:var(--indigo-light);color:var(--indigo);background:var(--indigo-50)}
+.gap-fill-btn svg{width:14px;height:14px}
+
+/* Buffer indicator */
+.buffer-indicator{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  padding:2px 8px;font-size:10px;color:var(--n-400);font-weight:500;
+}
+.buffer-indicator svg{width:10px;height:10px;opacity:.5}
+
+/* Share modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:1000;
+  opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;
+}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{
+  background:var(--n-0);border-radius:var(--r-xl);box-shadow:var(--sh-xl);
+  width:min(92vw,480px);overflow:hidden;transform:scale(.96);transition:transform .2s;
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-head{padding:var(--s5) var(--s5) var(--s4);display:flex;align-items:center;gap:var(--s3)}
+.modal-head h3{font-family:var(--font-display);font-size:17px;font-weight:700}
+.modal-head .mh-close{
+  margin-left:auto;width:30px;height:30px;border-radius:var(--r-sm);
+  display:flex;align-items:center;justify-content:center;color:var(--n-500);
+}
+.modal-head .mh-close:hover{background:var(--n-100);color:var(--n-900)}
+.modal-body{padding:0 var(--s5) var(--s5)}
+.share-link-box{
+  display:flex;align-items:center;gap:var(--s2);padding:4px 4px 4px 12px;
+  background:var(--n-100);border-radius:var(--r-md);margin-bottom:var(--s4);
+}
+.share-link-box input{
+  flex:1;background:transparent;border:none;outline:none;font-size:13px;
+  color:var(--n-700);padding:8px 0;
+}
+.share-link-box .btn{flex-shrink:0}
+.share-option{
+  display:flex;align-items:center;gap:var(--s3);padding:12px;border-radius:var(--r-md);
+  border:var(--bw) solid var(--border);cursor:pointer;transition:all .15s;
+}
+.share-option:hover{border-color:var(--border-hover);background:var(--n-50)}
+.share-option .so-icon{
+  width:36px;height:36px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.share-option .so-icon.pdf{background:#fef2f2;color:#dc2626}
+.share-option .so-icon.viewer{background:var(--indigo-50);color:var(--indigo)}
+.share-option .so-info{flex:1}
+.share-option .so-title{font-size:13px;font-weight:600;color:var(--n-900)}
+.share-option .so-sub{font-size:12px;color:var(--n-500);margin-top:1px}
+.share-option .so-arrow{color:var(--n-400)}
+.share-option .so-arrow svg{width:16px;height:16px}
+
+/* Viewer mode */
+body.viewer-mode .left-rail{border-right-color:var(--border)}
+body.viewer-mode .stop-actions{display:none}
+body.viewer-mode .stop-handle{display:none}
+body.viewer-mode .empty-slot{display:none}
+body.viewer-mode .gap-fill-btn{display:none}
+body.viewer-mode .vote-btn{cursor:default}
+body.viewer-mode .comment-chip{cursor:default}
+body.viewer-mode .weather-toggle{display:none}
+body.viewer-mode .day-tabs{pointer-events:none}
+.viewer-footer{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  padding:8px 24px;text-align:center;font-size:12px;color:var(--n-400);
+  background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+  border-top:var(--bw) solid var(--border);z-index:100;
+}
+body.viewer-mode .viewer-footer{display:block}
+body.viewer-mode .app-header .collab-avatars{display:none}
+body.viewer-mode .app-header .offline-chip{display:none}
+body.viewer-mode .app-header .btn-primary{display:none}
+body.viewer-mode .left-rail{min-width:360px;max-width:440px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:var(--n-900);color:var(--n-0);padding:10px 18px;border-radius:var(--r-md);
+  font-size:13px;font-weight:500;box-shadow:var(--sh-lg);z-index:2000;
+  opacity:0;transform:translateX(-50%) translateY(10px);transition:all .25s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Cursor presence */
+.cursor-presence{
+  position:fixed;width:16px;height:16px;z-index:500;pointer-events:none;
+  transition:all .5s ease;opacity:0;
+}
+.cursor-presence .cp-label{
+  position:absolute;top:18px;left:12px;padding:2px 7px;border-radius:var(--r-sm);
+  font-size:10px;font-weight:600;white-space:nowrap;color:#fff;
+}
+.cursor-presence.mei{color:#f59e0b}
+.cursor-presence.mei .cp-label{background:#f59e0b}
+.cursor-presence.sam{color:#10b991}
+.cursor-presence.sam .cp-label{background:#10b991}
+.cursor-presence svg{width:16px;height:16px}
+
+/* Weather swap suggestion */
+.weather-swap{
+  display:none;padding:12px var(--s4);margin:var(--s3) 0;
+  background:#dbeafe;border:var(--bw) solid #93c5fd;border-radius:var(--r-lg);
+  font-size:13px;color:#1e3a8a;align-items:center;gap:var(--s3);
+}
+.weather-swap.show{display:flex}
+.weather-swap .ws-icon{width:32px;height:32px;border-radius:var(--r-md);background:#bfdbfe;display:flex;align-items:center;justify-content:center;color:#1e40af;flex-shrink:0}
+.weather-swap .ws-icon svg{width:16px;height:16px}
+.weather-swap .ws-text{flex:1}
+.weather-swap .ws-title{font-weight:600;font-size:13px}
+.weather-swap .ws-sub{font-size:11.5px;color:#3730A3;margin-top:2px}
+.weather-swap .ws-action{flex-shrink:0}
+
+/* Leaflet overrides */
+.leaflet-container{background:var(--n-100);font-family:var(--font-sans)}
+.leaflet-default-icon-path{display:none}
+.custom-pin{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);
+  font-size:11px;font-weight:700;color:#fff;
+}
+.custom-pin span{transform:rotate(45deg)}
+.custom-pin.suggested{
+  border-style:dashed;opacity:.7;
+}
+.custom-pin.highlighted{box-shadow:0 0 0 4px rgba(79,70,229,.3),0 2px 6px rgba(0,0,0,.3)}
+.leaflet-popup-content-wrapper{border-radius:var(--r-md);box-shadow:var(--sh-md);padding:0}
+.leaflet-popup-content{margin:0;width:200px!important}
+.leaflet-popup-content .popup-card{padding:10px 12px}
+.leaflet-popup-content .popup-card .pc-name{font-size:13px;font-weight:600}
+.leaflet-popup-content .popup-card .pc-cat{font-size:11px;color:var(--n-500);margin-top:2px}
+.leaflet-popup-content .popup-card .pc-blurb{font-size:11.5px;color:var(--n-600);margin-top:6px;line-height:1.4}
+.leaflet-popup-tip{box-shadow:none}
+
+/* Print */
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  .app-header,.map-canvas,.stop-actions,.stop-handle,.empty-slot,.gap-fill-btn,
+  .weather-toggle,.vote-btn,.comment-chip,.toast,.modal-overlay,.cursor-presence{display:none!important}
+  .itin-layout{display:block;height:auto}
+  .left-rail{width:100%;max-width:100%;border-right:none}
+  .day-content{overflow:visible;padding:16px}
+  .day-tabs{display:none}
+  .stop-card{break-inside:avoid;margin-bottom:8px}
+  .viewer-footer{display:none!important}
+  .print-header{display:block;text-align:center;padding:20px;border-bottom:2px solid var(--indigo)}
+  .print-header h1{font-family:var(--font-display);font-size:24px;color:var(--indigo)}
+  .print-header .ph-sub{font-size:13px;color:var(--n-500);margin-top:4px}
+}
+.print-header{display:none}
+
+/* Scrollbar */
+.day-content::-webkit-scrollbar{width:6px}
+.day-content::-webkit-scrollbar-thumb{background:var(--n-200);border-radius:3px}
+.day-content::-webkit-scrollbar-thumb:hover{background:var(--n-300)}
+.day-tabs::-webkit-scrollbar{height:4px}
+.day-tabs::-webkit-scrollbar-thumb{background:var(--n-200);border-radius:2px}
+</style>
+</head>
+
+<body>
+<div class="app-header">
+  <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z" fill="currentColor" stroke="none"/></svg></div>
+  <span class="brand-wordmark">Tripwheel</span>
+  <div class="trip-sep"></div>
+  <span class="trip-title" id="tripTitle">5 Days in Kyoto &amp; Osaka</span>
+  <div class="header-spacer"></div>
+  <div class="collab-avatars" id="collabAvatars">
+    <div class="collab-avatar you" title="You">Y</div>
+    <div class="collab-avatar mei" title="Mei">M</div>
+    <div class="collab-avatar sam" title="Sam">S</div>
+  </div>
+  <div class="offline-chip" onclick="toggleOffline()">
+    <span class="oc-dot"></span>
+    Offline ready ✓
+    <span class="oc-tooltip">This trip is saved to your device — works with zero data.</span>
+  </div>
+  <button class="btn btn-primary" onclick="openShareModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    Share
+  </button>
+</div>
+
+<div class="itin-layout">
+  <div class="left-rail">
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="day-content" id="dayContent"></div>
+  </div>
+  <div class="map-canvas">
+    <div class="map-overlay-top">
+      <div class="map-pill" id="rainToggle" onclick="toggleRain()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="rainLabel">Sunny</span>
+      </div>
+      <div class="map-pill" id="airplaneToggle" onclick="toggleAirplane()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        <span id="airplaneLabel">Airplane mode</span>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Share this trip</h3>
+      <button class="mh-close" onclick="closeShareModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="share-link-box">
+        <input type="text" value="tripwheel.io/t/kyoto-5d" readonly id="shareLink">
+        <button class="btn btn-primary btn-sm" onclick="copyLink()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="share-option" onclick="window.print()">
+          <div class="so-icon pdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="so-info">
+            <div class="so-title">Download PDF</div>
+            <div class="so-sub">Save as a printable one-page itinerary</div>
+          </div>
+          <div class="so-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="share-option" onclick="toggleViewerMode()">
+          <div class="so-icon viewer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="so-info">
+            <div class="so-title">Open as viewer</div>
+            <div class="so-sub">See the clean, read-only page anyone can open</div>
+          </div>
+          <div class="so-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="viewer-footer">Made with &#10024; Tripwheel — every trip is a gorgeous, shareable, map-first page.</div>
+
+<div class="cursor-presence mei" id="cursorMei">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 3.21V20.79c0 .45.54.67.85.35l4.86-4.86a1 1 0 01.71-.29h6.87a.5.5 0 00.35-.86L6.35 2.85a.5.5 0 00-.85.36z"/></svg>
+  <div class="cp-label">Mei</div>
+</div>
+<div class="cursor-presence sam" id="cursorSam" style="display:none">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.5 3.21V20.79c0 .45.54.67.85.35l4.86-4.86a1 1 0 01.71-.29h6.87a.5.5 0 00.35-.86L6.35 2.85a.5.5 0 00-.85.36z"/></svg>
+  <div class="cp-label">Sam</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="print-header">
+  <h1>5 Days in Kyoto &amp; Osaka</h1>
+  <div class="ph-sub">A Tripwheel itinerary &middot; tripwheel.io/t/kyoto-5d</div>
+</div>
+
+<script>
+// ============================================================
+// NEIGHBOURHOOD COLOURS
+// ============================================================
+var NB_COLORS = {
+  'Higashiyama': '#10b981',
+  'Gion': '#8b5cf6',
+  'Dotonbori': '#f59e0b',
+  'Arashiyama': '#06b6d4',
+  'Namba': '#ec4899',
+  'Kyoto Station': '#6366f1',
+  'Umeda': '#f97316',
+  'Osaka Castle': '#14b8a6'
+};
+
+function nbColor(nb){ return NB_COLORS[nb] || '#71717a'; }
+
+// ============================================================
+// COLLABORATORS
+// ============================================================
+var COLLAB = {
+  you: {id:'you', name:'You', color:'#4F46E5'},
+  mei: {id:'mei', name:'Mei', color:'#f59e0b'},
+  sam: {id:'sam', name:'Sam', color:'#10b981'}
+};
+
+// ============================================================
+// SUGGESTION POOLS (for AI fill)
+// ============================================================
+var SUGGESTIONS = {
+  higashiyama_afternoon: [
+    {name:'Yasaka Pagoda',neighbourhood:'Gion',lat:35.0036,lng:135.7788,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1545569341-9eb8b3077943?w=400&h=240&fit=crop',
+     blurb:'Five-story pagoda in Higashiyama — Kyoto\u2019s most photographed temple.',
+     whyThis:'Iconic sunset shot, 5 min walk from Kiyomizu.',
+     durationMin:45},
+    {name:'Sannenzaka Street',neighbourhood:'Higashiyama',lat:35.0045,lng:135.7797,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&h=240&fit=crop',
+     blurb:'Preserved Edo-period sloping street lined with craft shops and tea houses.',
+     whyThis:'Best free stroll in the area, great for souvenirs.',
+     durationMin:60},
+    {name:'Ippodo Tea Kyoto',neighbourhood:'Gion',lat:34.9988,lng:135.7720,category:'food',
+     photoUrl:'https://images.unsplash.com/photo-1556910104-0d9e8c3b3ef1?w=400&h=240&fit=crop',
+     blurb:'300-year-old matcha tea house with tasting flights.',
+     whyThis:'Quick cultural break, 5 min walk. Highly rated.',
+     durationMin:40}
+  ],
+  osaka_evening: [
+    {name:'Dotonbori Night Walk',neighbourhood:'Dotonbori',lat:34.6687,lng:135.5022,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1582693355175-7fdb6c9f346b?w=400&h=240&fit=crop',
+     blurb:'Osaka\u2019s neon-soaked canal strip — food, lights, energy.',
+     whyThis:'The Glico sign, takoyaki stands, peak Osaka energy.',
+     durationMin:75},
+    {name:'Kushikatsu Daruma',neighbourhood:'Dotonbori',lat:34.6680,lng:135.5010,category:'food',
+     photoUrl:'https://images.unsplash.com/photo-1603560067048-4b1c8c7e3f9c?w=400&h=240&fit=crop',
+     blurb:'Deep-fried skewers — Osaka\u2019s comfort-food institution since 1929.',
+     whyThis:'No-resign-policy: you only dip once. Iconic local ritual.',
+     durationMin:55},
+    {name:'Hozenji Yokocho',neighbourhood:'Dotonbori',lat:34.6689,lng:135.5038,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1573530249050-6f5f5e3a3b4f?w=400&h=240&fit=crop',
+     blurb:'Lantern-lit narrow alley with moss-covered statues and tiny bars.',
+     whyThis:'Hidden pocket of old Osaka, 3 min from the main strip.',
+     durationMin:30}
+  ],
+  generic_gapfill: [
+    {name:'Local Coffee Roaster',neighbourhood:'Gion',lat:34.9976,lng:135.7736,category:'food',
+     photoUrl:'https://images.unsplash.com/photo-1497636577773-f1231844d3a6?w=400&h=240&fit=crop',
+     blurb:'Third-wave coffee bar tucked behind a stone wall.',
+     whyThis:'8 min walk from your morning stop. Highly rated.',
+     durationMin:30},
+    {name:'Nishiki Market',neighbourhood:'Gion',lat:35.0050,lng:135.7650,category:'food',
+     photoUrl:'https://images.unsplash.com/photo-1574393244013-9c9c5b4f-7f2e-4d3e-9c6f-9c3b5b1c0f0a?w=400&h=240&fit=crop',
+     blurb:'Covered food market \u2014 Kyoto\u2019s kitchen. Pickles, sweets, samples.',
+     whyThis:'All walking, lots of small samples \u2014 no stress decision.',
+     durationMin:45},
+    {name:'Riverside Stroll',neighbourhood:'Gion',lat:34.9998,lng:135.7700,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1528164402525-7fdb6c9f346b?w=400&h=240&fit=crop',
+     blurb:'Kamogawa River walk \u2014 peaceful path through the heart of Kyoto.',
+     whyThis:'Decompression slot between stops. Free, zero effort.',
+     durationMin:30}
+  ],
+  rainy_swap: [
+    {name:'Kyoto National Museum',neighbourhood:'Higashiyama',lat:34.9973,lng:135.7725,category:'sight',
+     photoUrl:'https://images.unsplash.com/photo-1565060169187-62807a1fb5c8?w=400&h=240&fit=crop',
+     blurb:'World-class collection of Buddhist art, ceramics, and scrolls \u2014 all indoors.',
+     whyThis:'Perfect rainy-day swap. Covers the same cultural ground.',
+     durationMin:90}
+  ]
+};
+
+// ============================================================
+// APP STATE — seeded Kyoto & Osaka trip
+// ============================================================
+var appState = {
+  currentDay: 0,
+  viewerMode: false,
+  rainy: false,
+  airplane: false,
+  collaboratorCount: 3,
+  trip: {
+    id: 'kyoto-5d',
+    title: '5 Days in Kyoto & Osaka',
+    dateRange: 'Oct 14\u201319, 2025',
+    collaborators: [COLLAB.you, COLLAB.mei, COLLAB.sam],
+    days: [
+      {
+        id: 'd1', label: 'Day 1', date: 'Oct 14',
+        anchorStopId: 's1', ownerId: 'you', weather: 'sunny',
+        stops: [
+          {id:'s1',name:'Kiyomizu-dera Temple',neighbourhood:'Higashiyama',lat:34.9950,lng:135.7850,category:'sight',
+           startTime:'9:00',durationMin:90,
+           photoUrl:'https://images.unsplash.com/photo-1545569341-9eb8b3077943?w=400&h=240&fit=crop',
+           blurb:'UNESCO temple with panoramic views over Kyoto from the wooden stage.',
+           transitFromPrev:{mins:0,mode:'walk'},votes:3,comments:[
+             {user:'mei',text:'The view from the stage is unreal at opening.'}
+           ],status:'planned'},
+          {id:'s2',name:'Sannenzaka & Ninenzaka',neighbourhood:'Higashiyama',lat:35.0040,lng:135.7790,category:'sight',
+           startTime:'11:00',durationMin:60,
+           photoUrl:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&h=240&fit=crop',
+           blurb:'Preserved Edo-period sloping streets with craft shops and tea houses.',
+           transitFromPrev:{mins:8,mode:'walk'},votes:2,comments:[],status:'planned'},
+          {id:'s3',name:'Ippodo Tea Kyoto',neighbourhood:'Gion',lat:34.9988,lng:135.7720,category:'food',
+           startTime:'12:30',durationMin:45,
+           photoUrl:'https://images.unsplash.com/photo-1556910104-0d9e8c3b3ef1?w=400&h=240&fit=crop',
+           blurb:'300-year-old matcha tea house with tasting flights.',
+           transitFromPrev:{mins:5,mode:'walk'},votes:1,comments:[],status:'planned'},
+          {id:'s4',name:'Gion Corner',neighbourhood:'Gion',lat:34.9999,lng:135.7749,category:'sight',
+           startTime:'14:00',durationMin:70,
+           photoUrl:'https://images.unsplash.com/photo-1604608675516-2e4d5e1c1f0a?w=400&h=240&fit=crop',
+           blurb:'Compact cultural showcase: tea ceremony, flower arranging, geiko dance.',
+           transitFromPrev:{mins:4,mode:'walk'},votes:4,comments:[
+             {user:'sam',text:'Great intro to geisha culture without a full show.'}
+           ],status:'planned'}
+        ]
+      },
+      {
+        id: 'd2', label: 'Day 2', date: 'Oct 15',
+        anchorStopId: 's5', ownerId: 'sam', weather: 'sunny',
+        stops: [
+          {id:'s5',name:'Fushimi Inari Shrine',neighbourhood:'Gion',lat:34.9673,lng:135.7681,category:'sight',
+           startTime:'8:30',durationMin:120,
+           photoUrl:'https://images.unsplash.com/photo-1604608675516-2e4d5e1c1f0a?w=400&h=240&fit=crop',
+           blurb:'10,000 vermilion torii gates climbing the mountain trail.',
+           blurb:'Thousands of vermilion torii gates on a mountain trail.',
+           transitFromPrev:{mins:0,mode:'train'},votes:5,comments:[
+             {user:'mei',text:'Go early before 9am to beat crowds.'},
+             {user:'sam',text:'Anchor of the whole trip! Sprint to the top.'}
+           ],status:'planned'},
+          {id:'s6',name:'Tofuku-ji Temple',neighbourhood:'Gion',lat:34.9650,lng:135.7590,category:'sight',
+           startTime:'11:00',durationMin:50,
+           photoUrl:'https://images.unsplash.com/photo-1573530249050-6f5f5e3a3b4f?w=400&h=240&fit=crop',
+           blurb:'Zen temple famous for autumn maple leaves and the Tsutenkyo bridge.',
+           transitFromPrev:{mins:5,mode:'walk'},votes:2,comments:[],status:'planned'},
+          {id:'s7',name:'Vermillion Cafe',neighbourhood:'Gion',lat:34.9640,lng:135.7650,category:'food',
+           startTime:'12:00',durationMin:40,
+           photoUrl:'https://images.unsplash.com/photo-1556910104-0d9e8c3b3ef1?w=400&h=240&fit=crop',
+           blurb:'Casual cafe near the shrine base, great matcha soft serve.',
+           transitFromPrev:{mins:8,mode:'walk'},votes:1,comments:[],status:'planned'}
+        ]
+      },
+      {
+        id: 'd3', label: 'Day 3', date: 'Oct 16',
+        anchorStopId: 's8', ownerId: 'mei', weather: 'sunny',
+        stops: [
+          {id:'s8',name:'Arashiyama Bamboo Grove',neighbourhood:'Arashiyama',lat:35.0176,lng:135.6716,category:'sight',
+           startTime:'7:30',durationMin:45,
+           photoUrl:'https://images.unsplash.com/photo-1565060169187-62807a1fb5c8?w=400&h=240&fit=crop',
+           blurb:'Towering bamboo corridor \u2014 magical at dawn before the crowds.',
+           transitFromPrev:{mins:0,mode:'walk'},votes:4,comments:[
+             {user:'mei',text:'Sunrise slot is non-negotiable. I scouted it last trip.'}
+           ],status:'planned'},
+          {id:'s9',name:'Tenryu-ji Temple',neighbourhood:'Arashiyama',lat:35.0168,lng:135.6790,category:'sight',
+           startTime:'8:45',durationMin:60,
+           photoUrl:'https://images.unsplash.com/photo-1604608675516-2e4d5e1c1f0a?w=400&h=240&fit=crop',
+           blurb:'UNESCO Zen garden with a reflective pond dating to 1339.',
+           transitFromPrev:{mins:3,mode:'walk'},votes:3,comments:[],status:'planned'},
+          {id:'s10',name:'Arashiyama Yoshimura',neighbourhood:'Arashiyama',lat:35.0180,lng:135.6680,category:'food',
+           startTime:'10:00',durationMin:45,
+           photoUrl:'https://images.unsplash.com/photo-1556910104-0d9e8c3b3ef1?w=400&h=240&fit=crop',
+           blurb:'Soba noodles with riverside seating overlooking the Togetsukyo bridge.',
+           transitFromPrev:{mins:5,mode:'walk'},votes:2,comments:[],status:'planned'},
+          {id:'s11',name:'Iwatayama Monkey Park',neighbourhood:'Arashiyama',lat:35.0123,lng:135.6679,category:'sight',
+           startTime:'12:30',durationMin:90,
+           photoUrl:'https://images.unsplash.com/photo-1573530249050-6f5f5e3a3b4f?w=400&h=240&fit=crop',
+           blurb:'Hike up to feed wild snow monkeys with panoramic Kyoto city views.',
+           transitFromPrev:{mins:8,mode:'walk'},votes:1,comments:[],status:'planned'}
+        ]
+      },
+      {
+        id: 'd4', label: 'Day 4', date: 'Oct 17',
+        anchorStopId: 's12', ownerId: 'you', weather: 'sunny',
+        stops: [
+          {id:'s12',name:'Osaka Castle',neighbourhood:'Osaka Castle',lat:34.6873,lng:135.5259,category:'sight',
+           startTime:'9:00',durationMin:100,
+           photoUrl:'https://images.unsplash.com/photo-1582693355175-7fdb6c9f346b?w=400&h=240&fit=crop',
+           blurb:'Iconic Osaka landmark surrounded by cherry-filled park and moats.',
+           transitFromPrev:{mins:0,mode:'train'},votes:3,comments:[],status:'planned'},
+          {id:'s13',name:'Osaka Museum of History',neighbourhood:'Namba',lat:34.6824,lng:135.5266,category:'sight',
+           startTime:'11:00',durationMin:60,
+           photoUrl:'https://images.unsplash.com/photo-1565060169187-62807a1fb5c8?w=400&h=240&fit=crop',
+           blurb:'Interactive exhibits tracing Osaka from ancient capital to modern metropolis.',
+           transitFromPrev:{mins:5,mode:'walk'},votes:1,comments:[],status:'planned'}
+          // Afternoon empty — for AI fill demo
+        ]
+      },
+      {
+        id: 'd5', label: 'Day 5', date: 'Oct 18',
+        anchorStopId: 's14', ownerId: 'you', weather: 'sunny',
+        stops: [
+          {id:'s14',name:'Osaka Kaiyukan',neighbourhood:'Namba',lat:34.6545,lng:135.4297,category:'sight',
+           startTime:'9:30',durationMin:120,
+           photoUrl:'https://images.unsplash.com/photo-1582693355175-7fdb6c9f346b?w=400&h=240&fit=crop',
+           blurb:'World\u2019s largest aquarium featuring a whale shark in a massive Pacific tank.',
+           transitFromPrev:{mins:15,mode:'train'},votes:2,comments:[],status:'planned'},
+          {id:'s15',name:'Umeda Sky Building',neighbourhood:'Umeda',lat:34.7053,lng:135.4906,category:'sight',
+           startTime:'13:00',durationMin:50,
+           photoUrl:'https://images.unsplash.com/photo-1545569341-9eb8b3077943?w=400&h=240&fit=crop',
+           blurb:'Floating garden observatory connecting two towers \u2014 360\u00b0 city views.',
+           transitFromPrev:{mins:20,mode:'train'},votes:1,comments:[],status:'planned'},
+          {id:'s16',name:'Hep Five Ferris Wheel',neighbourhood:'Umeda',lat:34.7038,lng:135.4998,category:'sight',
+           startTime:'14:30',durationMin:20,
+           photoUrl:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&h=240&fit=crop',
+           blurb:'Bright red rooftop Ferris wheel above a shopping mall \u2014 quick fun stop.',
+           transitFromPrev:{mins:5,mode:'walk'},votes:0,comments:[],status:'planned'}
+        ]
+      }
+    ]
+  }
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+var ICONS = {
+  walk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><circle cx="12" cy="4" r="2"/><path d="M8 20l2-6 4-2 2-6M14 18l-4-4M10 16l-2 4"/></svg>',
+  train:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><rect x="4" y="3" width="16" height="14" rx="2"/><line x1="4" y1="11" x2="20" y2="11"/><circle cx="8.5" cy="17.5" r="1"/><circle cx="15.5" cy="17.5" r="1"/></svg>',
+  food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><path d="M3 2v7c0 1.1.9 2 2 2h.5L5 22M8 2v20M5 11v11M16 2c-1.5 0-2.5 2.5-2.5 5S15 11 16 11s2.5-2 2.5-4 .5-5-2.5-5zM16 11v11"/></svg>',
+  sight:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  transit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>',
+  hotel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="st-icon"><path d="M3 21V5a2 2 0 012-2h14a2 2 0 012 2v16M3 21h18M9 7v4M15 7v4"/></svg>',
+  drag:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>',
+  sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 5L19 9.5 13.5 11 12 16l-1.5-5L5 9.5 10.5 8z"/></svg>',
+  thumbsUp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>',
+  comment:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+  rain:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/><line x1="12" y1="15" x2="12" y2="23"/><path d="M20 16.58A5 5 0 0018 7h-1.26A8 8 0 104 15.25"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  anchor:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0020 0h-3"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  swap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>',
+  airplane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>'
+};
+
+function transitIcon(mode){
+  if(mode==='walk') return ICONS.walk;
+  if(mode==='train') return ICONS.train;
+  return ICONS.transit;
+}
+
+function catIcon(cat){
+  if(cat==='food') return ICONS.food;
+  if(cat==='sight') return ICONS.sight;
+  if(cat==='hotel') return ICONS.hotel;
+  return ICONS.transit;
+}
+
+function avatarHTML(collabId){
+  var c = COLLAB[collabId] || COLLAB.you;
+  var initials = c.name.charAt(0);
+  return '<span class="ob-av" style="background:'+c.color+'">'+initials+'</span>';
+}
+
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// RENDER — Day tabs
+// ============================================================
+function renderDayTabs(){
+  var container = document.getElementById('dayTabs');
+  container.innerHTML = '';
+  var days = appState.trip.days;
+  for(var i=0;i<days.length;i++){
+    var d = days[i];
+    var tab = document.createElement('div');
+    tab.className = 'day-tab' + (i===appState.currentDay ? ' active' : '');
+    tab.onclick = (function(idx){ return function(){ selectDay(idx); }; })(i);
+    var weatherIcon = d.weather==='rainy' ? '&#127783;' : '&#9728;';
+    var count = d.stops.filter(function(s){return s.status==='planned'}).length;
+    tab.innerHTML = d.label + ' <span class="dt-weather">'+weatherIcon+'</span><span class="dt-count">'+count+'</span>';
+    container.appendChild(tab);
+  }
+}
+
+// ============================================================
+// RENDER — Day content
+// ============================================================
+function renderDayContent(){
+  var container = document.getElementById('dayContent');
+  var day = appState.trip.days[appState.currentDay];
+  var html = '';
+
+  // Day header
+  var owner = COLLAB[day.ownerId] || COLLAB.you;
+  html += '<div class="day-header">';
+  html += '<div>';
+  html += '<h2>'+day.label+' &middot; '+day.date+'</h2>';
+  html += '<div class="day-date">'+appState.trip.title+'</div>';
+  html += '</div>';
+  html += '<span class="anchor-badge">'+ICONS.anchor+' Anchor: '+getStopName(day.anchorStopId)+'</span>';
+  html += '<span class="owner-badge">'+avatarHTML(day.ownerId)+' '+owner.name+'</span>';
+  if(!appState.viewerMode){
+    var rainClass = appState.rainy ? ' rainy' : '';
+    var rainLabel = appState.rainy ? 'Rainy day' : 'Sunny';
+    var rainIco = appState.rainy ? ICONS.rain : ICONS.sun;
+    html += '<div class="weather-toggle'+rainClass+'" onclick="toggleRain()">'+rainIco+' '+rainLabel+'</div>';
+  }
+  html += '</div>';
+
+  // Weather swap suggestion
+  if(appState.rainy){
+    html += '<div class="weather-swap show">';
+    html += '<div class="ws-icon">'+ICONS.rain+'</div>';
+    html += '<div class="ws-text">';
+    html += '<div class="ws-title">&#127783; Rain expected \u2014 swap an outdoor stop?</div>';
+    html += '<div class="ws-sub">Kyoto National Museum is indoors and covers similar cultural ground.</div>';
+    html += '</div>';
+    html += '<button class="btn btn-secondary btn-sm" onclick="swapForRain()">Swap</button>';
+    html += '</div>';
+  }
+
+  // Stops
+  html += '<div class="stop-list" id="stopList">';
+  for(var i=0;i<day.stops.length;i++){
+    var s = day.stops[i];
+    html += renderStopCard(s, i);
+  }
+  html += '</div>';
+
+  // Empty slot for AI fill (Day 4 afternoon)
+  if(!appState.viewerMode){
+    var hasEmpty = day.stops.length < 4;
+    if(hasEmpty && day.id==='d4'){
+      html += '<div class="empty-slot" id="emptySlot" onclick="triggerAIFill()">';
+      html += '<div class="es-icon">'+ICONS.sparkle+'</div>';
+      html += '<div class="es-title">&#10024 Let Tripwheel fill this</div>';
+      html += '<div class="es-sub">Empty afternoon \u2014 AI will draft nearby options from your day</div>';
+      html += '</div>';
+      html += '<div class="ai-shimmer" id="aiShimmer">';
+      html += '<div class="ai-thinking-label"><span class="atl-dot"></span> Tripwheel is drafting your afternoon...</div>';
+      html += '<div class="sh-line"></div><div class="sh-line"></div><div class="sh-line"></div>';
+      html += '</div>';
+      html += '<div class="suggestion-list" id="suggestionList"></div>';
+    }
+
+    // Gap fill
+    if(day.stops.length >= 3 && day.id !== 'd4'){
+      html += '<button class="gap-fill-btn" onclick="triggerGapFill(\''+day.id+'\')">'+ICONS.sparkle+' Fill the gaps</button>';
+    }
+  }
+
+  container.innerHTML = html;
+
+  // Setup drag
+  if(!appState.viewerMode){
+    setupDragReorder();
+  }
+}
+
+function renderStopCard(s, idx){
+  var html = '';
+  html += '<div class="stop-card'+(s.status==='suggested' ? ' suggested' : '')+'" data-stop-id="'+s.id+'" data-stop-idx="'+idx+'">';
+  // Drag handle
+  html += '<div class="stop-handle">'+ICONS.drag+'</div>';
+  // Transit
+  if(s.transitFromPrev && s.transitFromPrev.mins > 0){
+    html += '<div class="stop-transit">';
+    html += transitIcon(s.transitFromPrev.mode);
+    html += '<span class="st-mode">'+s.transitFromPrev.mode+'</span>';
+    html += '<span>'+s.transitFromPrev.mins+' min from previous</span>';
+    html += '</div>';
+  }
+  // Body
+  html += '<div class="stop-body">';
+  html += '<div class="stop-photo">';
+  if(s.photoUrl){
+    html += '<img src="'+s.photoUrl+'" alt="'+s.name+'" loading="lazy" onerror="this.parentElement.innerHTML=\''+ICONS.sight.replace(/"/g,'&quot;')+'\'" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    html += '<div class="sp-placeholder">'+ICONS.sight+'</div>';
+  }
+  html += '</div>';
+  html += '<div class="stop-info">';
+  html += '<div class="stop-name">'+s.name+'<span class="stop-cat '+s.category+'">'+s.category+'</span></div>';
+  html += '<div class="stop-blurb">'+s.blurb+'</div>';
+  html += '<div class="stop-meta">';
+  if(s.startTime) html += '<span class="stop-time">'+s.startTime+'</span>';
+  html += '<span class="stop-dur">'+s.durationMin+'min</span>';
+  // Neighbourhood color dot
+  html += '<span style="width:8px;height:8px;border-radius:50%;background:'+nbColor(s.neighbourhood)+';flex-shrink:0" title="'+s.neighbourhood+'"></span>';
+  html += '<span style="font-size:11px;color:var(--n-400)">'+s.neighbourhood+'</span>';
+  html += '<div class="stop-actions">';
+  html += '<button class="sa-btn" onclick="event.stopPropagation();voteStop(\''+s.id+'\')" title="Vote">'+ICONS.thumbsUp+'</button>';
+  html += '<button class="sa-btn" onclick="event.stopPropagation();commentStop(\''+s.id+'\')" title="Comment">'+ICONS.comment+'</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  // Vote row
+  html += '<div class="stop-vote-row">';
+  html += '<button class="vote-btn'+(s.votes>0?' voted':'')+'" onclick="voteStop(\''+s.id+'\')">'+ICONS.thumbsUp+' '+s.votes+'</button>';
+  html += '<button class="comment-chip" onclick="commentStop(\''+s.id+'\')">'+ICONS.comment+' '+(s.comments?s.comments.length:0)+'</button>';
+  if(s.whyThis){
+    html += '<span style="font-size:11px;color:var(--indigo-dark);font-weight:500;margin-left:auto">\u2728 '+s.whyThis+'</span>';
+  }
+  html += '</div>';
+  // Comments
+  if(s.comments && s.comments.length > 0){
+    for(var j=0;j<s.comments.length;j++){
+      var c = s.comments[j];
+      var collab = COLLAB[c.user] || COLLAB.you;
+      html += '<div class="comment-bubble" style="margin:0 var(--s4) var(--s2) var(--s4)">';
+      html += '<span class="cb-av" style="background:'+collab.color+'">'+collab.name.charAt(0)+'</span>';
+      html += '<div><span class="cb-name">'+collab.name+'</span> '+c.text+'</div>';
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  // Buffer indicator between stops
+  var nextStop = appState.trip.days[appState.currentDay].stops[idx+1];
+  if(nextStop && s.transitFromPrev && s.transitFromPrev.mins < 5){
+    html += '<div class="buffer-indicator" style="padding:4px 0">'+ICONS.clock+' 5 min buffer</div>';
+  }
+  return html;
+}
+
+function getStopName(stopId){
+  for(var i=0;i<appState.trip.days.length;i++){
+    var stops = appState.trip.days[i].stops;
+    for(var j=0;j<stops.length;j++){
+      if(stops[j].id === stopId) return stops[j].name;
+    }
+  }
+  return 'Unknown';
+}
+
+function getStop(stopId){
+  for(var i=0;i<appState.trip.days.length;i++){
+    var stops = appState.trip.days[i].stops;
+    for(var j=0;j<stops.length;j++){
+      if(stops[j].id === stopId) return stops[j];
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// RENDER — Map
+// ============================================================
+var map = null;
+var mapMarkers = [];
+var routeLine = null;
+
+function initMap(){
+  map = L.map('map', {
+    zoomControl: true,
+    scrollWheelZoom: true,
+    attributionControl: false
+  }).setView([34.9850, 135.7680], 12);
+
+  // Carto Voyager tiles (clean, no API key)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(map);
+
+  updateMap();
+}
+
+function createPinDiv(num, colour, suggested, highlighted){
+  var cls = 'custom-pin';
+  if(suggested) cls += ' suggested';
+  if(highlighted) cls += ' highlighted';
+  return '<div class="'+cls+'" style="background:'+colour+'"><span>'+num+'</span></div>';
+}
+
+function updateMap(){
+  // Clear existing
+  for(var i=0;i<mapMarkers.length;i++){
+    map.removeLayer(mapMarkers[i]);
+  }
+  mapMarkers = [];
+  if(routeLine){ map.removeLayer(routeLine); routeLine = null; }
+
+  var day = appState.trip.days[appState.currentDay];
+  var latlngs = [];
+
+  for(var i=0;i<day.stops.length;i++){
+    var s = day.stops[i];
+    var colour = nbColor(s.neighbourhood);
+    var isSuggested = s.status === 'suggested';
+    var icon = L.divIcon({
+      className: '',
+      html: createPinDiv(i+1, colour, isSuggested, false),
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -28]
+    });
+    var marker = L.marker([s.lat, s.lng], {icon: icon, draggable: !appState.viewerMode}).addTo(map);
+    marker.stopId = s.id;
+    marker.stopIdx = i;
+
+    // Popup
+    var popupHTML = '<div class="popup-card">';
+    popupHTML += '<div class="pc-name">'+s.name+'</div>';
+    popupHTML += '<div class="pc-cat">'+s.category+' &middot; '+s.neighbourhood+'</div>';
+    popupHTML += '<div class="pc-blurb">'+s.blurb+'</div>';
+    if(s.startTime) popupHTML += '<div style="font-size:11px;color:var(--n-400);margin-top:6px">'+s.startTime+' &middot; '+s.durationMin+'min</div>';
+    popupHTML += '</div>';
+    marker.bindPopup(popupHTML, {closeButton: false, offset: [0, -10]});
+
+    // Hover sync
+    marker.on('mouseover', function(e){
+      var stopId = e.target.stopId;
+      var card = document.querySelector('.stop-card[data-stop-id="'+stopId+'"]');
+      if(card) card.classList.add('highlighted');
+    });
+    marker.on('mouseout', function(e){
+      var stopId = e.target.stopId;
+      var card = document.querySelector('.stop-card[data-stop-id="'+stopId+'"]');
+      if(card) card.classList.remove('highlighted');
+    });
+
+    // Drag to reorder
+    marker.on('dragend', function(e){
+      var draggedIdx = e.target.stopIdx;
+      var newPos = e.target.getLatLng();
+      // Find nearest stop by distance
+      var day = appState.trip.days[appState.currentDay];
+      var minDist = Infinity, targetIdx = draggedIdx;
+      for(var k=0;k<day.stops.length;k++){
+        if(k === draggedIdx) continue;
+        var s = day.stops[k];
+        var dist = Math.sqrt(Math.pow(s.lat - newPos.lat, 2) + Math.pow(s.lng - newPos.lng, 2));
+        if(dist < minDist){
+          minDist = dist;
+          targetIdx = k;
+        }
+      }
+      if(targetIdx !== draggedIdx){
+        // Reorder
+        var stops = day.stops;
+        var moved = stops.splice(draggedIdx, 1)[0];
+        stops.splice(targetIdx, 0, moved);
+        // Update transit
+        updateTransit(stops);
+        renderDayTabs();
+        renderDayContent();
+        updateMap();
+        showToast('Reordered &middot; route updated');
+      } else {
+        // Snap back
+        updateMap();
+      }
+    });
+
+    mapMarkers.push(marker);
+    latlngs.push([s.lat, s.lng]);
+  }
+
+  // Route polyline
+  if(latlngs.length >= 2){
+    var dayColour = nbColor(day.stops[0].neighbourhood);
+    routeLine = L.polyline(latlngs, {
+      color: '#4F46E5',
+      weight: 2.5,
+      opacity: 0.6,
+      dashArray: '6,8'
+    }).addTo(map);
+  }
+
+  // Fit bounds
+  if(latlngs.length > 0){
+    map.fitBounds(latlngs, {padding: [50, 50], maxZoom: 14});
+  }
+}
+
+// ============================================================
+// DRAG REORDER (list)
+// ============================================================
+var dragSrcIdx = null;
+
+function setupDragReorder(){
+  var stopList = document.getElementById('stopList');
+  if(!stopList) return;
+  var cards = stopList.querySelectorAll('.stop-card');
+  cards.forEach(function(card){
+    var handle = card.querySelector('.stop-handle');
+    card.setAttribute('draggable', 'true');
+
+    card.addEventListener('dragstart', function(e){
+      dragSrcIdx = parseInt(card.getAttribute('data-stop-idx'));
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function(){
+      card.classList.remove('dragging');
+    });
+    card.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+    card.addEventListener('drop', function(e){
+      e.preventDefault();
+      var targetIdx = parseInt(card.getAttribute('data-stop-idx'));
+      if(dragSrcIdx !== null && dragSrcIdx !== targetIdx){
+        var day = appState.trip.days[appState.currentDay];
+        var moved = day.stops.splice(dragSrcIdx, 1)[0];
+        day.stops.splice(targetIdx, 0, moved);
+        updateTransit(day.stops);
+        renderDayTabs();
+        renderDayContent();
+        updateMap();
+        showToast('Reordered &middot; route updated');
+      }
+      dragSrcIdx = null;
+    });
+  });
+
+  // Hover sync: list -> map
+  cards.forEach(function(card){
+    var stopId = card.getAttribute('data-stop-id');
+    card.addEventListener('mouseenter', function(){
+      for(var i=0;i<mapMarkers.length;i++){
+        if(mapMarkers[i].stopId === stopId){
+          mapMarkers[i].getElement().querySelector('.custom-pin').classList.add('highlighted');
+        }
+      }
+    });
+    card.addEventListener('mouseleave', function(){
+      for(var i=0;i<mapMarkers.length;i++){
+        if(mapMarkers[i].stopId === stopId){
+          var el = mapMarkers[i].getElement();
+          if(el){
+            var pin = el.querySelector('.custom-pin');
+            if(pin) pin.classList.remove('highlighted');
+          }
+        }
+      }
+    });
+  });
+}
+
+// ============================================================
+// TRANSIT UPDATE
+// ============================================================
+function updateTransit(stops){
+  for(var i=1;i<stops.length;i++){
+    var prev = stops[i-1];
+    var curr = stops[i];
+    var dist = Math.sqrt(Math.pow(curr.lat - prev.lat, 2) + Math.pow(curr.lng - prev.lng, 2));
+    // Rough conversion: ~111km per degree, walking speed 5km/h
+    var km = dist * 111;
+    if(km < 1.5){
+      curr.transitFromPrev = {mins: Math.max(3, Math.round(km * 12)), mode: 'walk'};
+    } else if(km < 5){
+      curr.transitFromPrev = {mins: Math.round(km * 3 + 8), mode: 'train'};
+    } else {
+      curr.transitFromPrev = {mins: Math.round(km * 2 + 15), mode: 'train'};
+    }
+  }
+}
+
+// ============================================================
+// AI FILL — shimmer + suggestions
+// ============================================================
+var aiFillTriggered = false;
+
+function triggerAIFill(){
+  if(aiFillTriggered) return;
+  aiFillTriggered = true;
+
+  // Hide empty slot
+  var slot = document.getElementById('emptySlot');
+  if(slot) slot.style.display = 'none';
+
+  // Show shimmer
+  var shimmer = document.getElementById('aiShimmer');
+  shimmer.classList.add('active');
+
+  // After ~1.2s, show suggestions
+  setTimeout(function(){
+    shimmer.classList.remove('active');
+    var container = document.getElementById('suggestionList');
+    if(!container) return;
+
+    var pool = SUGGESTIONS.higashiyama_afternoon;
+    var html = '';
+    for(var i=0;i<pool.length;i++){
+      var s = pool[i];
+      var rankClass = 'r'+(i+1);
+      var rankLabel = i+1;
+      html += '<div class="suggestion-card" data-rank="'+(i+1)+'">';
+      html += '<div class="suggestion-rank '+rankClass+'">'+rankLabel+'</div>';
+      html += '<div class="sug-header">';
+      html += '<div class="sug-photo"><img src="'+s.photoUrl+'" alt="'+s.name+'" onerror="this.style.display=\'none\'"></div>';
+      html += '<div class="sug-info">';
+      html += '<div class="sug-name">'+s.name+'</div>';
+      html += '<div class="sug-why">\u2728 '+s.whyThis+'</div>';
+      html += '<div class="sug-blurb">'+s.blurb+'</div>';
+      html += '<div class="sug-transit">&#128694; '+s.transitFromPrev.mins+' min walk &middot; '+s.durationMin+'min visit</div>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="sug-actions">';
+      html += '<button class="btn btn-primary btn-sm" onclick="acceptSuggestion('+i+')">Accept</button>';
+      html += '<button class="btn btn-secondary btn-sm" onclick="swapSuggestion('+i+')">See similar</button>';
+      html += '<button class="btn btn-ghost btn-sm" onclick="dismissSuggestion('+i+')">Dismiss</button>';
+      html += '</div>';
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }, 1200);
+}
+
+function makeStopFromSuggestion(sug, rank, prevStop){
+  var transitMins = 5;
+  var transitMode = 'walk';
+  if(prevStop){
+    updateTransit([prevStop, sug]);
+    transitMins = sug.transitFromPrev ? sug.transitFromPrev.mins : 5;
+    transitMode = sug.transitFromPrev ? sug.transitFromPrev.mode : 'walk';
+  }
+  return {
+    id: 's_ai_'+Date.now()+'_'+rank,
+    name: sug.name,
+    neighbourhood: sug.neighbourhood,
+    lat: sug.lat,
+    lng: sug.lng,
+    category: sug.category,
+    startTime: prevStop ? (parseInt(prevStop.startTime)+prevStop.durationMin+transitMins) : '14:00',
+    durationMin: sug.durationMin,
+    photoUrl: sug.photoUrl,
+    blurb: sug.blurb,
+    whyThis: sug.whyThis,
+    transitFromPrev: {mins: transitMins, mode: transitMode},
+    votes: 0,
+    comments: [],
+    status: 'planned'
+  };
+}
+
+function acceptSuggestion(idx){
+  var pool = SUGGESTIONS.higashiyama_afternoon;
+  var sug = pool[idx];
+  var day = appState.trip.days[appState.currentDay];
+  var prevStop = day.stops[day.stops.length - 1];
+  var newStop = makeStopFromSuggestion(sug, idx, prevStop);
+  day.stops.push(newStop);
+
+  // Remove suggestion from list
+  var cards = document.querySelectorAll('.suggestion-card');
+  if(cards[idx]) cards[idx].style.display = 'none';
+
+  renderDayTabs();
+  renderDayContent();
+  updateMap();
+  map.fitBounds(day.stops.map(function(s){return [s.lat,s.lng]}), {padding:[50,50], maxZoom:14});
+  showToast('\u2713 Added '+sug.name+' to your day');
+}
+
+function swapSuggestion(idx){
+  showToast('Showing similar options near this area...');
+  // Just re-trigger with slight variation
+  setTimeout(function(){
+    showToast('No similar options found \u2014 this is the best match for your route.');
+  }, 800);
+}
+
+function dismissSuggestion(idx){
+  var cards = document.querySelectorAll('.suggestion-card');
+  if(cards[idx]) cards[idx].style.display = 'none';
+  showToast('Dismissed. You can restart by reopening this slot.');
+}
+
+// ============================================================
+// GAP FILL
+// ============================================================
+function triggerGapFill(dayId){
+  showToast('Finding gaps...');
+
+  setTimeout(function(){
+    var pool = SUGGESTIONS.generic_gapfill;
+    var sug = pool[0];
+
+    // Find the day
+    for(var i=0;i<appState.trip.days.length;i++){
+      if(appState.trip.days[i].id === dayId){
+        var day = appState.trip.days[i];
+        var prevStop = day.stops[day.stops.length - 1];
+        var newStop = makeStopFromSuggestion(sug, 0, prevStop);
+        newStop.startTime = (prevStop ? parseInt(prevStop.startTime) + prevStop.durationMin + 10: '15:00');
+        day.stops.push(newStop);
+        renderDayTabs();
+        renderDayContent();
+        updateMap();
+        showToast('\u2713 Filled gap with '+sug.name);
+        return;
+      }
+    }
+  }, 900);
+}
+
+// ============================================================
+// RAIN / WEATHER
+// ============================================================
+function toggleRain(){
+  appState.rainy = !appState.rainy;
+  var day = appState.trip.days[appState.currentDay];
+  day.weather = appState.rainy ? 'rainy' : 'sunny';
+
+  var pill = document.getElementById('rainToggle');
+  var label = document.getElementById('rainLabel');
+  if(appState.rainy){
+    pill.classList.add('active');
+    label.textContent = 'Rainy';
+  } else {
+    pill.classList.remove('active');
+    label.textContent = 'Sunny';
+  }
+
+  renderDayContent();
+  renderDayTabs();
+
+  if(appState.rainy){
+    showToast('\u127783 Rain mode on \u2014 checking for indoor swap suggestions');
+  } else {
+    showToast('Back to sunny. Much better.');
+  }
+}
+
+function swapForRain(){
+  var pool = SUGGESTIONS.rainy_swap;
+  var sug = pool[0];
+  var day = appState.trip.days[appState.currentDay];
+
+  // Find first outdoor sight and swap
+  for(var i=0;i<day.stops.length;i++){
+    if(day.stops[i].category === 'sight'){
+      var prevStop = i > 0 ? day.stops[i-1] : null;
+      var newStop = makeStopFromSuggestion(sug, 0, prevStop || day.stops[0]);
+      day.stops[i] = newStop;
+      break;
+    }
+  }
+
+  renderDayTabs();
+  renderDayContent();
+  updateMap();
+  showToast('\u2713 Swapped to Kyoto National Museum \u2014 indoor, no rain gear needed');
+}
+
+// ============================================================
+// AIRPLANE MODE
+// ============================================================
+function toggleAirplane(){
+  appState.airplane = !appState.airplane;
+  var pill = document.getElementById('airplaneToggle');
+  var label = document.getElementById('airplaneLabel');
+  if(appState.airplane){
+    pill.classList.add('active');
+    label.textContent = 'Airplane \u2708 ON';
+    showToast('\u2708 Airplane mode \u2014 everything still works. That\u2019s the point.');
+  } else {
+    pill.classList.remove('active');
+    label.textContent = 'Airplane mode';
+    showToast('Back online. Nothing broke because it\u2019s offline-first.');
+  }
+}
+
+// ============================================================
+// OFFLINE
+// ============================================================
+function toggleOffline(){
+  showToast('This trip is fully cached \u2014 maps, routes, and details.');
+}
+
+// ============================================================
+// VOTE & COMMENT
+// ============================================================
+function voteStop(stopId){
+  var stop = getStop(stopId);
+  if(stop){
+    stop.votes++;
+    renderDayContent();
+    showToast('+1 vote for '+stop.name);
+  }
+}
+
+function commentStop(stopId){
+  var stop = getStop(stopId);
+  if(!stop) return;
+  // Toggle a pre-seeded comment
+  if(stop.comments && stop.comments.length > 0){
+    // Already has comments, add a canned one
+    stop.comments.push({user:'you', text:'Looks great \u2014 let\u2019s keep it!'});
+  } else {
+    stop.comments = [{user:'you', text:'Looks great \u2014 let\u2019s keep it!'}];
+  }
+  renderDayContent();
+  showToast('Comment added');
+}
+
+// ============================================================
+// SHARE MODAL
+// ============================================================
+function openShareModal(){
+  document.getElementById('shareModal').classList.add('open');
+}
+
+function closeShareModal(){
+  document.getElementById('shareModal').classList.remove('open');
+}
+
+function copyLink(){
+  var input = document.getElementById('shareLink');
+  input.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  showToast('Link copied: tripwheel.io/t/kyoto-5d');
+}
+
+// ============================================================
+// VIEWER MODE
+// ============================================================
+function toggleViewerMode(){
+  appState.viewerMode = !appState.viewerMode;
+  if(appState.viewerMode){
+    document.body.classList.add('viewer-mode');
+    closeShareModal();
+    showToast('Viewer mode \u2014 this is what your friends see when they open the link.');
+  } else {
+    document.body.classList.remove('viewer-mode');
+    showToast('Back to edit mode.');
+  }
+  renderDayTabs();
+  renderDayContent();
+  updateMap();
+}
+
+// ============================================================
+// DAY SELECTION
+// ============================================================
+function selectDay(idx){
+  appState.currentDay = idx;
+  aiFillTriggered = false;
+  // Reset rain toggle when switching days
+  var day = appState.trip.days[idx];
+  appState.rainy = day.weather === 'rainy';
+  var pill = document.getElementById('rainToggle');
+  var label = document.getElementById('rainLabel');
+  if(appState.rainy){
+    pill.classList.add('active');
+    label.textContent = 'Rainy';
+  } else {
+    pill.classList.remove('active');
+    label.textContent = 'Sunny';
+  }
+  renderDayTabs();
+  renderDayContent();
+  updateMap();
+}
+
+// ============================================================
+// CURSOR PRESENCE (scripted, once on load)
+// ============================================================
+function playPresenceAnimation(){
+  if(window._presencePlayed) return;
+  window._presencePlayed = true;
+
+  var mei = document.getElementById('cursorMei');
+  mei.style.opacity = '1';
+  mei.style.left = '60%';
+  mei.style.top = '40%';
+
+  // Move to map area
+  setTimeout(function(){
+    mei.style.left = '70%';
+    mei.style.top = '50%';
+  }, 800);
+
+  // Add a temporary pin on the map
+  setTimeout(function(){
+    var tempIcon = L.divIcon({
+      className: '',
+      html: '<div class="custom-pin" style="background:#f59e0b;opacity:0.5"><span>+</span></div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 28]
+    });
+    var tempMarker = L.marker([34.6500, 135.7700], {icon: tempIcon}).addTo(map);
+
+    // Show toast about presence
+    showToast('Mei just added a stop to Day 2 \u2014 multiplayer planning \u2728');
+
+    // Remove after 2s
+    setTimeout(function(){
+      map.removeLayer(tempMarker);
+      mei.style.opacity = '0';
+    }, 2500);
+  }, 1800);
+}
+
+// ============================================================
+// TRIP TITLE EDIT
+// ============================================================
+document.getElementById('tripTitle').addEventListener('click', function(){
+  if(appState.viewerMode) return;
+  var current = appState.trip.title;
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.style.cssText = 'font-size:14px;font-weight:600;color:var(--indigo);border:none;outline:none;background:transparent;width:250px';
+  this.replaceWith(input);
+  input.focus();
+  input.select();
+  input.addEventListener('blur', function(){
+    appState.trip.title = input.value || current;
+    var span = document.createElement('span');
+    span.className = 'trip-title';
+    span.id = 'tripTitle';
+    span.textContent = appState.trip.title;
+    span.addEventListener('click', arguments.callee);
+    input.replaceWith(span);
+    showToast('Trip title updated');
+  });
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') input.blur();
+  });
+});
+
+// ============================================================
+// MODAL CLOSE ON OVERLAY CLICK
+// ============================================================
+document.getElementById('shareModal').addEventListener('click', function(e){
+  if(e.target === this) closeShareModal();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', function(){
+  renderDayTabs();
+  renderDayContent();
+  initMap();
+
+  // Play presence animation after 1.5s
+  setTimeout(playPresenceAnimation, 1500);
+});
+
+</script>
+</body>
+</html>
