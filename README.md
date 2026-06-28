@@ -39,7 +39,9 @@ tripwheel-design/
 
 Static site — no build step. Connect this repo in Vercel; it serves `index.html` at the root.
 
-**Password gate:** set env var `DVL_PASSWORD` in Vercel (Project → Settings → Environment Variables). Unauthenticated visitors are redirected to `/auth.html`. Cookie lasts 7 days. Leave unset locally to skip auth.
+**Password gate:** set env var `DVL_PASSWORD` in Vercel (Project → Settings → Environment Variables). Unauthenticated visitors are redirected to `/auth`. Cookie lasts 7 days. Leave unset locally to skip auth.
+
+**AI / handoff:** see [`docs/HANDOFF.md`](docs/HANDOFF.md) for accessing and updating the version log from any platform.
 
 ```bash
 # Optional local preview (with auth)
@@ -52,7 +54,10 @@ npx serve .
 
 ## Adding a new version
 
+See **[`docs/HANDOFF.md`](docs/HANDOFF.md)** for the full checklist, entry template, agent prompts, and deploy steps.
+
 1. Ship prototype HTML to `prototypes/`
 2. Capture screenshots → `assets/screenshots/`
 3. Update spec in `docs/specs/` if needed
 4. Add entry at top of `index.html`
+5. `git push origin main` (auto-deploys)

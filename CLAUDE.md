@@ -26,6 +26,7 @@ Product design workspace for Tripwheel. Tokens, prototypes, specs, and the versi
 | Tool connections | `.mcp.json` |
 | Conventions | `.claude/rules/` |
 | Workflows | `.claude/skills/` · `.claude/commands/` |
+| **DVL handoff** | `docs/HANDOFF.md` — access + update version log from any AI |
 
 ## Stack
 - Design tool: Figma
