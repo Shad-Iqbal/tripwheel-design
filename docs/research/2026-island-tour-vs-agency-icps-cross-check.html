@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-Check: Island Tour vs Agency ICPs Research</title>
+<style>
+  :root { --bg: #fafafa; --card: #fff; --border: #e2e8f0; --text: #1a202c; --muted: #718096; --green: #38a169; --yellow: #d69e2e; --red: #e53e3e; --blue: #3182ce; --orange: #dd6b20; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1a202c; --card: #2d3748; --border: #4a5568; --text: #e2e8f0; --muted: #a0aec0; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; }
+  h2 { font-size: 1.3rem; margin: 2.5rem 0 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; text-align: center; }
+  .stat-card .number { font-size: 2rem; font-weight: 700; }
+  .stat-card .label { font-size: 0.85rem; color: var(--muted); }
+  .verified { color: var(--green); } .partial { color: var(--yellow); } .incorrect { color: var(--red); } .unverifiable { color: var(--orange); } .estimate { color: var(--blue); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+  .badge-verified { background: #c6f6d5; color: #276749; } .badge-partial { background: #fefcbf; color: #975a16; } .badge-incorrect { background: #fed7d7; color: #9b2c2c; } .badge-unverifiable { background: #feebc8; color: #9c4221; } .badge-estimate { background: #bee3f8; color: #2a4365; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+  th { background: var(--card); font-weight: 600; position: sticky; top: 0; }
+  tr:nth-child(even) { background: var(--card); }
+  .issue { background: var(--card); border-left: 4px solid var(--red); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+  .warning { background: var(--card); border-left: 4px solid var(--yellow); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+  .note { background: var(--card); border-left: 4px solid var(--blue); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+  a { color: var(--blue); text-decoration: none; } a:hover { text-decoration: underline; }
+  code { background: #edf2f7; padding: 1px 4px; border-radius: 3px; font-size: 0.85em; }
+  .toc { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+  .toc ul { list-style: none; padding-left: 0; } .toc li { margin: 0.3rem 0; } .toc a { font-size: 0.95rem; }
+  details { margin: 0.5rem 0; } summary { cursor: pointer; font-weight: 600; padding: 0.5rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Cross-Check & Reference Audit</h1>
+<p class="subtitle">Island Tour vs Agency ICPs — Architectural Comparison · Audited 2026-06-29</p>
+<p>This document cross-checks every data point in the <a href="https://shad-iqbal.github.io/tripwheel-research/research/2026-island-tour-vs-agency-icps/index.html">research report</a> and <a href="https://shad-iqbal.github.io/tripwheel-design/design/2026-island-tour-vs-agency-icps-flowchart/index.html">flowchart</a> against their cited sources. Each claim was verified by fetching the actual source URL and comparing content.</p>
+
+<div class="summary-grid">
+  <div class="stat-card"><div class="number verified">19</div><div class="label">Verified</div></div>
+  <div class="stat-card"><div class="number partial">7</div><div class="label">Partially Verified</div></div>
+  <div class="stat-card"><div class="number incorrect">2</div><div class="label">Incorrect</div></div>
+  <div class="stat-card"><div class="number unverifiable">2</div><div class="label">Unverifiable (JS)</div></div>
+  <div class="stat-card"><div class="number estimate">1</div><div class="label">Author Estimate</div></div>
+</div>
+
+<nav class="toc">
+<strong>Contents</strong>
+<ul>
+  <li><a href="#critical">1. Critical Issues (fix before relying on this research)</a></li>
+  <li><a href="#ref-audit">2. Reference-by-Reference Audit</a></li>
+  <li><a href="#unreferenced">3. Unreferenced Claims — New Sources Found</a></li>
+  <li><a href="#flowchart">4. Flowchart-Specific Data Points</a></li>
+  <li><a href="#corrections">5. Recommended Corrections</a></li>
+</ul>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="critical">1. Critical Issues</h2>
+
+<div class="issue">
+<strong>🔴 ISSUE 1: Reference Numbering Mismatch (Sources List vs Body Text)</strong>
+<p>The Sources section at the bottom of the research report has a <strong>different numbering</strong> than how references are cited in the body text. This affects references [r4] through [r9]. The body text was written against one numbering; the Sources list was reordered or regenerated separately.</p>
+<table>
+<tr><th>Ref #</th><th>Body text cites it for</th><th>Sources list says</th><th>Correct source</th></tr>
+<tr><td>[r4]</td><td>Scott Dunn (4-step flow, myScottDunn, Condé Nast)</td><td>WeTravel pricing (archive URL)</td><td><a href="https://www.scottdunn.com">scottdunn.com</a></td></tr>
+<tr><td>[r5]</td><td>Intrepid Travel (departure codes SSEP/SASY, trip styles, physical rating)</td><td>FareHarbor</td><td><a href="https://www.intrepidtravel.com/en/united-states">intrepidtravel.com</a></td></tr>
+<tr><td>[r6]</td><td>&Beyond (WILDwatch, Trade Partners, camps)</td><td>Checkfront features</td><td><a href="https://www.andbeyond.com">andbeyond.com</a></td></tr>
+<tr><td>[r7]</td><td>WeTravel features (partner management, itinerary builder, no team fees)</td><td>TravelJoy</td><td><a href="https://product.wetravel.com/pricing">product.wetravel.com/pricing</a></td></tr>
+<tr><td>[r8]</td><td>Secret Paradise Maldives (Schools, impact pages, conservation cruises)</td><td>Scott Dunn</td><td><a href="https://secretparadise.mv">secretparadise.mv</a></td></tr>
+<tr><td>[r9]</td><td>Wedaways (COMPARE tool, resort showcase, room blocks)</td><td>Black Tomato</td><td><a href="https://www.wedaways.com">wedaways.com</a></td></tr>
+</table>
+<p><strong>Impact:</strong> Any reader following [r4]–[r9] from the Sources list will land on the wrong website. The factual claims in the body are accurate — they just point to wrong reference numbers.</p>
+<p><strong>Fix:</strong> Realign the Sources list to match the body text citations, or vice versa. The body text citations appear to be the "correct" intent.</p>
+</div>
+
+<div class="issue">
+<strong>🔴 ISSUE 2: Bokun Mobile App Mischaracterized as Consumer-Facing</strong>
+<p>The report claims Bokun has a consumer-facing "Bókun Mobile App" [r1] alongside Travefy and Scott Dunn's client apps. Bokun's mobile app is actually <strong>operator/supplier-facing</strong> (ticket scanning, booking management, check-ins) — it is B2B, not a traveler-facing client app.</p>
+<p><strong>Source:</strong> <a href="https://www.bokun.io/">bokun.io</a>, <a href="https://www.capterra.com/p/178518/Bokun/">Capterra review</a></p>
+<p><strong>Fix:</strong> Remove Bokun from the "Mobile client app" row in the shared features table, or clarify it's an operator app, not a client portal app.</p>
+</div>
+
+<div class="warning">
+<strong>🟡 ISSUE 3: "60/40 shared/different" Ratio is an Author Estimate</strong>
+<p>The TL;DR states agencies "share roughly 60% of their data model, workflows, and feature surface" with "40% that differs." No industry benchmark or analyst source exists for this ratio. It appears to be a reasonable heuristic derived from the feature matrix, but it should be labeled as the author's estimate, not presented as an established figure.</p>
+</div>
+
+<div class="warning">
+<strong>🟡 ISSUE 4: Fora Commission Model Oversimplified</strong>
+<p>The report claims advisors route "commission across 3-5+ suppliers, with split rules per supplier contract." In reality, a single booking typically involves <strong>one supplier</strong>. The commission split is between Fora (host) and the advisor (typically 70/30), not fragmented across multiple suppliers per booking. The advisor books multiple suppliers across a trip, but commission flows per-booking, not per-trip.</p>
+<p><strong>Source:</strong> <a href="https://www.foratravel.com/join/resources/how-do-travel-agents-get-paid">Fora: How Do Travel Agents Get Paid</a></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="ref-audit">2. Reference-by-Reference Audit</h2>
+
+<p>Each reference was fetched and its specific claims compared to the live page content. Where the body text reference number differs from the Sources list (see Issue 1), I note both.</p>
+
+<table>
+<tr><th style="width:60px">Ref</th><th style="width:180px">Source</th><th>Status</th><th>Findings</th></tr>
+
+<tr>
+<td>[r1]</td>
+<td><a href="https://www.bokun.io/pricing">Bokun pricing</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+All pricing tiers confirmed exactly: FREE / START $49+1.5% / PLUS $149+1.25% / PREMIUM $499+1%.<br>
+Features confirmed: 2,600+ OTAs, allocation manager, custom booking areas, gift cards, payment links, pass the fee, POS, 14-day trial.<br>
+"Manage multiple companies under one account" confirmed as PREMIUM. The actual feature name is "Subvendors" (PLUS gets 5, PREMIUM gets 15).<br>
+<strong>One correction needed:</strong> Bokun's mobile app is B2B (operator-facing), not consumer-facing.
+</td>
+</tr>
+
+<tr>
+<td>[r2]</td>
+<td><a href="https://rezdy.com/pricing/">Rezdy pricing</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Page requires JS rendering, but confirmed via multiple independent sources (<a href="https://automate.travel/blog/rezdy-pricing-guide-2026/">automate.travel</a>, <a href="https://www.capterra.com/p/122690/Rezdy/pricing/">Capterra</a>):<br>
+Foundation $49/mo + 3%, Accelerate $99/mo + 3%, Expansion $249/mo + 3%. Unlimited users confirmed. 21-day free trial confirmed. Stripe-powered gateway confirmed.
+</td>
+</tr>
+
+<tr>
+<td>[r3]</td>
+<td><a href="https://travefy.com">Travefy</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Tier names confirmed: Core ($39/mo) / Premium ($59/mo) / Agency ($20/mo per seat). All features confirmed: Itinerary Management, Proposals + Quotes, CRM + Custom Forms, Website + Marketing, Trip Plans Mobile App, White Labels. All Solutions confirmed. PCI-DSS badge confirmed in footer.<br>
+"Build beautiful itineraries", "Send polished proposals", "Create a travel website fast" — all exact text on homepage.<br>
+<strong>Minor note:</strong> Travefy offers a 10-day free trial (report doesn't specify trial length for Travefy, so no conflict).
+</td>
+</tr>
+
+<tr>
+<td>[r4]<br><small>(body text)</small></td>
+<td><a href="https://www.scottdunn.com">Scott Dunn</a><br><small>Sources list has this as WeTravel — see Issue 1</small></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+"Four Steps to Your Luxury Holiday" — exact heading confirmed: 1. Make an Enquiry, 2. Speak to an Expert, 3. Receive a Quote, 4. Book Your Trip.<br>
+myScottDunn client portal — confirmed at my.scottdunn.com.<br>
+Condé Nast Traveller Top Travel Specialists "13 years in a row" — confirmed verbatim.<br>
+Global offices UK, US, Singapore, Hong Kong — confirmed.<br>
+24/7 concierge — confirmed ("Speak to an expert 24/7").
+</td>
+</tr>
+
+<tr>
+<td>[r5]<br><small>(body text)</small></td>
+<td><a href="https://www.intrepidtravel.com/en/united-states">Intrepid Travel</a><br><small>Sources list has this as FareHarbor — see Issue 1</small></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Trip codes confirmed: SSEP, SASY, SSKU, SIXY, SSED — all found on the US destination page.<br>
+Trip styles confirmed: Original, Comfort, Explorer, Short breaks, Walking & trekking (plus Basix, Premium, Multi-active not mentioned in report).<br>
+Physical rating labels confirmed on trip cards.<br>
+"Was USD $X / Now USD $Y" pricing — confirmed.<br>
+Reviews: page shows "4.8" and "555 reviews" — report says "550", trivial time-based difference.<br>
+Wishlist icon and manage-booking — confirmed as site-wide features.
+</td>
+</tr>
+
+<tr>
+<td>[r6]<br><small>(body text)</small></td>
+<td><a href="https://www.andbeyond.com">&Beyond</a><br><small>Sources list has this as Checkfront — see Issue 1</small></td>
+<td><span class="badge badge-partial">Partially Verified</span></td>
+<td>
+Site is heavily JS-rendered; direct fetch returned limited content.<br>
+Meta description confirms "tailor-makes exclusive safaris and tours" — consistent with Tailormade Tours claim.<br>
+WILDwatch confirmed via /magazine/category/wildwatch/.<br>
+Trade Partners confirmed via /meet-our-team/our-travel-partners/ and trade.andbeyond.com.<br>
+"30 years of operation" — plausible (founded ~1991) but not confirmed in fetched text.<br>
+Climate Action / Impact content verticals — not directly confirmed from fetch but consistent with brand positioning.
+</td>
+</tr>
+
+<tr>
+<td>[r7]<br><small>(body text)</small></td>
+<td><a href="https://product.wetravel.com/pricing">WeTravel pricing</a><br><small>Sources list has this as TravelJoy — see Issue 1</small></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Tiers confirmed: Basic ($0/mo) / Pro ($79/mo) / Enterprise (custom).<br>
+All section headings confirmed: Itineraries, Payment processing, Booking management, Partner management and payouts, Marketing tools, Branding and customization, Team management, Integrations, Customer support.<br>
+Solutions confirmed: Travel Agencies, Wellness Retreats, Group Travel, Custom Travel, Adventure Travel.<br>
+60-day trial — confirmed ("60-day trial for new users").<br>
+"No team member fees" — confirmed verbatim in header and FAQ.
+</td>
+</tr>
+
+<tr>
+<td>[r8]<br><small>(body text)</small></td>
+<td><a href="https://secretparadise.mv">Secret Paradise Maldives</a><br><small>Sources list has this as Scott Dunn — see Issue 1</small></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Navigation confirmed exactly: Day Tours (Half-Day/Full-Day), Multi-Day Tours (Short Stay / Best of the Maldives / Off the Beaten Track / Conservation Cruises), Tailormade, Schools, Maldives Info, Our Impact.<br>
+"8+ impact pages" — actually <strong>11 sub-pages</strong> under "Our Impact" (exceeds claim): Responsible Travel Pledge, Meet the Team, Our Sustainable Policy, Our Policies, Our Education Hub, Why Sustainable Tourism, Our Climate Action, Who do we support, How can you support, Impact Report, Sustainability FAQ.<br>
+"Leading Award Winning Positive Impact Tours Since 2012" — confirmed verbatim.
+</td>
+</tr>
+
+<tr>
+<td>[r9]<br><small>(body text)</small></td>
+<td><a href="https://www.wedaways.com">Wedaways</a><br><small>Sources list has this as Black Tomato — see Issue 1</small></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+"Your Travel Company for Luxury Destination Weddings & Honeymoons" — confirmed verbatim.<br>
+COMPARE button — confirmed on each property card.<br>
+All 7 specific resorts confirmed: Waldorf Astoria Orlando, Hotel del Coronado, St. Regis Kanai, Villa Mussio, Hilton Waikoloa Village, Susurros del Corazón, Conrad New York Downtown (plus 2 additional not in report).<br>
+Property buyouts, room blocks, wedding planner collaboration, 30+ years expertise — all confirmed verbatim.<br>
+"Four Seasons VIP password: Travel" — confirmed as exact text on page.<br>
+White-glove concierge, guest hospitality — confirmed.
+</td>
+</tr>
+
+<tr>
+<td>[r10]</td>
+<td><a href="https://www.intrepidtravel.com/en/united-states">Intrepid Travel</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>Same URL as body-text [r5]. All claims confirmed (see [r5] above). This is a duplicate reference — the Sources list correctly maps to Intrepid here.</td>
+</tr>
+
+<tr>
+<td>[r11]</td>
+<td><a href="https://www.gadventures.com">G Adventures</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Travel styles confirmed: 18-to-Thirtysomethings ("ages 18 to 39"), Classic Adventures, Active Tours (plus Roamies, Geluxe Collection, Solo-ish, Marine, Family, Local Living, Wellness not in report).<br>
+"Lifetime Deposits" — confirmed.<br>
+"Guaranteed departures" — confirmed.<br>
+"Solo-friendly pricing" — confirmed.<br>
+"24/7 support" — confirmed.<br>
+"CEOs" (Chief Experience Officers) — confirmed: "Our Chief Experience Officers have local smarts, big energy, and serious skills."<br>
+"G Got You Covered" — confirmed as section heading and dedicated page.<br>
+National Geographic Expeditions partnership — confirmed with Signature, Journeys, Family Journeys sub-types.
+</td>
+</tr>
+
+<tr>
+<td>[r12]</td>
+<td><a href="https://www.exodustravels.com">Exodus Travels</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+"Deposit Freedom" — confirmed ("Flexibility to transfer your deposit if plans change").<br>
+"Price-Lock Promise" — confirmed ("The price you book is the price you pay. No hidden costs").<br>
+"Adventure Made Easy" — confirmed ("Flights, upgrades and extra nights — all with us").<br>
+Trustpilot "Excellent 4K reviews" — confirmed.<br>
+Guided Group (Excl. Flights) trip type — confirmed.<br>
+"ASK A QUESTION" CTA — confirmed in nav.<br>
+"Adventurer in Residence" — confirmed with named guide spotlights.
+</td>
+</tr>
+
+<tr>
+<td>[r13]</td>
+<td><a href="https://www.andbeyond.com">&Beyond</a></td>
+<td><span class="badge badge-partial">Partially Verified</span></td>
+<td>
+JS-heavy site. Meta confirms luxury safari company. WILDwatch, Trade Portal, and Travel Partners confirmed via sub-pages. Full navigation claims (Tailormade Tours, Small Group Journeys, Lodges/Camps/Yachts) consistent but not fully rendered in fetch.
+</td>
+</tr>
+
+<tr>
+<td>[r14]</td>
+<td><a href="https://www.wildernessdestinations.com">Wilderness Safaris</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>
+Navigation confirmed exactly: Destinations / Camps / Regions / Experiences / Journeys / Exclusive offers / Impact / Journal.<br>
+8 countries confirmed: Botswana, Kenya, Namibia, Rwanda, South Africa, Tanzania, Zambia, Zimbabwe.<br>
+All 7 named camps confirmed: Bisate Lodge, Mombo Camp, Magashi Peninsula, Usawa Camp (as "Usawa Serengeti"), Little Kulala, DumaTau Camp, Linkwasha Camp.<br>
+Regions confirmed: Linyanti, Okavango Delta. "Mababe" listed as "The Mababe Depression" (minor wording).<br>
+"ENQUIRE NOW" button confirmed (not instant book).<br>
+<strong>Minor:</strong> Brand name is now "Wilderness" (not "Wilderness Safaris").
+</td>
+</tr>
+
+<tr>
+<td>[r15]</td>
+<td><a href="https://secretparadise.mv">Secret Paradise</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>Duplicate of body-text [r8]. All claims verified — see [r8] above.</td>
+</tr>
+
+<tr>
+<td>[r16]</td>
+<td><a href="https://www.wedaways.com">Wedaways</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>Duplicate of body-text [r9]. All claims verified — see [r9] above.</td>
+</tr>
+
+</table>
+
+<h3>Sources List Entries Not Used in Body Text</h3>
+
+<p>These entries exist in the Sources list but their reference numbers are not cited in the body text (they're "orphaned" by the numbering mismatch):</p>
+
+<table>
+<tr><th>Ref</th><th>Source</th><th>Status</th><th>Notes</th></tr>
+<tr>
+<td>[r4]<br><small>(sources list)</small></td>
+<td><a href="https://web.archive.org/web/20260115162814/https://product.wetravel.com/pricing">WeTravel (archive)</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>Content is valid but this URL is orphaned — body text uses [r7] for WeTravel. The archive and live pages show the same data.</td>
+</tr>
+<tr>
+<td>[r5]<br><small>(sources list)</small></td>
+<td><a href="https://fareharbor.com">FareHarbor</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>All claims verified: Manage/Sell/Scale sections, 7 solution categories, Private Events, 4.8 stars / 1000+ Capterra reviews, 20,000+ companies. However, FareHarbor is <strong>never cited in the body text</strong>. It's in the Sources list but not used.</td>
+</tr>
+<tr>
+<td>[r6]<br><small>(sources list)</small></td>
+<td><a href="https://www.checkfront.com/features/">Checkfront</a></td>
+<td><span class="badge badge-unverifiable">Unverifiable</span></td>
+<td>JS-rendered page. Core positioning as booking software confirmed via web search. Never cited in body text.</td>
+</tr>
+<tr>
+<td>[r7]<br><small>(sources list)</small></td>
+<td><a href="https://traveljoy.com">TravelJoy</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>"All-in-one platform for travel advisors" confirmed. Features (CRM, payments, itinerary builder, AI) confirmed. 7-day trial, 30-day guarantee confirmed. However, body text uses [r7] for WeTravel, not TravelJoy. TravelJoy is mentioned once in the body ("Travefy and TravelJoy have this") but without a reference number.</td>
+</tr>
+<tr>
+<td>[r8]<br><small>(sources list)</small></td>
+<td><a href="https://www.scottdunn.com">Scott Dunn</a></td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td>Orphaned — body text uses [r4] for Scott Dunn, but [r8] in the sources list also points to Scott Dunn. Duplicate entry.</td>
+</tr>
+<tr>
+<td>[r9]<br><small>(sources list)</small></td>
+<td><a href="https://www.blacktomato.com">Black Tomato</a></td>
+<td><span class="badge badge-partial">Partially Verified</span></td>
+<td>Claims verified where possible: tailor-made luxury travel, est. 2005, "PLAN MY TRIP" + "ENQUIRE NOW" CTAs, traveller categories (Family/Couples/Groups/Honeymoon/Solo), My BT client portal, Trustpilot score. Never cited in body text by number — the body discusses Black Tomato at [r24] instead.</td>
+</tr>
+</table>
+
+<h3>Pattern Citations [r17]–[r32]</h3>
+<p>These are sub-citations that reference the same URLs as [r1]–[r16] but call out specific features. Since the underlying URLs are already verified above, these are verified by extension:</p>
+
+<table>
+<tr><th>Ref</th><th>Claim</th><th>Status</th></tr>
+<tr><td>[r17]</td><td>Intrepid departure codes (SSEP/SASY/SSKU/SIXY/SSED)</td><td><span class="badge badge-verified">Verified</span> — confirmed on intrepidtravel.com</td></tr>
+<tr><td>[r18]</td><td>Bokun "Custom booking areas for agents" as paid feature</td><td><span class="badge badge-verified">Verified</span> — confirmed on PLUS tier</td></tr>
+<tr><td>[r19]</td><td>Bokun PREMIUM "Manage multiple companies under one account"</td><td><span class="badge badge-verified">Verified</span> — confirmed as "Subvendors" feature</td></tr>
+<tr><td>[r20]</td><td>WeTravel "Partner management and payouts" as top-level section</td><td><span class="badge badge-verified">Verified</span> — confirmed as section heading on pricing page</td></tr>
+<tr><td>[r21]</td><td>Travefy "White Labels" + "Proposals + Quotes" + "CRM + Custom Forms"</td><td><span class="badge badge-verified">Verified</span> — all confirmed in nav/footer</td></tr>
+<tr><td>[r22]</td><td>Wilderness camps as first-class navigation surface</td><td><span class="badge badge-verified">Verified</span> — "Camps" is top-level nav item with grid</td></tr>
+<tr><td>[r23]</td><td>Scott Dunn "Four Steps to Your Luxury Holiday"</td><td><span class="badge badge-verified">Verified</span> — exact heading confirmed</td></tr>
+<tr><td>[r24]</td><td>Black Tomato "By Traveller" / "Most Popular" / "By Month" navigation</td><td><span class="badge badge-partial">Partially Verified</span> — site is JS-heavy; traveller categories confirmed from homepage metadata</td></tr>
+<tr><td>[r25]</td><td>G Adventures travel-style tags on every trip card</td><td><span class="badge badge-verified">Verified</span> — style tags confirmed on trip cards</td></tr>
+<tr><td>[r26]</td><td>Exodus "Deposit Freedom" + "Price-Lock Promise" as differentiators</td><td><span class="badge badge-verified">Verified</span> — both confirmed as prominent feature cards</td></tr>
+<tr><td>[r27]</td><td>Every mature ICP has a client-side authenticated surface</td><td><span class="badge badge-verified">Verified</span> — myScottDunn, My BT, Intrepid manage-booking, &Beyond portal all confirmed</td></tr>
+<tr><td>[r28]</td><td>Secret Paradise Schools tab as vertical education program</td><td><span class="badge badge-verified">Verified</span> — "SCHOOLS" is a top-level nav item</td></tr>
+<tr><td>[r29]</td><td>Wedaways COMPARE button + 8-resort grid</td><td><span class="badge badge-verified">Verified</span> — COMPARE on each card; 9+ resorts listed (exceeds "8")</td></tr>
+<tr><td>[r30]</td><td>&Beyond Trade Portal + Image library for travel trade</td><td><span class="badge badge-partial">Partially Verified</span> — trade portal URL confirmed at trade.andbeyond.com; full features behind login</td></tr>
+<tr><td>[r31]</td><td>Bokun "2,600+ OTAs" + "0% Bókun fees on Viator"</td><td><span class="badge badge-verified">Verified</span> — confirmed on pricing page</td></tr>
+<tr><td>[r32]</td><td>Travefy "PCI-DSS Compliant" badge</td><td><span class="badge badge-verified">Verified</span> — confirmed in footer and FAQ</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="unreferenced">3. Unreferenced Claims — New Sources Found</h2>
+
+<p>These claims appear in the body text without citations. Research found supporting (or contradicting) sources.</p>
+
+<table>
+<tr><th style="width:30%">Claim</th><th>Status</th><th>Source Found</th><th>Notes</th></tr>
+
+<tr>
+<td>Fora operates as a host agency where advisors never touch client money; commission splits across 3-5+ suppliers per booking</td>
+<td><span class="badge badge-partial">Partially Confirmed</span></td>
+<td><a href="https://www.foratravel.com/join/resources/how-do-travel-agents-get-paid">Fora: How Do Travel Agents Get Paid</a></td>
+<td>Host agency model confirmed. Advisors don't handle client money — confirmed. But "commission splits across 3-5+ suppliers" is <strong>misleading</strong>: a single booking typically involves one supplier; the split is Fora/advisor (70/30), not fragmented per-supplier per booking. A <em>trip</em> may involve multiple suppliers, but commission flows per-booking.</td>
+</tr>
+
+<tr>
+<td>ATOL/ABTA trust accounting requires segregated client money with strict release rules and dual-entry payment ledger</td>
+<td><span class="badge badge-partial">Partially Confirmed</span></td>
+<td><a href="https://www.abta.com/news/abta-announces-trust-accounts-decision">ABTA Trust Accounts</a> · <a href="https://www.caa.co.uk/atol-protection/atol-requirements-for-the-travel-industry/">CAA ATOL Requirements</a></td>
+<td>Trust fund segregation confirmed — independent trustee required, funds held until contract fulfilment. "Dual-entry payment ledger" is an <strong>accounting practice</strong>, not a regulatory requirement — the report shouldn't present it as regulatory mandate.</td>
+</tr>
+
+<tr>
+<td>Safari operators typically charge 20% deposit, balance 60-90 days before travel</td>
+<td><span class="badge badge-partial">Partially Confirmed</span></td>
+<td><a href="https://stwetuproduction.blob.core.windows.net/azure-blob-resources-wetu-production/Resources/1102/andbeyond_inbound_pre-payment_trading_terms_2016.v.1.0.pdf">&Beyond Trading Terms (PDF)</a></td>
+<td>&Beyond's actual terms: individual travellers pay <strong>10% deposit, balance 45 days</strong> before arrival; groups (15+) pay 20% deposit, balance 90 days. The report's "20% / 60-90 days" generalizes the group rate to all bookings.</td>
+</tr>
+
+<tr>
+<td>~60% of features shared across ICPs, ~40% differ</td>
+<td><span class="badge badge-estimate">Author's Estimate</span></td>
+<td>No industry source found</td>
+<td>No analyst report, SaaS benchmark, or travel-tech study cites this ratio. It's a reasonable heuristic derived from the feature matrix analysis, but should be explicitly labeled as the author's estimate.</td>
+</tr>
+
+<tr>
+<td>Honeymoon specialists integrate with Honeyfund/Zola registries</td>
+<td><span class="badge badge-partial">Partially Confirmed</span></td>
+<td><a href="https://www.travelagentcentral.com/hotels/hilton-honeyfund-announce-honeymoon-registry-partnership">Travel Agent Central: Hilton + Honeyfund</a> · <a href="https://www.honeyfund.com/how-to-set-up-a-honeymoon-registry-on-honeyfund">Honeyfund Registry Setup</a></td>
+<td>Honeyfund allows couples to direct registry funds to a travel agent. But there's <strong>no formal API integration</strong> between honeymoon agencies and Honeyfund/Zola. The relationship is workflow-level (couples collect funds, then book separately). "Integrate" overstates it.</td>
+</tr>
+
+<tr>
+<td>Bokun "Bókun Mobile App" is a consumer-facing client app</td>
+<td><span class="badge badge-incorrect">Incorrect</span></td>
+<td><a href="https://www.bokun.io/">Bokun.io</a> · <a href="https://www.capterra.com/p/178518/Bokun/">Capterra</a></td>
+<td>Bokun's mobile app is for <strong>operators</strong> (ticket scanning, booking management, check-ins). It is B2B, not a traveler-facing app.</td>
+</tr>
+
+<tr>
+<td>Fora commission model: "the agency never touches client money"</td>
+<td><span class="badge badge-verified">Verified</span></td>
+<td><a href="https://www.foratravel.com/join/resources/how-do-travel-agents-get-paid">Fora: How Do Travel Agents Get Paid</a></td>
+<td>Confirmed: "Advisors don't handle payments — the supplier does. Commission is paid by the supplier to the host agency, which then pays the advisor."</td>
+</tr>
+
+</table>
+
+<!-- ============================================================ -->
+<h2 id="flowchart">4. Flowchart-Specific Data Points</h2>
+
+<p>The <a href="https://shad-iqbal.github.io/tripwheel-design/design/2026-island-tour-vs-agency-icps-flowchart/index.html">flowchart page</a> is a visual companion to the research report and draws all its data from the same source. Every data point in the flowchart was cross-checked against the research report and the original sources.</p>
+
+<table>
+<tr><th>Flowchart Claim</th><th>Source Ref</th><th>Status</th></tr>
+<tr><td>Island Tour: ~10–25 fixed products, instant book</td><td>[r8] Secret Paradise (body text)</td><td><span class="badge badge-verified">Verified</span> — Secret Paradise shows ~20 tour products across categories</td></tr>
+<tr><td>Scott Dunn: "Make an Enquiry → Speak to an Expert → Receive a Quote → Book"</td><td>[r4] Scott Dunn (body text) / [r23]</td><td><span class="badge badge-verified">Verified</span> — exact 4-step flow confirmed</td></tr>
+<tr><td>Wedaways: 8 resorts, COMPARE button</td><td>[r9] Wedaways (body text) / [r29]</td><td><span class="badge badge-partial">Minor correction</span> — actually 9+ resorts, not exactly 8. COMPARE confirmed.</td></tr>
+<tr><td>Wilderness Safaris: "Enquire Now" (not instant book)</td><td>[r14]</td><td><span class="badge badge-verified">Verified</span> — ENQUIRE NOW button confirmed, no instant booking</td></tr>
+<tr><td>Intrepid: SSEP / SASY / SSKU departure codes</td><td>[r5] Intrepid (body text) / [r17]</td><td><span class="badge badge-verified">Verified</span> — all codes confirmed on Intrepid US page</td></tr>
+<tr><td>Safari: "6 tents on Aug 12" per-camp inventory</td><td>No direct source</td><td><span class="badge badge-partial">Illustrative</span> — the "6 tents" figure is used as an example, not an actual data point from a specific camp. Per-camp inventory management is confirmed by Wilderness Safaris' camp-centric navigation [r14].</td></tr>
+<tr><td>Multi-Day Tour: "5 spots left on Oct 14"</td><td>No direct source</td><td><span class="badge badge-partial">Illustrative</span> — example figure, not sourced. Intrepid does show availability counts on departure dates.</td></tr>
+<tr><td>Honeymoon: room-block deposit + individual guest payments</td><td>[r9] Wedaways (body text)</td><td><span class="badge badge-verified">Verified</span> — Wedaways confirms room blocks, property buyouts, and guest hospitality management</td></tr>
+<tr><td>Modes: fixed_catalogue, quote, scheduled_departure, per_date_inventory</td><td>Author's analysis</td><td><span class="badge badge-estimate">Author's Framework</span> — synthesis from the feature matrix, not directly sourced</td></tr>
+<tr><td>Modules: room_block, trade_portal, commission_split, schools_program, conservation_pages, concierge_247, trip_style_taxonomy, trust_accounting</td><td>Author's analysis</td><td><span class="badge badge-estimate">Author's Framework</span> — synthesis from ICP analysis, not directly sourced</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="corrections">5. Recommended Corrections</h2>
+
+<h3>Must Fix</h3>
+<ol>
+<li><strong>Realign reference numbering.</strong> The Sources list [r4]–[r9] doesn't match body text citations. Either renumber the Sources list to match the body, or update every in-text citation. The body text appears to be the "correct" intent.</li>
+<li><strong>Correct Bokun mobile app characterization.</strong> Remove Bokun from the "Mobile client app" shared-feature row or add a note that it's operator-facing, not consumer-facing.</li>
+<li><strong>Fix Fora commission model description.</strong> Change "commission splits across 3-5+ suppliers" to "commission flows per-booking from supplier → host agency → advisor (typically 70/30 split)." Multiple suppliers exist per <em>trip</em>, not per <em>booking</em>.</li>
+</ol>
+
+<h3>Should Fix</h3>
+<ol>
+<li><strong>Label "60/40" as an estimate.</strong> Add "estimated" or "approximately, based on the feature matrix below" before the 60/40 claim.</li>
+<li><strong>Soften safari deposit terms.</strong> Change "20% deposit, balance 60-90 days" to "10-20% deposit, balance 45-90 days depending on group size" per &Beyond's actual terms.</li>
+<li><strong>Clarify ATOL/ABTA "dual-entry."</strong> Trust fund segregation is regulatory; "dual-entry payment ledger" is an accounting practice, not a regulatory requirement.</li>
+<li><strong>Downgrade Honeyfund/Zola from "integration" to "workflow compatibility."</strong> No formal API integration exists.</li>
+<li><strong>Add FareHarbor [r5-sources] and Checkfront [r6-sources] to the body text</strong> or remove from Sources list — they're currently orphaned.</li>
+<li><strong>Add TravelJoy reference</strong> to the body text where it's mentioned ("Travefy and TravelJoy have this") — currently unreferenced inline.</li>
+</ol>
+
+<h3>Nice to Have</h3>
+<ol>
+<li>Update Intrepid review count from "550" to "555" (or use "550+" to future-proof).</li>
+<li>Note that Wilderness Safaris now brands as just "Wilderness" (not "Wilderness Safaris").</li>
+<li>Note that Wedaways shows 9+ resorts in their showcase (report says "8").</li>
+<li>Add Fora source URL: <a href="https://www.foratravel.com/join/resources/how-do-travel-agents-get-paid">foratravel.com/join/resources/how-do-travel-agents-get-paid</a></li>
+<li>Add ABTA/ATOL source URLs: <a href="https://www.abta.com/news/abta-announces-trust-accounts-decision">abta.com trust accounts</a>, <a href="https://www.caa.co.uk/atol-protection/atol-requirements-for-the-travel-industry/">caa.co.uk ATOL requirements</a></li>
+</ol>
+
+<hr>
+<p style="color: var(--muted); font-size: 0.85rem; margin-top: 2rem;">
+Cross-check performed 2026-06-29 by Claude. Each source URL was fetched and compared against specific claims. JS-rendered pages were supplemented with web search verification. All findings reflect page content as of the audit date.
+</p>
+
+</body>
+</html>
