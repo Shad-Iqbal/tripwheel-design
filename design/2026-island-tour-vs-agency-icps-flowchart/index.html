@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Island Tour vs Agency ICPs — Architectural Comparison</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --rule: #e5e1d8;
+    --accent: #4a3a8c;
+    --shared: #6b6b6b;
+    --island: #0e7c66;        /* deep teal — Island Tour anchor */
+    --island-bg: #e6f4ef;
+    --advisor: #c2410c;        /* burnt orange */
+    --advisor-bg: #fcebe1;
+    --luxury: #7c3aed;        /* purple */
+    --luxury-bg: #f0e7fc;
+    --honeymoon: #be185d;      /* rose */
+    --honeymoon-bg: #fce7f1;
+    --safari: #b45309;         /* warm brown */
+    --safari-bg: #faecd5;
+    --tour: #1e40af;          /* deep blue */
+    --tour-bg: #dde6fa;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  main {
+    max-width: 1240px;
+    margin: 56px auto;
+    padding: 0 32px 96px;
+  }
+  h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+  h1 {
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    color: var(--accent);
+  }
+  h2 {
+    font-size: 1.55rem;
+    margin: 56px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h3 { font-size: 1.15rem; margin: 32px 0 12px; }
+  h4 { font-size: 0.95rem; margin: 16px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  p { margin: 10px 0; }
+  .subtitle { color: var(--muted); font-size: 1.05rem; margin-bottom: 24px; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+  a { color: var(--accent); }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 12px 18px;
+    margin: 16px 0 24px; padding: 14px 18px;
+    background: white; border: 1px solid var(--rule); border-radius: 6px;
+    font-size: 0.88rem;
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch {
+    display: inline-block; width: 14px; height: 14px;
+    border-radius: 3px; border: 1px solid var(--rule);
+  }
+  .swatch.shared { background: #fff; border-color: var(--shared); }
+  .swatch.island { background: var(--island-bg); border-color: var(--island); }
+  .swatch.advisor { background: var(--advisor-bg); border-color: var(--advisor); }
+  .swatch.luxury { background: var(--luxury-bg); border-color: var(--luxury); }
+  .swatch.honeymoon { background: var(--honeymoon-bg); border-color: var(--honeymoon); }
+  .swatch.safari { background: var(--safari-bg); border-color: var(--safari); }
+  .swatch.tour { background: var(--tour-bg); border-color: var(--tour); }
+
+  /* Flow row */
+  .flow {
+    display: flex; align-items: stretch; gap: 0;
+    margin: 12px 0; overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .flow-step {
+    flex: 0 0 auto;
+    min-width: 130px; max-width: 170px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--rule);
+    background: white;
+    border-radius: 6px;
+    margin-right: -1px;
+    text-align: center;
+  }
+  .flow-step.shared {
+    background: #f3f0e8;
+    border-color: var(--shared);
+    color: var(--muted);
+  }
+  .flow-step.island {
+    background: var(--island-bg);
+    border-color: var(--island);
+    border-width: 2px;
+    box-shadow: 0 0 0 1px var(--island);
+  }
+  .flow-step.advisor {
+    background: var(--advisor-bg);
+    border-color: var(--advisor);
+  }
+  .flow-step.luxury {
+    background: var(--luxury-bg);
+    border-color: var(--luxury);
+  }
+  .flow-step.honeymoon {
+    background: var(--honeymoon-bg);
+    border-color: var(--honeymoon);
+  }
+  .flow-step.safari {
+    background: var(--safari-bg);
+    border-color: var(--safari);
+  }
+  .flow-step.tour {
+    background: var(--tour-bg);
+    border-color: var(--tour);
+  }
+  .flow-step h5 {
+    margin: 0 0 6px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+  .flow-step p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+  .flow-step.island h5 { color: var(--island); }
+  .flow-step.advisor h5 { color: var(--advisor); }
+  .flow-step.luxury h5 { color: var(--luxury); }
+  .flow-step.honeymoon h5 { color: var(--honeymoon); }
+  .flow-step.safari h5 { color: var(--safari); }
+  .flow-step.tour h5 { color: var(--tour); }
+
+  /* Branching: vertical column of alternatives under a shared step */
+  .branches {
+    display: flex; flex-direction: column; gap: 6px;
+    margin: 6px 0; padding-left: 16px;
+    border-left: 3px solid var(--rule);
+  }
+  .branch {
+    font-size: 0.78rem; padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--fg);
+  }
+  .branch.island { background: var(--island-bg); border-left: 3px solid var(--island); }
+  .branch.advisor { background: var(--advisor-bg); border-left: 3px solid var(--advisor); }
+  .branch.luxury { background: var(--luxury-bg); border-left: 3px solid var(--luxury); }
+  .branch.honeymoon { background: var(--honeymoon-bg); border-left: 3px solid var(--honeymoon); }
+  .branch.safari { background: var(--safari-bg); border-left: 3px solid var(--safari); }
+  .branch.tour { background: var(--tour-bg); border-left: 3px solid var(--tour); }
+  .branch b { font-weight: 600; }
+
+  /* ICP strip — a horizontal label row used to identify each row */
+  .icp-label {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    color: white;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .icp-label.island { background: var(--island); }
+  .icp-label.advisor { background: var(--advisor); }
+  .icp-label.luxury { background: var(--luxury); }
+  .icp-label.honeymoon { background: var(--honeymoon); }
+  .icp-label.safari { background: var(--safari); }
+  .icp-label.tour { background: var(--tour); }
+
+  /* Section: comparison table */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--rule);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #efece4; font-weight: 600; }
+  th.col-island { background: var(--island-bg); }
+  th.col-shared { background: #e8e6df; color: var(--muted); }
+
+  /* Summary callouts */
+  .callout {
+    margin: 16px 0;
+    padding: 14px 18px;
+    background: white;
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+  }
+  .callout.island { border-left-color: var(--island); }
+  .callout.shared { border-left-color: var(--shared); }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* Footer */
+  footer {
+    margin-top: 64px; padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: 0.85rem;
+  }
+  footer a { color: var(--muted); }
+
+  @media print {
+    body { background: white; }
+    main { max-width: 100%; margin: 24px; }
+    .flow { overflow: visible; flex-wrap: wrap; }
+    .flow-step { break-inside: avoid; }
+  }
+
+  @media (max-width: 900px) {
+    main { padding: 0 16px 64px; }
+    h1 { font-size: 1.8rem; }
+    .flow { flex-direction: column; }
+    .flow-step { max-width: 100%; min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Island Tour vs Agency ICPs — Architectural Comparison</h1>
+<p class="subtitle">Traveler &amp; agency journey comparison across 6 ICPs, with shared vs different patterns made explicit.</p>
+<p class="meta">
+  <b>Anchor ICP:</b> Island Tour (single-destination tour specialist).
+  <b>Compared against:</b> Travel Advisor (Fora) · Boutique/Luxury · Honeymoon · Safari · Multi-Day Guided Tour.
+  <b>Two perspectives:</b> Traveler journey (top) · Agency journey (bottom).
+  <b>Companion to:</b> <a href="report.html">the full report</a>.
+</p>
+
+<div class="legend">
+  <span class="legend-item"><span class="swatch shared"></span>Shared across all ICPs</span>
+  <span class="legend-item"><span class="swatch island"></span><b>Island Tour</b> (anchor)</span>
+  <span class="legend-item"><span class="swatch advisor"></span>Travel Advisor (Fora)</span>
+  <span class="legend-item"><span class="swatch luxury"></span>Boutique/Luxury</span>
+  <span class="legend-item"><span class="swatch honeymoon"></span>Honeymoon</span>
+  <span class="legend-item"><span class="swatch safari"></span>Safari</span>
+  <span class="legend-item"><span class="swatch tour"></span>Multi-Day Tour</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2><span class="icp-label island">Part 1</span> Traveler Journey — Browse → Discover → Compare → Book</h2>
+
+<p>Every ICP's traveler goes through <b>land → browse → discover → compare → book → pay → travel → review</b>. The differences are in <i>how</i> they discover (search vs curated), <i>what</i> they compare (one product vs many components), and <i>how</i> they book (instant vs quote vs scheduled-departure picker). The Island Tour path is highlighted with a heavier border; the other ICPs branch off the shared spine.</p>
+
+<div class="flow">
+  <div class="flow-step shared">
+    <h5>1 · Land</h5>
+    <p>Google deep-local-intent, IG, advisor referral, Virtuoso, trade partner</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>2 · Browse</h5>
+    <p>Region / destination / theme / trip-style pages</p>
+  </div>
+  <div class="flow-step island">
+    <h5>3 · Discover</h5>
+    <p>Tour detail page; "Best of Maldives" collections; ~10–25 fixed products</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>4 · Compare</h5>
+    <p>Variants, COMPARE tool, alternative camps/resorts, "see similar"</p>
+  </div>
+  <div class="flow-step island">
+    <h5>5 · Book</h5>
+    <p><b>Instant book</b> with date picker, full or deposit+balance</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>6 · Pay</h5>
+    <p>Card / link / schedule; trust account if ATOL/ABTA</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>7 · Receive</h5>
+    <p>Confirmation + manifest + client portal access</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>8 · Travel</h5>
+    <p>Day-of contact, local guide, in-country support</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>9 · Review</h5>
+    <p>Post-trip email → Trustpilot / TripAdvisor / public review</p>
+  </div>
+</div>
+
+<h3>Where the other ICPs branch off the Island Tour path</h3>
+
+<div class="branches">
+  <div class="branch advisor"><b>Discover — Advisor:</b> most discovery happens off-site (IG, blog, email). The Tripwheel-style "browse" surface is the advisor's curated portfolio, not a search-driven catalog. Compare = mental model, not a UI widget.</div>
+  <div class="branch luxury"><b>Book — Boutique/Luxury:</b> NOT instant book. Clicking "Enquire" opens a quote form, then 4-step human flow (Scott Dunn: "Make an Enquiry → Speak to an Expert → Receive a Quote → Book"). Price is bespoke, finalized in the proposal.</div>
+  <div class="branch honeymoon"><b>Compare — Honeymoon:</b> side-by-side resort COMPARE tool (Wedaways: 8 resorts, COMPARE button). The "compare" step IS the booking aid — they don't compare trips, they compare venues.</div>
+  <div class="branch safari"><b>Book — Safari:</b> "Enquire Now" (Wilderness Safaris) → per-camp holds → human confirms. Per-camp inventory ("6 tents on Aug 12") is the constraint, not the date.</div>
+  <div class="branch tour"><b>Book — Multi-Day Tour:</b> scheduled-departure picker with a code per departure (Intrepid: SSEP / SASY / SSKU). Date is primary; seats are the inventory unit ("5 spots left on Oct 14").</div>
+  <div class="branch luxury advisor safari tour"><b>Pay — All non-Island-Tour ICPs:</b> deposit+balance with hard final-payment cutoff. Boutique Luxury + Safari may sit in a regulated trust account (ATOL/ABTA) until travel completion.</div>
+  <div class="branch honeymoon"><b>Pay — Honeymoon:</b> room-block deposit from couple, then individual guest payments against the room block. Multi-payer ledger per booking.</div>
+  <div class="branch advisor"><b>Review — Advisor:</b> usually internal/private, not public. The advisor's reputation is on LinkedIn + referrals, not on the operator site.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2><span class="icp-label island">Part 2</span> Agency Journey — Build → Manage → Publish</h2>
+
+<p>The agency side. How the operator/advisor builds their website, manages their inventory, takes inquiries, confirms bookings, and publishes content. The shared backbone is "tenancy + auth + CMS + CRM + booking + payment + media library + mobile app" — the universal SaaS core. What differs is the <b>mode</b> the workspace runs in (fixed-catalogue vs quote vs scheduled-departure vs per-date-inventory) and which <b>modules</b> are turned on (room-block, trade-portal, commission-split, schools-program, conservation-pages, concierge-247, trip-style-taxonomy).</p>
+
+<div class="flow">
+  <div class="flow-step shared">
+    <h5>1 · Build site</h5>
+    <p>CMS + templates + custom domain + brand</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>2 · Add product</h5>
+    <p>Trip / itinerary / hotel / activity record</p>
+  </div>
+  <div class="flow-step island">
+    <h5>3 · Manage inventory</h5>
+    <p>~10–25 fixed tours; date + per-tour cap; no scheduled-departures</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>4 · Take inquiry</h5>
+    <p>Form → CRM → task → respond (auto + human)</p>
+  </div>
+  <div class="flow-step island">
+    <h5>5 · Confirm booking</h5>
+    <p>Card on file; deposit + balance; instant confirm; voucher sent</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>6 · Publish</h5>
+    <p>Trip goes live, IG/SEO/GEO surfaces, day-by-day published</p>
+  </div>
+  <div class="flow-step shared">
+    <h5>7 · Operate</h5>
+    <p>Day-of logistics, transfers, guides, support</p>
+  </div>
+</div>
+
+<h3>Where the other ICPs branch off the Island Tour operational model</h3>
+
+<div class="branches">
+  <div class="branch advisor"><b>Build site — Advisor:</b> personal brand surface, not a catalog. "I focus on luxury family travel in SE Asia" positioning page. Less product, more portfolio. CMS is portfolio-grade, not catalog-grade.</div>
+  <div class="branch advisor"><b>Add product — Advisor:</b> NO owned products. The advisor "adds" nothing — they assemble from supplier net-rates. The platform surfaces supplier inventory aggregated from 3-5+ external booking systems.</div>
+  <div class="branch luxury"><b>Manage inventory — Boutique/Luxury:</b> "tailormade" = blank-slate itinerary templates, not a fixed catalog. The product IS a per-client proposal; the operator's CMS is for <i>templates + components</i> (hotels, transfers, experiences), not full trips.</div>
+  <div class="branch safari"><b>Manage inventory — Safari:</b> per-camp inventory. Each camp has a capacity ("6 tents") per date. Cross-camp itinerary = cross-property availability check. The hardest inventory model in the set.</div>
+  <div class="branch tour"><b>Manage inventory — Multi-Day Tour:</b> scheduled-departure codes (SSEP, SASY, SSKU). A trip is run multiple times per year; each departure has its own seat count. Per-departure pricing overrides (Was/Now sale pricing).</div>
+  <div class="branch luxury advisor honeymoon safari"><b>Confirm booking — Quote-then-confirm ICPs:</b> no card on file at inquiry. Operator/agent produces a proposal, client approves, then payment link is sent. State machine has 4–7 steps vs Island Tour's 2-step (book → pay).</div>
+  <div class="branch tour"><b>Publish — Multi-Day Tour:</b> date-first homepage. "Costa Rica in October" is a higher-traffic landing page than the trip itself. Search + date picker is the primary navigation, not destination picker.</div>
+  <div class="branch safari"><b>Operate — Safari:</b> inter-camp transfers are first-class inventory. A 7-day trip that moves through 3 camps has 4 transfers; each transfer is its own product with its own capacity and supplier.</div>
+  <div class="branch honeymoon"><b>Operate — Honeymoon:</b> room-block + guest manifest. The couple is the buyer, but a 30-person wedding party may need 12 rooms. Each room has its own payer, its own check-in, its own dietary preferences.</div>
+  <div class="branch advisor"><b>Operate — Advisor:</b> commission split tracking. Every booking flows commission to multiple suppliers per the host-agency contract. The advisor's role is orchestration + commission collection, not inventory.</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2><span class="icp-label island">Part 3</span> Shared vs Different — The Architecture View</h2>
+
+<p>The diagram in flow form above. Here it is as a table — same data, easier to scan, easier to action.</p>
+
+<h3>Same across all 6 ICPs (the universal SaaS core)</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th class="col-shared" style="width: 30%;">Capability</th>
+      <th>What every ICP gets, regardless of mode</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>Tenancy</th><td>One agency = one workspace; sub-tenancy variants (multi-brand, advisor-under-host, multi-staff)</td></tr>
+    <tr><th>User accounts</th><td>Login per agency; multi-user is universal (Bokun 1/5/10/unlimited, Rezdy unlimited, WeTravel "no team member fees")</td></tr>
+    <tr><th>CRM</th><td>Contacts with status, custom fields, notes, tasks, follow-up reminders</td></tr>
+    <tr><th>Itinerary builder</th><td>The universal "build a trip" surface. Travefy: "Build beautiful itineraries" + "Send polished proposals". WeTravel literally calls it "Itinerary builder"</td></tr>
+    <tr><th>Booking record</th><td>Guests, status, payments, documents, history, cancellation</td></tr>
+    <tr><th>Payment</th><td>Charge a card, payment link, schedule installments (schedule shape varies by ICP)</td></tr>
+    <tr><th>Content / CMS</th><td>Pages, blog, FAQs, media library, publishable to a live site</td></tr>
+    <tr><th>Enquiry form</th><td>Lead capture, with custom fields per ICP</td></tr>
+    <tr><th>Website publishing</th><td>The agency's branded site with custom domain</td></tr>
+    <tr><th>Mobile client app</th><td>At least a booking-detail view + day-by-day. Bokun, Travefy, Scott Dunn, Intrepid, &Beyond all have one</td></tr>
+    <tr><th>Media library</th><td>Image, video, map asset management</td></tr>
+  </tbody>
+</table>
+
+<h3>Different per ICP (the 40% that justifies a real product, not a config switch)</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Difference</th>
+      <th>Type of difference</th>
+      <th>Why it differs</th>
+      <th class="col-island">Affects Island Tour?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>Booking flow: instant vs quote</th><td>workflow + business rule</td><td>Island Tour / Multi-Day can take money at the booking step; Advisor / Luxury / Honeymoon / Safari need human-in-the-loop quoting because price depends on the brief</td><td class="col-island">No (instant book is the Island Tour pattern)</td></tr>
+    <tr><th>Payment schedule shape</th><td>data + workflow</td><td>Honeymoon splits per-guest, Multi-Day has hard final-payment cutoff, Safari has per-camp balances due 60-90d out</td><td class="col-island">Yes (deposit+balance, simpler than per-camp or per-guest)</td></tr>
+    <tr><th>Product shape: tour vs hotel-night vs camp-night vs scheduled-departure vs assembled-component</th><td>data</td><td>The atomic sellable unit differs; entity is the same but schema variants differ</td><td class="col-island">Yes (tour, simplest variant)</td></tr>
+    <tr><th>Per-camp per-date inventory</th><td>data + UI</td><td>Safari must manage "6 tents on Aug 12" — Island Tour has dates but simpler, Multi-Day has departures not per-date</td><td class="col-island">No (per-tour cap, not per-camp)</td></tr>
+    <tr><th>Scheduled-departure codes (SSEP, SASY…)</th><td>data + UI</td><td>Multi-Day operators identify trips by code; first-class identifier with public surface</td><td class="col-island">No</td></tr>
+    <tr><th>Trade Partner Portal</th><td>permissions + UI</td><td>Safari (&Beyond) has B2B travel agents; no other ICP needs a public B2B portal</td><td class="col-island">No</td></tr>
+    <tr><th>Concierge 24/7 phone</th><td>workflow + UI</td><td>Boutique Luxury / Honeymoon promise a human on the other end; the platform needs a duty-officer queue</td><td class="col-island">No</td></tr>
+    <tr><th>Schools / Education program</th><td>data + content</td><td>Island Tour (Secret Paradise) runs a school program; separate product line with its own customers, pricing, and content</td><td class="col-island">Yes (Secret Paradise is the reference)</td></tr>
+    <tr><th>Conservation / Impact page depth</th><td>content</td><td>Island Tour / Safari lead with conservation; other ICPs have lighter impact pages or none</td><td class="col-island">Yes (Secret Paradise: 8+ impact pages)</td></tr>
+    <tr><th>Wedding party / Group manifest</th><td>data + workflow</td><td>Honeymoon must manage a room block, a guest list, and per-guest payments — no other ICP has this</td><td class="col-island">No</td></tr>
+    <tr><th>Trip-style taxonomy + physical rating</th><td>data + UI</td><td>Multi-Day Tour + Safari need a structured taxonomy (Original/Comfort/Explorer; Migration/Gorilla/Walking) and a difficulty rating</td><td class="col-island">No</td></tr>
+    <tr><th>Tailormade template</th><td>data</td><td>Luxury / Safari / Island Tour publish "tailormade" versions of their catalogue; Multi-Day does not</td><td class="col-island">Yes (Secret Paradise has Tailormade)</td></tr>
+    <tr><th>Commission split tracking (multi-supplier)</th><td>data + workflow + permissions</td><td>Travel Advisor (Fora) is the only ICP where the agency never touches client money — every booking routes commission across 3-5+ suppliers, with split rules per supplier contract</td><td class="col-island">No</td></tr>
+    <tr><th>White-label client app</th><td>branding + permissions</td><td>Fora-style "the advisor's app, with the agency's brand" — Bokun and Travefy offer this</td><td class="col-island">No</td></tr>
+    <tr><th>Multi-brand tenancy</th><td>tenancy + permissions</td><td>Bokun PREMIUM "manage multiple companies under one account"; Travefy "White Labels" — needed by host agencies (Fora) and multi-brand tour operators</td><td class="col-island">No</td></tr>
+    <tr><th>Trust accounting (ATOL/ABTA client-fund protection)</th><td>business rule + data + workflow</td><td>Boutique Luxury / Safari / Multi-Day Tour with own ATOL/ABTA license must segregate client money into trust accounts with strict release rules on travel-completion. Every payment event is dual-entry (client trust + supplier payable). The platform's payment module is materially different from a non-trust-account SaaS</td><td class="col-island">No (no ATOL/ABTA in scope for small island tour)</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2><span class="icp-label island">Part 4</span> Taxonomy of Differences</h2>
+
+<p>All 16 differences above cluster into 6 kinds. Knowing which kind tells you whether you can defer it, parameterize it, or build a new entity for it.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kind of difference</th>
+      <th>Hardest to retrofit</th>
+      <th>Easiest to defer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th>Data schema</th><td>Per-camp inventory, room-block allocation, commission split</td><td>Add-on fields (certifications, dietary, gear)</td></tr>
+    <tr><th>Workflow</th><td>Quote-then-confirm state machine, payment-schedule reminder cadence</td><td>Concierge queue routing</td></tr>
+    <tr><th>UI</th><td>Scheduled-departure picker, COMPARE tool, Trade Portal</td><td>Search filters, sort orders</td></tr>
+    <tr><th>Permissions / tenancy</th><td>Host-agency-vs-advisor, multi-brand</td><td>Role-based view filters</td></tr>
+    <tr><th>Content schema</th><td>Trip-style taxonomy, physical rating, conservation page template</td><td>FAQ categories, blog tags</td></tr>
+    <tr><th>Business rules</th><td>Final-payment cutoff date, trust-account release, hold expiry</td><td>Child pricing curve, single-supplement logic</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2><span class="icp-label island">Part 5</span> The Modes + Modules Pattern (one product, looks like six)</h2>
+
+<div class="callout island">
+<p><b>Recommendation:</b> build a single Workspace model with a <code>mode</code> field and a <code>modules[]</code> array. The shared 60% is the hard core. The 40% that differs is expressed as a small set of modes and toggleable modules.</p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Mode</th>
+      <th>Used by</th>
+      <th>What it changes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th><code>fixed_catalogue</code></th><td>Island Tour, Honeymoon (mostly), Multi-Day Tour (without codes)</td><td>One product = one trip; date picker optional; instant book is the default</td></tr>
+    <tr><th><code>quote</code></th><td>Travel Advisor, Boutique/Luxury</td><td>State machine has 4+ steps; no card-on-file at inquiry; payment link only on approval</td></tr>
+    <tr><th><code>scheduled_departure</code></th><td>Multi-Day Tour (with codes)</td><td>Trip has many departures; each departure has a code, date, seat count, price overrides</td></tr>
+    <tr><th><code>per_date_inventory</code></th><td>Safari</td><td>Each component (camp, transfer) has per-date capacity; cross-camp itinerary = cross-property availability</td></tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>Module (toggle on/off)</th>
+      <th>Used by</th>
+      <th>What it adds</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><th><code>room_block</code></th><td>Honeymoon</td><td>Per-room payer, per-guest dietary, group manifest</td></tr>
+    <tr><th><code>trade_portal</code></th><td>Safari (&Beyond pattern)</td><td>B2B login for travel agents, net-rate access, image library export</td></tr>
+    <tr><th><code>commission_split</code></th><td>Travel Advisor (Fora model)</td><td>Per-supplier commission rules, multi-supplier ledger, advisor payout</td></tr>
+    <tr><th><code>schools_program</code></th><td>Island Tour (Secret Paradise pattern)</td><td>Separate customer type, curriculum-based products, separate pricing</td></tr>
+    <tr><th><code>conservation_pages</code></th><td>Island Tour, Safari</td><td>Pre-built content template, impact reporting, sustainability FAQs</td></tr>
+    <tr><th><code>concierge_247</code></th><td>Boutique Luxury, Honeymoon, Safari</td><td>Duty-officer queue, phone call routing, escalation workflow</td></tr>
+    <tr><th><code>trip_style_taxonomy</code></th><td>Multi-Day Tour, Safari</td><td>Structured taxonomy (Original/Comfort/Explorer; Migration/Gorilla/Walking), physical rating 1-5</td></tr>
+    <tr><th><code>trust_accounting</code></th><td>ATOL/ABTA-licensed Boutique Luxury, Safari, Multi-Day Tour</td><td>Dual-entry payment ledger, hold-until-completion release, regulated-account reporting</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>TL;DR for the visual</h2>
+
+<div class="callout shared">
+<p><b>Shared across all 6 ICPs (universal SaaS core):</b> tenancy, auth, CRM, itinerary builder, booking, payment, CMS, website, mobile app, media library. This is what every agency SaaS gets right — and what doesn't differentiate.</p>
+</div>
+
+<div class="callout island">
+<p><b>Island Tour's anchor position:</b> simplest data model (single-destination, ~10–25 fixed products, instant book, deposit+balance, no ATOL/ABTA). Best v1 ICP because the modes + modules pattern is easiest to prove here. Three modules light up: <code>schools_program</code>, <code>conservation_pages</code>, <code>tailormade</code>.</p>
+</div>
+
+<div class="callout">
+<p><b>What gets harder as you move right in the lineup:</b> Travel Advisor (B2B commission model), Boutique/Luxury (quote-then-confirm + trust accounting), Safari (per-camp inventory + transfers as first-class objects), Multi-Day Tour (scheduled-departure codes + trip-style taxonomy), Honeymoon (room block + per-guest ledger). Each one is buildable as a mode + a few modules — but not as a "config switch" on top of Island Tour's model.</p>
+</div>
+
+<footer>
+  Companion: <a href="report.html">full report (markdown, 50KB, 32 sources)</a>.
+  Sources cited inline. Generated 2026-06-29 from operator-site research + Tripwheel Vision 2040 prior work (April–May 2026).
+</footer>
+
+</main>
+</body>
+</html>
