@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tripwheel — Itinerary Builder Version Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(98% 0.003 250);
+      --surface: oklch(100% 0 0);
+      --surface-2: oklch(97% 0.004 250);
+      --border: oklch(91% 0.008 250);
+      --border-subtle: oklch(95% 0.005 250);
+      --text: oklch(16% 0.02 250);
+      --text-2: oklch(45% 0.015 250);
+      --text-3: oklch(62% 0.01 250);
+      --primary: oklch(52% 0.14 250);
+      --primary-soft: oklch(95% 0.03 250);
+      --success: oklch(58% 0.16 145);
+      --success-soft: oklch(95% 0.04 145);
+      --warning: oklch(72% 0.18 75);
+      --warning-soft: oklch(96% 0.05 75);
+      --draft: oklch(65% 0.18 25);
+      --draft-soft: oklch(96% 0.04 25);
+      --muted: oklch(94% 0.006 250);
+      --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
+      --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      text-decoration: none; margin-bottom: 16px;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .page { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+    .hero { margin-bottom: 32px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--primary); margin-bottom: 12px;
+    }
+    .hero-eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 10px;
+    }
+    .hero-sub { font-size: 15px; color: var(--text-2); max-width: 62ch; }
+    .meta-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      background: var(--surface); border: 1px solid var(--border);
+      font-size: 12px; color: var(--text-2);
+    }
+    .meta-pill strong { color: var(--text); font-weight: 600; }
+    .sources {
+      margin: 20px 0 28px; padding: 16px 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); font-size: 13px; color: var(--text-2);
+    }
+    .sources h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text);
+    }
+    .sources ul { padding-left: 18px; }
+    .sources li { margin: 4px 0; }
+    .sources code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px; background: var(--surface-2);
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;
+      padding: 14px 16px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+    }
+    .toolbar-label { font-size: 12px; font-weight: 600; color: var(--text-3); align-self: center; margin-right: 4px; }
+    .filter-btn {
+      padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface-2); font-size: 12px; font-weight: 500;
+      color: var(--text-2); cursor: pointer; transition: all 0.15s ease;
+    }
+    .filter-btn:hover { border-color: var(--primary); color: var(--text); }
+    .filter-btn.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+    .timeline { display: flex; flex-direction: column; gap: 16px; }
+    .entry { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .entry.hidden { display: none; }
+    .entry-head { padding: 20px 22px 16px; border-bottom: 1px solid var(--border-subtle); }
+    .entry-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .version-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px; font-weight: 600; color: var(--primary);
+      background: var(--primary-soft); padding: 4px 10px; border-radius: 6px;
+    }
+    .date { font-size: 12px; color: var(--text-3); }
+    .badge {
+      margin-left: auto; padding: 3px 10px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .badge.latest { background: var(--success-soft); color: var(--success); border: 1px solid oklch(85% 0.08 145); }
+    .badge.stable { background: var(--muted); color: var(--text-3); border: 1px solid var(--border); }
+    .badge.research { background: var(--primary-soft); color: var(--primary); border: 1px solid oklch(88% 0.04 250); }
+    .badge.spec { background: var(--warning-soft); color: oklch(45% 0.12 75); border: 1px solid oklch(88% 0.08 75); }
+    .badge.standalone { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+    .entry-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px;
+    }
+    .entry-desc { font-size: 14px; color: var(--text-2); }
+    .entry-body { padding: 0 22px 22px; }
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-3); margin: 18px 0 10px;
+    }
+    .changelog { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .changelog li {
+      position: relative; padding-left: 18px; font-size: 13px; color: var(--text-2);
+    }
+    .changelog li::before {
+      content: ""; position: absolute; left: 0; top: 8px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary); opacity: 0.55;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tag {
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      font-size: 11px; color: var(--text-3);
+    }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+    .link-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--r-md);
+      background: var(--surface-2); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 600; color: var(--primary);
+      text-decoration: none; transition: all 0.15s ease;
+    }
+    .link-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+    .link-btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .link-btn.muted { color: var(--text-3); font-weight: 500; }
+    .path-note {
+      font-size: 11px; color: var(--text-3); margin-top: 10px;
+      padding: 8px 10px; background: var(--surface-2);
+      border-radius: var(--r-md); border: 1px solid var(--border-subtle);
+    }
+    footer {
+      margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-3); text-align: center;
+    }
+    @media (max-width: 640px) {
+      .page { padding: 28px 16px 64px; }
+      .badge { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="index.html">← All versions</a>
+    <header class="hero">
+      <div class="hero-eyebrow"><span class="dot"></span> Tripwheel · Itinerary Builder</div>
+      <h1>Itinerary Version Log</h1>
+      <p class="hero-sub">
+        Completed research, specs, standalone prototypes, and integrated app-shell work —
+        compiled from <code>Projects/tripwheel0.1/</code> and the desktop Tripwheel project folder.
+      </p>
+      <div class="meta-bar">
+        <span class="meta-pill"><strong>Owner</strong> Shad · shad@tripwheel.io</span>
+        <span class="meta-pill"><strong>Latest integrated</strong> v0.5.5-states</span>
+        <span class="meta-pill"><strong>Compiled</strong> Jul 1, 2026</span>
+        <span class="meta-pill"><strong>Entries</strong> 20 completed tasks</span>
+      </div>
+    </header>
+
+    <div class="sources">
+      <h3>Source folders</h3>
+      <ul>
+        <li><code>/Users/shad/Doptor/Projects/tripwheel0.1/tripwheel-design/</code> — design workspace + DVL (canonical)</li>
+        <li><code>/Users/shad/Desktop/doptor/projects/tripwheel/</code> — earlier specs + standalone HTML references</li>
+      </ul>
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-label">Show:</span>
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="integrated">Integrated (v0.5.x)</button>
+      <button class="filter-btn" data-filter="prototype">Standalone prototypes</button>
+      <button class="filter-btn" data-filter="spec">Specs</button>
+      <button class="filter-btn" data-filter="research">Research</button>
+    </div>
+
+    <div class="timeline">
+
+      <!-- itinerary-builder-icp-crosscheck -->
+      <article class="entry" data-type="research">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">itinerary-builder-icp-crosscheck</span>
+            <span class="date">Jul 1, 2026</span>
+            <span class="badge research">Cross-check</span>
+          </div>
+          <h2 class="entry-title">Itinerary Builder × ICP cross-check (v0.5.5 vs six agency ICPs)</h2>
+          <p class="entry-desc">Research report mapping the v0.5.5 prototype against island-tour vs agency ICP research: feature inventory, ICP fit scores, anchor-tension analysis (quote-mode builder vs Island Tour catalogue/book path), gap analysis, and retrofit recommendations.</p>
+          <div class="tags"><span class="tag">ICP fit</span><span class="tag">Gap analysis</span><span class="tag">v0.5.5 audit</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Executive summary: builder is experiential planner + client proposal tool, not booking/pricing engine</li>
+            <li>Feature inventory from prototype source (brief, day builder, templates, share, Draft/Shared statuses)</li>
+            <li>ICP × builder fit matrix for Island Tour, Advisor, Luxury, Honeymoon, Safari, Multi-day</li>
+            <li>Headline tension: tool shape fits deferred ICPs better than v1 anchor Island Tour conversion flow</li>
+            <li>Gap analysis + recommendations (pricing ladder vs separate Bookings module)</li>
+            <li>Cross-references <code>v0.5.5-states.html</code> and <code>island-tour-vs-agency-icps-combined.html</code></li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="docs/research/itinerary-builder-icp-crosscheck.html" target="_blank">Open report</a>
+            <a class="link-btn" href="docs/research/island-tour-vs-agency-icps-combined.html" target="_blank">ICP research v1.1</a>
+            <a class="link-btn" href="prototypes/v0.5.5-states.html" target="_blank">v0.5.5 prototype</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.5 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.5-states</span>
+            <span class="date">Jun 30, 2026</span>
+            <span class="badge latest">Latest</span>
+          </div>
+          <h2 class="entry-title">Overview tab polish, brief de-dupe, whole-trip map</h2>
+          <p class="entry-desc">Tidy-up after Overview launch: fixed tab label stacking, removed must-dos from brief pop-up (now only on Overview), and combined all days' stops on the map when Overview is open.</p>
+          <div class="tags"><span class="tag">Overview</span><span class="tag">Brief</span><span class="tag">Combined map</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog section-label" style="list-style:none;margin:0;padding:0">
+            <div class="section-label">Completed</div>
+            <ul class="changelog">
+              <li>Fixed Overview tab text (stacked Intro / Overview eyebrow)</li>
+              <li>Removed Must-dos &amp; constraints from brief pop-up — live only on Overview page</li>
+              <li>Whole-trip map on Overview tab: all days + routes combined with summary chip</li>
+            </ul>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.5-states.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="prototypes/itinerary-builder-Spec-vc1.3.md" target="_blank">Trip Brief spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.4 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.4-states</span>
+            <span class="date">Jun 27, 2026</span>
+          </div>
+          <h2 class="entry-title">Quick add-stop, Overview intro page, z-index fix</h2>
+          <p class="entry-desc">Add-stop opens edit modal immediately. New optional Overview tab before Day 1 (client intro + must-dos). Fixed Leaflet map overlapping Share dialog.</p>
+          <div class="tags"><span class="tag">Add stop</span><span class="tag">Overview page</span><span class="tag">Bug fix</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>"Add a stop" adds blank stop + opens edit popup (cancel discards untouched new stop)</li>
+            <li>Overview tab: intro note, must-dos, don't-dos — hidden from client when empty</li>
+            <li>Viewer renders overview between advisor card and Day 1 when filled</li>
+            <li>Raised modal z-index above Leaflet map controls</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.4-states.html" target="_blank">Open prototype</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.3 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.3-states</span>
+            <span class="date">Jun 27, 2026</span>
+          </div>
+          <h2 class="entry-title">Multi-photo stops, editable transit, share-to-promote-live</h2>
+          <p class="entry-desc">Facebook-style photo collage + lightbox, editable transit lines, simplified header, Share dialog rebuilt around live link, dashboard Get Started 4th step.</p>
+          <div class="tags"><span class="tag">Multi-image</span><span class="tag">Share live</span><span class="tag">Onboarding</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Get Started: 4th step "Create an itinerary" → opens builder</li>
+            <li>Multi-photo stops with collage + full-screen swipeable lightbox</li>
+            <li>Edit modal media uploader (add/edit/remove photo tiles)</li>
+            <li>Editable transit lines (mode + minutes, reset to auto estimate)</li>
+            <li>Share dialog: live-itinerary preview + copy / Email / WhatsApp primary actions</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.3-states.html" target="_blank">Open prototype</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.2 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.2-states</span>
+            <span class="date">Jun 27, 2026</span>
+          </div>
+          <h2 class="entry-title">Editable days, editable stops &amp; pins, responsive viewer</h2>
+          <p class="entry-desc">Full control pass: add/rename/remove days, optional editable stop images, draggable map pins, viewer rebuilt for mobile-first responsive layout.</p>
+          <div class="tags"><span class="tag">Editable days</span><span class="tag">Draggable pins</span><span class="tag">Responsive viewer</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Add day chip + per-day edit modal with Remove day</li>
+            <li>Stop images optional &amp; editable with category placeholder fallback</li>
+            <li>Draggable map pins update route + transit live</li>
+            <li>Viewer rebuilt: fluid width, compact rows, sticky Reply CTA</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.2-states.html" target="_blank">Open prototype</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.1 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.1-states</span>
+            <span class="date">Jun 27, 2026</span>
+          </div>
+          <h2 class="entry-title">Trip Brief — capture the client's ask, power the AI</h2>
+          <p class="entry-desc">Unified new-itinerary flow around a short brief (travellers, budget, pace, interests, must-dos). Brief persists as editable summary bar; AI reads brief for drafts.</p>
+          <div class="tags"><span class="tag">Trip Brief</span><span class="tag">Intake</span><span class="tag">AI from brief</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>New-itinerary modal: one brief form + Start from (Blank / Template / AI)</li>
+            <li>Persistent brief summary bar under day tabs with Edit brief</li>
+            <li>AI "Draft this day" and "Generate draft" consume brief fields</li>
+            <li>Additive <code>itinerary.brief</code> schema object</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.1-states.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="prototypes/itinerary-builder-Spec-vc1.3.md" target="_blank">Spec vc1.3</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.5.0 -->
+      <article class="entry" data-type="integrated">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">v0.5.0-states</span>
+            <span class="date">Jun 27, 2026</span>
+            <span class="badge stable">MVP shipped</span>
+          </div>
+          <h2 class="entry-title">Itinerary Builder MVP integrated into app shell</h2>
+          <p class="entry-desc">Itinerary Builder enabled in sidebar. Library + templates, image-rich builder, collapsible map, light AI assist, mobile-first shareable viewer with Reply CTA. Built on v0.4.3 shell + Leaflet.</p>
+          <div class="tags"><span class="tag">Library</span><span class="tag">Templates</span><span class="tag">Shareable viewer</span><span class="tag">Light AI</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Sidebar: Itinerary Builder active with New badge → <code>switchScreen('itinerary')</code></li>
+            <li>Library: client-trip cards, search, status chips, Templates tab, grid/list toggle</li>
+            <li>New-itinerary: Blank / Template / AI draft modes</li>
+            <li>Image-first builder with collapsible map panel</li>
+            <li>Per-day "Draft this day" → 3 add/skip suggestions</li>
+            <li>Polished viewer with sticky Reply CTA + reply sheet</li>
+            <li>JS namespaced under <code>window.iti</code></li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/v0.5.0-states.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="prototypes/itinerary-builder-Spec-vc1.2.md" target="_blank">MVP spec vc1.2</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- vc1.3 spec -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · vc1.3</span>
+            <span class="date">Jun 27, 2026</span>
+            <span class="badge spec">Spec</span>
+          </div>
+          <h2 class="entry-title">Trip Brief spec — intake before planning</h2>
+          <p class="entry-desc">Defines the missing front door: capture client ask (party, budget, pace, interests, must-dos) before builder/AI. Builds on vc1.2 MVP.</p>
+          <div class="tags"><span class="tag">Trip Brief</span><span class="tag">JTBD</span><span class="tag">Data model</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Unified new-itinerary modal wireframes + field table</li>
+            <li><code>Itinerary.brief</code> additive schema documented</li>
+            <li>AI consumption rules for pace, interests, travellers, must-dos</li>
+            <li>Implemented in v0.5.1-states through v0.5.5-states</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/itinerary-builder-Spec-vc1.3.md" target="_blank">Open spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- MVP spec -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · MVP vc1.2</span>
+            <span class="date">Jun 27, 2026</span>
+            <span class="badge spec">Spec</span>
+          </div>
+          <h2 class="entry-title">Itinerary Builder MVP scope filter</h2>
+          <p class="entry-desc">Scoped the first cut to features valuable to both advisor and traveller. Cut multiplayer, engagement analytics, offline PWA from v1; kept library, map-first builder, share link, light AI.</p>
+          <div class="tags"><span class="tag">MVP scope</span><span class="tag">Both-sides value</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Value matrix: advisor vs traveller vs in-MVP decision</li>
+            <li>Screen specs: Library, Builder, Light AI, Share + Viewer</li>
+            <li>Integration plan into v0.4.3-states shell</li>
+            <li>Supersedes fuller demo + advisor specs for v1 pass</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/itinerary-builder-Spec-vc1.2.md" target="_blank">Open spec (design repo)</a>
+          </div>
+          <div class="path-note">Desktop copy: <code>~/Desktop/doptor/projects/tripwheel/Itinerary_MVP_Spec.md</code></div>
+        </div>
+      </article>
+
+      <!-- itinerary-builder-v0.2 -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">itinerary-builder-v0.2</span>
+            <span class="date">Jun 28, 2026</span>
+            <span class="badge standalone">Standalone</span>
+          </div>
+          <h2 class="entry-title">Single-file builder inside v0.4.3 app shell</h2>
+          <p class="entry-desc">Same v0.1 builder logic reskinned with full sidebar/topbar shell matching v0.4.3-states. Standalone reference before full v0.5.x integration.</p>
+          <div class="tags"><span class="tag">App shell</span><span class="tag">Leaflet</span><span class="tag">localStorage</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Full Tripwheel sidebar + topbar with Itinerary Builder active</li>
+            <li>Builder + Traveler modes with map-first 3-column layout</li>
+            <li>localStorage persistence (<code>tripwheel.v0.2.trip</code>)</li>
+            <li>AI draft import, smart suggestions, URL-hash share mock</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/itinerary-builder-v0.2.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="docs/specs/itinerary-builder-single-html.md" target="_blank">Single-HTML spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- dashboard v0.1 -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">itinerary-builder-dashboard-v0.1</span>
+            <span class="date">Jun 28, 2026</span>
+            <span class="badge standalone">Standalone</span>
+          </div>
+          <h2 class="entry-title">Dashboard-integrated itinerary tool prototype</h2>
+          <p class="entry-desc">First-class dashboard tool: library landing, day-by-day editor, templates tab, preview, autosave — calm SaaS UI inherited from v0.4.3 (map secondary in v0.1).</p>
+          <div class="tags"><span class="tag">Dashboard tool</span><span class="tag">Library</span><span class="tag">Templates</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Itinerary Builder moved from Coming soon to active Tools nav</li>
+            <li>Library with stat strip, filters, trip cards, New itinerary flow</li>
+            <li>Builder: day tabs, stop cards, preview panel, status chips</li>
+            <li>Templates tab with reuse flow</li>
+            <li>Matches dashboard-tool spec acceptance criteria for v0.1</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/itinerary-builder-dashboard-v0.1.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="docs/specs/itinerary-builder-dashboard-tool.md" target="_blank">Dashboard tool spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- v0.1 single html -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">itinerary-builder-v0.1</span>
+            <span class="date">Jun 27, 2026</span>
+            <span class="badge standalone">Standalone</span>
+          </div>
+          <h2 class="entry-title">Map-first single-HTML itinerary builder</h2>
+          <p class="entry-desc">Self-contained prototype per single-html spec: Builder + Traveler modes, Leaflet map, localStorage, AI import mock, smart day suggestions, share modal.</p>
+          <div class="tags"><span class="tag">Map-first</span><span class="tag">Traveler view</span><span class="tag">Offline content</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>3-column builder: day nav, map canvas, stop detail / suggestions</li>
+            <li>Traveler view with per-day mini-maps and share affordances</li>
+            <li>localStorage autosave + restored state indicator</li>
+            <li>AI draft paste/import + contextual gap-fill suggestions</li>
+            <li>Leaflet map teardown fix on traveler re-render</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/itinerary-builder-v0.1.html" target="_blank">Open prototype</a>
+            <a class="link-btn" href="docs/specs/itinerary-builder-single-html.md" target="_blank">Product spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- dashboard tool spec -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · dashboard-tool</span>
+            <span class="date">Jun 26, 2026</span>
+            <span class="badge spec">Spec</span>
+          </div>
+          <h2 class="entry-title">Dashboard-integrated itinerary tool spec</h2>
+          <p class="entry-desc">Independent spec for itinerary as first-class Tripwheel dashboard tool. Prioritizes ease of first creation over map/AI complexity; inherits v0.4.3 shell patterns.</p>
+          <div class="tags"><span class="tag">Dashboard</span><span class="tag">IA</span><span class="tag">Ease of use</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Sidebar integration wireframe + nav behavior</li>
+            <li>Library / Builder / Preview screen requirements</li>
+            <li>Templates, autosave, empty states, topbar CTAs</li>
+            <li>Explicit non-goals for v0.1 (map-first dominance deferred)</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="docs/specs/itinerary-builder-dashboard-tool.md" target="_blank">Open spec</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- single html spec -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · single-html</span>
+            <span class="date">Jun 26, 2026</span>
+            <span class="badge spec">Spec</span>
+          </div>
+          <h2 class="entry-title">Single-HTML itinerary builder product spec</h2>
+          <p class="entry-desc">Build-ready spec from research v2 opportunities: beautiful shareable page, map-first planning, AI draft → human polish, offline content, smart day builder, scoped group planning.</p>
+          <div class="tags"><span class="tag">Research-driven</span><span class="tag">Acceptance criteria</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Maps all 6 research v2 opportunities to product responses</li>
+            <li>IA, user flows, data model, test plan documented</li>
+            <li>Target: <code>prototypes/itinerary-builder-v0.1.html</code></li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="docs/specs/itinerary-builder-single-html.md" target="_blank">Open spec</a>
+            <a class="link-btn" href="research-itinerary-v2.html" target="_blank">Research v2</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- desktop advisor + builder -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">desktop · advisor + builder</span>
+            <span class="date">Jun 26–27, 2026</span>
+            <span class="badge standalone">Desktop refs</span>
+          </div>
+          <h2 class="entry-title">Advisor workspace + single-trip builder (desktop folder)</h2>
+          <p class="entry-desc">Earlier standalone HTML pair: advisor library/templates/engagement shell and map-first single-trip builder. Source references for vc1.2 advisor IA before v0.5 integration.</p>
+          <div class="tags"><span class="tag">Advisor IA</span><span class="tag">Templates</span><span class="tag">Engagement</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li><code>itinerary-dashboard.html</code> — Itineraries library, Templates, Engagement tabs</li>
+            <li><code>itinerary-builder.html</code> — map-first single-trip builder with Leaflet</li>
+            <li><code>Advisor_Dashboard_Spec.md</code> — IA + screen specs for advisor layer</li>
+            <li>Reviewed and scope-trimmed → led to MVP vc1.2 / v0.5.0 integration</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <span class="link-btn muted">itinerary-dashboard.html (desktop only)</span>
+            <span class="link-btn muted">itinerary-builder.html (desktop only)</span>
+          </div>
+          <div class="path-note">Paths: <code>~/Desktop/doptor/projects/tripwheel/itinerary-dashboard.html</code>, <code>itinerary-builder.html</code>, <code>Advisor_Dashboard_Spec.md</code></div>
+        </div>
+      </article>
+
+      <!-- demo bugfix -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">tripwheel-itinerary · fix</span>
+            <span class="date">Jun 27, 2026</span>
+          </div>
+          <h2 class="entry-title">Marketing demo — 8 bug fixes</h2>
+          <p class="entry-desc">Polish pass on Kyoto/Osaka demo prototype after initial ship. Git commit <code>d50152f</code>.</p>
+          <div class="tags"><span class="tag">Bug fix</span><span class="tag">Demo</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Fixed startTime calc (parseTime/fmtTime helpers)</li>
+            <li>Guarded undefined transitFromPrev on AI suggestions</li>
+            <li>Removed duplicate blurb on Fushimi Inari</li>
+            <li>Replaced arguments.callee with named editTripTitle</li>
+            <li>Fixed unicode rainy toast, date range mismatch, drag index reset</li>
+            <li>Replaced 11 broken Unsplash photo URLs</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/tripwheel-itinerary.html" target="_blank">Open demo</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- demo v0 -->
+      <article class="entry" data-type="prototype">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">tripwheel-itinerary · v0</span>
+            <span class="date">Jun 26, 2026</span>
+            <span class="badge stable">Demo</span>
+          </div>
+          <h2 class="entry-title">Marketing-grade itinerary demo (Kyoto/Osaka)</h2>
+          <p class="entry-desc">Single-file scripted happy-path demo: map-first layout, AI fill-this-slot, drag reorder, rainy-day swap, share/viewer toggle, mocked co-planner presence. Git commit <code>a593d71</code>.</p>
+          <div class="tags"><span class="tag">Investor demo</span><span class="tag">Map-first</span><span class="tag">AI mock</span><span class="tag">Share</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Pre-seeded 5-day Kyoto &amp; Osaka trip (never empty on load)</li>
+            <li>Map-dominant two-pane layout with live route + transit</li>
+            <li>"Let Tripwheel fill this" AI suggestion flow (mocked)</li>
+            <li>Drag pins/list to reorder; weather-aware swap flourish</li>
+            <li>Share modal + read-only viewer mode + print-to-PDF</li>
+            <li>Mocked multiplayer avatars + presence animation</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="prototypes/tripwheel-itinerary.html" target="_blank">Open demo</a>
+          </div>
+          <div class="path-note">Desktop spec: <code>~/Desktop/doptor/projects/tripwheel/Tripwheel_Itinerary_Demo_Spec.md</code></div>
+        </div>
+      </article>
+
+      <!-- demo spec -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · demo v0</span>
+            <span class="date">Jun 26, 2026</span>
+            <span class="badge spec">Spec</span>
+          </div>
+          <h2 class="entry-title">Itinerary Builder demo spec</h2>
+          <p class="entry-desc">Defines the marketing-grade single-HTML demo: 60-second happy path, feature requirements mapped to research §9, acceptance criteria per opportunity.</p>
+          <div class="tags"><span class="tag">Demo</span><span class="tag">Happy path</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Anchor scenario: 5 days Kyoto &amp; Osaka</li>
+            <li>All 6 research opportunities → demo behaviors documented</li>
+            <li>Choreographed flow: land → AI fill → reorder → share → viewer</li>
+          </ul>
+          <div class="path-note">Path: <code>~/Desktop/doptor/projects/tripwheel/Tripwheel_Itinerary_Demo_Spec.md</code></div>
+        </div>
+      </article>
+
+      <!-- advisor spec review -->
+      <article class="entry" data-type="spec">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">spec · vc1.2 review</span>
+            <span class="date">Jun 27, 2026</span>
+            <span class="badge spec">Review</span>
+          </div>
+          <h2 class="entry-title">Advisor dashboard spec review + scope correction</h2>
+          <p class="entry-desc">Reviewed itinerary-builder-Spec-vc1.2: flagged overreach vs v0.4.3 minimalism, premature engagement tab, builder handoff gaps. Led to trimmed MVP vc1.2 scope.</p>
+          <div class="tags"><span class="tag">Scope trim</span><span class="tag">Product review</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Critical: advisor shell treated builder as external handoff, not core product</li>
+            <li>High: stat rows + engagement analytics conflict with minimal dashboard direction</li>
+            <li>Outcome: MVP filter (both-sides value) → v0.5.0 integrated approach</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn" href="prototypes/itinerary-builder-Spec-vc1.2.md" target="_blank">Spec vc1.2</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- research -->
+      <article class="entry" data-type="research">
+        <div class="entry-head">
+          <div class="entry-top">
+            <span class="version-tag">research-itinerary-v2</span>
+            <span class="date">Jun 26, 2026</span>
+            <span class="badge research">Foundation</span>
+          </div>
+          <h2 class="entry-title">Travel itinerary research v2 (sourced &amp; fact-checked)</h2>
+          <p class="entry-desc">Market/user research establishing Tripwheel's itinerary opportunity: beautiful shareable pages, map-first gap, AI draft + human polish, offline need, smart day builder, multiplayer gap.</p>
+          <div class="tags"><span class="tag">Competitive</span><span class="tag">JTBD</span><span class="tag">Opportunities</span></div>
+        </div>
+        <div class="entry-body">
+          <ul class="changelog">
+            <li>Fact-checked corrections vs v1 research</li>
+            <li>6 product opportunities defined in §9 (basis for all subsequent specs)</li>
+            <li>Canonical copy in design repo; duplicate in desktop project folder</li>
+          </ul>
+          <div class="section-label">Links</div>
+          <div class="links">
+            <a class="link-btn primary" href="research-itinerary-v2.html" target="_blank">Open research</a>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <footer>
+      Tripwheel · shad@tripwheel.io · Itinerary version log · Jul 1, 2026<br>
+      <a href="index.html" style="color:var(--primary);text-decoration:none">← Back to main version log</a>
+    </footer>
+  </div>
+
+  <script>
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.entry').forEach(entry => {
+          if (filter === 'all') entry.classList.remove('hidden');
+          else entry.classList.toggle('hidden', entry.dataset.type !== filter);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Itinerary Research v2 — Sourced & Fact-Checked</title>
+<style>
+  :root{
+    --indigo:#4F46E5; --indigo-dark:#3730A3; --indigo-soft:#EEF2FF;
+    --ink:#111827; --muted:#6B7280; --line:#E5E7EB; --bg:#FFFFFF;
+    --good:#059669; --warn:#D97706; --bad:#DC2626; --card:#FAFAFB;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px 120px;}
+  header.hero{background:linear-gradient(135deg,var(--indigo),var(--indigo-dark));color:#fff;
+    padding:64px 24px 56px;margin-bottom:0;}
+  header.hero .inner{max-width:880px;margin:0 auto;}
+  .tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;margin-bottom:18px;}
+  header.hero h1{font-size:40px;line-height:1.15;margin:0 0 14px;font-weight:800;letter-spacing:-.02em;}
+  header.hero p{font-size:18px;margin:0 0 18px;max-width:640px;opacity:.94;}
+  .meta{font-size:13px;opacity:.82;}
+  .corrections{background:#FFFBEB;border:1px solid #FCD34D;border-radius:14px;padding:22px 24px;margin:36px 0;}
+  .corrections h3{margin:0 0 10px;font-size:16px;color:#92400E;}
+  .corrections ul{margin:0;padding-left:20px;}
+  .corrections li{margin:6px 0;font-size:14.5px;}
+  .sec-num{font-size:64px;font-weight:800;color:var(--indigo-soft);line-height:1;margin:56px 0 -28px;}
+  h2{font-size:28px;font-weight:800;letter-spacing:-.01em;margin:0 0 8px;}
+  h2 + .lede{color:var(--muted);font-size:16px;margin:0 0 26px;max-width:680px;}
+  h4{font-size:18px;margin:0 0 6px;font-weight:700;}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:30px 0;}
+  .stat{background:var(--indigo-soft);border-radius:14px;padding:18px 14px;text-align:center;}
+  .stat .n{font-size:30px;font-weight:800;color:var(--indigo);line-height:1.1;}
+  .stat .l{font-size:12.5px;color:var(--ink);margin-top:6px;}
+  .stat .src{font-size:10.5px;color:var(--muted);margin-top:6px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:14px 0;}
+  .card .badge{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--indigo);background:var(--indigo-soft);padding:4px 9px;border-radius:999px;margin-bottom:10px;}
+  .card p{margin:6px 0 0;font-size:15px;}
+  table{width:100%;border-collapse:collapse;margin:24px 0;font-size:13.5px;}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--indigo);color:#fff;font-weight:600;}
+  tr:nth-child(even) td{background:var(--card);}
+  sup a{color:var(--indigo);text-decoration:none;font-weight:700;font-size:11px;padding:0 1px;}
+  sup a:hover{text-decoration:underline;}
+  .quote{border-left:4px solid var(--indigo);background:var(--card);padding:14px 18px;margin:18px 0;
+    font-style:italic;border-radius:0 10px 10px 0;font-size:15px;}
+  .quote .who{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:8px;}
+  .flag{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:12px;padding:16px 20px;margin:22px 0;font-size:14px;}
+  .flag b{color:var(--bad);}
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;margin:2px 4px 2px 0;}
+  .p-good{background:#ECFDF5;color:var(--good);} .p-warn{background:#FFFBEB;color:var(--warn);} .p-bad{background:#FEF2F2;color:var(--bad);}
+  .refs{margin-top:50px;border-top:2px solid var(--line);padding-top:30px;}
+  .refs ol{padding-left:22px;font-size:13.5px;line-height:1.7;}
+  .refs li{margin:7px 0;}
+  .refs a{color:var(--indigo);word-break:break-word;}
+  footer{color:var(--muted);font-size:13px;margin-top:50px;border-top:1px solid var(--line);padding-top:20px;}
+  @media(max-width:640px){.statgrid{grid-template-columns:repeat(2,1fr);}header.hero h1{font-size:30px;}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="inner">
+    <span class="tag">Research Report · v2 — Fact-Checked & Sourced</span>
+    <h1>Travel Itinerary: Travellers &amp; Advisors Perspective</h1>
+    <p>What travellers want from trip itineraries, what advisors wish they understood, and where existing tools fall short — now with every figure traced to a named source.</p>
+    <div class="meta">Updated June 26, 2026 · For: Tripwheel Product Research · Industry data: WTTC, UN Tourism, Phocuswright, McKinsey, Amadeus, CivicScience, Expedia/Sabre</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="corrections">
+    <h3>⚠ What changed from v1 (and why)</h3>
+    <ul>
+      <li><b>"$1.3T global travel market" → $11.6T.</b> v1 figure was an order of magnitude low. WTTC puts Travel &amp; Tourism's 2025 GDP contribution at US$11.6 trillion (9.8% of the global economy).<sup><a href="#r1">1</a></sup></li>
+      <li><b>"4.2B trips planned yearly" → removed.</b> No verifiable source. Replaced with UN Tourism's 1.52B international arrivals (2025) plus WTTC domestic/international spend split.<sup><a href="#r2">2</a></sup></li>
+      <li><b>Headline stats 73 / 68 / 82 / 91% → re-sourced.</b> Original four had no citation. Replaced with measured figures (stress 71%, apps 7–8, maps #1 app at 52%, itinerary-in-one-place 64%).<sup><a href="#r3">3</a></sup><sup><a href="#r4">4</a></sup></li>
+      <li><b>TripIt "no map" → corrected.</b> TripIt Pro <i>has</i> interactive maps (103 airports, walking directions). True gap is trip-<i>route</i> mapping, not maps entirely. "Paid for basics" also wrong — core features are free; Pro is a $49/yr add-on.<sup><a href="#r5">5</a></sup></li>
+      <li><b>Reddit quotes → flagged unverified.</b> Cited post IDs all cluster in one narrow window and none surfaced in search; treat as illustrative, not evidence (see flag in §3).</li>
+    </ul>
+  </div>
+
+  <!-- 01 -->
+  <div class="sec-num">01</div>
+  <h2>Executive Summary &amp; Market Context</h2>
+  <p class="lede">Travellers are overwhelmed by planning, underserved by fragmented tools, and want something both organised and personal — against a backdrop of a record-breaking, AI-disrupted travel market.</p>
+
+  <div class="statgrid">
+    <div class="stat"><div class="n">$11.6T</div><div class="l">T&amp;T contribution to global GDP, 2025</div><div class="src">WTTC<sup><a href="#r1">1</a></sup></div></div>
+    <div class="stat"><div class="n">1.52B</div><div class="l">International arrivals, 2025</div><div class="src">UN Tourism<sup><a href="#r2">2</a></sup></div></div>
+    <div class="stat"><div class="n">71%</div><div class="l">Find trip planning stressful</div><div class="src">CivicScience<sup><a href="#r3">3</a></sup></div></div>
+    <div class="stat"><div class="n">7–8</div><div class="l">Apps used across one trip</div><div class="src">Expedia<sup><a href="#r4">4</a></sup></div></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">The Core Tension</span>
+    <p>Travellers want structure <i>and</i> spontaneity. They spend hours researching, then feel locked into rigid schedules. The best itineraries are frameworks, not contracts. Existing tools force a binary: spreadsheet rigidity or scattered-notes chaos. Meanwhile generative AI has collapsed the cost of a first draft — 78% of travellers who use GenAI say it improves their planning<sup><a href="#r6">6</a></sup> — shifting the value from "making a plan" to "making a plan that's beautiful, spatial, shareable, and trustworthy."</p>
+  </div>
+
+  <!-- 02 -->
+  <div class="sec-num">02</div>
+  <h2>What Travellers Actually Want</h2>
+  <p class="lede">Recurring themes from travel-app usage studies, traveller surveys, and forum discussion — each tied to a measured signal where one exists.</p>
+
+  <div class="card"><span class="badge">Most Wanted · Maps</span><h4>Visual + Map Integration</h4>
+    <p>Maps are the single most-used travel app category — 52% of leisure travellers, ahead of weather (51%) and airline apps (50%).<sup><a href="#r4">4</a></sup> Travellers want to see route, distance, and geographic flow. "An itinerary without a map is just a list."</p></div>
+
+  <div class="card"><span class="badge">Most Wanted · Offline</span><h4>Offline Access</h4>
+    <p>Critical for international travel, where roaming is a real cost — travellers racked up an estimated $60B+ in unexpected roaming charges in 2024, fuelling eSIM and offline-map adoption.<sup><a href="#r7">7</a></sup> Maps, schedules, and booking refs must work without data.</p></div>
+
+  <div class="card"><span class="badge">High Priority · Consolidation</span><h4>One Trip, One Place</h4>
+    <p>Seeing the entire itinerary in one place is the #2 most-wanted travel-app feature (64%), just behind real-time flight alerts (65%).<sup><a href="#r4">4</a></sup> The 7–8-app sprawl is tolerated, not loved.</p></div>
+
+  <div class="card"><span class="badge">High Priority · Sharing</span><h4>Easy Sharing for Groups</h4>
+    <p>Group travel is mainstream: 24% of travellers' trips are with friends, 34% with a partner, 34% with immediate family; 40% of millennials plan a friends trip within the year.<sup><a href="#r8">8</a></sup> Plans need copy-paste links, not app downloads or account walls.</p></div>
+
+  <div class="card"><span class="badge">Growing · AI</span><h4>AI-Assisted Planning</h4>
+    <p>~40% of global travellers already use AI tools for planning and 29% of US consumers have used AI for trips; itinerary creation is the #1 AI use case (~37%).<sup><a href="#r6">6</a></sup><sup><a href="#r9">9</a></sup> Users want a customisable starting point, not a blank canvas or a locked schedule.</p></div>
+
+  <div class="card"><span class="badge">Growing · Collaboration</span><h4>Collaborative Planning</h4>
+    <p>Multi-player editing is a top request for group trips — "you plan Day 1, I'll plan Day 2." Real-time co-editing, comments, and voting on activities. Largely unsolved across current tools (see §5).</p></div>
+
+  <!-- 03 -->
+  <div class="sec-num">03</div>
+  <h2>Top Pain Points</h2>
+  <p class="lede">The frustrations travellers express most — and the biggest product openings.</p>
+
+  <div class="flag"><b>Source caveat:</b> The Reddit threads quoted below appeared in v1 with links whose post IDs all fall in one narrow time window, and none could be independently retrieved (Reddit blocks automated fetching; search returned no matches). They are retained as <i>illustrative voice</i> only. Verify each link manually before quoting any of them externally. The pain-point <i>themes</i> themselves are corroborated by the cited surveys.</div>
+
+  <div class="card"><span class="badge">Pain #1</span><h4>Planning Overwhelm</h4><p>71% of US adults who arrange travel find it stressful — rising to 78% for parents of under-18s.<sup><a href="#r3">3</a></sup> The research phase is paralysing: too many options, no hierarchy.</p></div>
+  <div class="card"><span class="badge">Pain #2</span><h4>Tool Fragmentation</h4><p>Leisure travellers juggle 7–8 apps per trip; the market is oversaturated and disjointed, and even travel agencies cite content fragmentation as a top cost and CX problem.<sup><a href="#r4">4</a></sup><sup><a href="#r10">10</a></sup></p></div>
+  <div class="card"><span class="badge">Pain #3</span><h4>Rigid vs. Chaos</h4><p>No tool nails the balance: TripIt is strong on flights but thin on activities; Sheets is flexible but ugly; Wanderlog is capable but heavy for simple trips.<sup><a href="#r5">5</a></sup></p></div>
+  <div class="card"><span class="badge">Pain #4</span><h4>Sharing is Broken</h4><p>Most tools require the recipient to make an account or install an app. A no-login shareable link is still rare — yet group trips are the norm.<sup><a href="#r8">8</a></sup></p></div>
+  <div class="card"><span class="badge">Pain #5</span><h4>No Sense of Place</h4><p>Without map integration an itinerary is an abstract list. Travel is spatial; maps are the most-used travel app for exactly this reason.<sup><a href="#r4">4</a></sup></p></div>
+  <div class="card"><span class="badge">Pain #6</span><h4>Decision Paralysis</h4><p>Travellers don't want more options — they want confident, contextual recommendations. This is precisely where AI drafting plus human/local curation wins (§8).<sup><a href="#r6">6</a></sup></p></div>
+
+  <!-- 04 -->
+  <div class="sec-num">04</div>
+  <h2>What Advisors Wish You Knew</h2>
+  <p class="lede">Craft heuristics from professional trip planners. These are practitioner conventions, not survey statistics — presented as guidance, not data.</p>
+
+  <div class="card"><h4>Buffer Time is Sacred</h4><p>Amateurs pack every hour and end up stressed and late. Pros build in ~30% slack. Professional itineraries have gaps by design.</p></div>
+  <div class="card"><h4>Geographic Flow Beats Chronology</h4><p>Group by neighbourhood, not time of day. The map should inform the schedule — the same instinct travellers express when they rank maps their #1 tool.<sup><a href="#r4">4</a></sup></p></div>
+  <div class="card"><h4>One Anchor Per Day</h4><p>One must-do; everything else optional. If you only do the anchor, the day still counts as a success.</p></div>
+  <div class="card"><h4>Food is the Backbone</h4><p>Plan meals first, build the day's geography around them — breakfast near the hotel, lunch near the morning activity, dinner near the evening stop.</p></div>
+  <div class="card"><h4>Transport Times Are Lies</h4><p>Door-to-door ≠ the map's estimate. Add ~10 minutes per leg for finding the station, ticketing, and the wrong platform.</p></div>
+  <div class="card"><h4>The "Tuesday Test"</h4><p>Would the itinerary survive a rainy day? Good plans have a Plan B; great plans have a Plan B as good as Plan A.</p></div>
+
+  <div class="quote">"A good itinerary is 60% planned and 40% empty. The empty space is where memories happen."<span class="who">— Practitioner heuristic, widely echoed among professional advisors (attribution unverified)</span></div>
+
+  <!-- 05 -->
+  <div class="sec-num">05</div>
+  <h2>Competitive Landscape</h2>
+  <p class="lede">Where the leading tools stand. Feature claims below are checked against vendor docs and current reviews; sentiment is directional.</p>
+
+  <table>
+    <tr><th>Tool</th><th>Strengths</th><th>Weaknesses (corrected)</th><th>Status / note</th></tr>
+    <tr><td><b>Wanderlog</b></td><td>Map integration, collaborative, free tier, visual</td><td>Heavy for simple trips; signup required</td><td>Closest "Google Trips successor"</td></tr>
+    <tr><td><b>TripIt</b></td><td>Email auto-import, clean timeline, Pro flight tracking, airport maps (103)</td><td>No trip-<i>route</i> map; dated UI; best features behind $49/yr Pro<sup><a href="#r5">5</a></sup></td><td>Core app is free, not "paid for basics"</td></tr>
+    <tr><td><b>Google Sheets</b></td><td>Flexible, shareable, familiar, free</td><td>No map, no visuals, all manual</td><td>Default fallback for many</td></tr>
+    <tr><td><b>Notion</b></td><td>Customisable, embeds, collaborative</td><td>Not travel-specific; no map; setup overhead</td><td>"Beautiful but overkill"</td></tr>
+    <tr><td><b>Google Trips</b></td><td>Auto-import, clean timeline, offline</td><td>Shut down Aug 5, 2019; folded into Google Travel/Maps<sup><a href="#r11">11</a></sup></td><td>Still-unfilled void</td></tr>
+    <tr><td><b>Viator / GetYourGuide</b></td><td>Bookings + real availability</td><td>Sales-focused; no custom plans/sharing</td><td>Booking, not planning</td></tr>
+    <tr><td><b>TripAdvisor</b></td><td>Huge review database</td><td>Cluttered, ad-heavy, weak planning tools</td><td>Research, not planning</td></tr>
+    <tr><td><b>AI tools (Layla, Roam, GuideGeek)</b></td><td>Instant, conversational, low effort</td><td>Generic output, thin local nuance, hallucinations</td><td>Good first draft, needs review<sup><a href="#r6">6</a></sup></td></tr>
+  </table>
+
+  <div class="card"><span class="badge">The Google Trips Void</span><p>Google Trips was discontinued on August 5, 2019 and its loved combination — Gmail auto-import, clean daily timeline, offline access, map integration — has never been fully replaced.<sup><a href="#r11">11</a></sup><sup><a href="#r12">12</a></sup> Wanderlog is the nearest match but lacks the auto-import magic. This remains the clearest open lane.</p></div>
+
+  <!-- 06 -->
+  <div class="sec-num">06</div>
+  <h2>Best Practices from Experienced Travellers</h2>
+  <p class="lede">Field-tested conventions for building a plan that survives contact with the trip.</p>
+
+  <div class="card"><span class="badge">Practice</span><h4>The 3-2-1 Rule</h4><p>3 must-dos, 2 nice-to-haves, 1 wild card per day. Covers highlights without over-scheduling.</p></div>
+  <div class="card"><span class="badge">Practice</span><h4>Neighbourhood Batching</h4><p>Group by area, not time. Never zigzag across the city — the same logic advisors apply with geographic flow.</p></div>
+  <div class="card"><span class="badge">Practice</span><h4>The Morning Anchor</h4><p>Plan one thing for the morning; the rest flows from it. Sleep in and you've lost nothing.</p></div>
+  <div class="card"><span class="badge">Practice</span><h4>Research in Phases</h4><p>Big picture → must-dos → gap-fill → logistics. Don't mix phases; it's what makes planning feel like 15 open tabs.</p></div>
+  <div class="card"><span class="badge">Practice</span><h4>The "Save for Later" List</h4><p>Keep a running list of spots; when a free hour appears, check what's nearby. Spontaneity needs preparation.</p></div>
+  <div class="card"><span class="badge">Practice</span><h4>Transport Overlays</h4><p>Overlay the plan on the transit map. Activities on one line should be grouped — transit lines are the skeleton of a good day.</p></div>
+
+  <!-- 07 -->
+  <div class="sec-num">07</div>
+  <h2>What Makes a Great Digital Itinerary</h2>
+  <p class="lede">UX patterns that separate good tools from great ones, anchored to the demand signals above.</p>
+
+  <div class="card"><span class="badge">Must Have</span><h4>Interactive Map as Primary View</h4><p>The map <i>is</i> the itinerary, not a sidebar. Maps are the #1 travel-app category;<sup><a href="#r4">4</a></sup> lead with geography, support with time.</p></div>
+  <div class="card"><span class="badge">Must Have</span><h4>Day-by-Day + Timeline Toggle</h4><p>Some think in days, others in timelines. Let users switch between the full-trip view and a single-day detail view.</p></div>
+  <div class="card"><span class="badge">Must Have</span><h4>One-Click Share Link</h4><p>No signup, no app, no account. Copy link → recipient sees it. With a "download PDF" for the least tech-savvy. Table stakes for a group-trip world.<sup><a href="#r8">8</a></sup></p></div>
+  <div class="card"><span class="badge">Delighter</span><h4>Photo Gallery per Location</h4><p>See each place before you go — auto-fetched imagery beats text descriptions.</p></div>
+  <div class="card"><span class="badge">Delighter</span><h4>Transit Time Estimates</h4><p>Auto-calc travel time between consecutive stops to kill the zigzag — and pad it, because door-to-door ≠ map time.</p></div>
+  <div class="card"><span class="badge">Delighter</span><h4>Weather-Aware Suggestions</h4><p>Check the forecast and propose indoor swaps for rainy days. Proactive, not reactive — the automated "Tuesday Test."</p></div>
+
+  <div class="card"><span class="badge">The Shareability Test</span><p>The best itinerary tool is the one your least tech-savvy relative can open. If sharing needs an app, account, or login, you lose much of your audience. Gold standard: <b>open link → see beautiful itinerary → done.</b></p></div>
+
+  <!-- 08 -->
+  <div class="sec-num">08</div>
+  <h2>Emerging Trends</h2>
+  <p class="lede">Where travel planning is heading — and where the openings are.</p>
+
+  <div class="card"><span class="badge">Trend</span><h4>AI-Generated Itineraries</h4><p>The fastest-moving shift. ~40% of travellers use AI to plan, 78% say it improves planning, and AI-referred traffic to US travel sites jumped ~3,500% YoY in mid-2025.<sup><a href="#r6">6</a></sup><sup><a href="#r9">9</a></sup><sup><a href="#r13">13</a></sup> But output is generic — the opportunity is AI draft + human/local curation.</p></div>
+  <div class="card"><span class="badge">Trend</span><h4>Social Itinerary Sharing</h4><p>TikTok and Instagram created "itinerary culture" — the itinerary is the travel content. Embeddable, beautiful, shareable plans are the new travel blog.</p></div>
+  <div class="card"><span class="badge">Trend</span><h4>Micro-Trip Planning</h4><p>Weekend getaways and 2–4 day city breaks are underserved by tools built for two-week vacations.</p></div>
+  <div class="card"><span class="badge">Trend</span><h4>Multigenerational &amp; Group Travel</h4><p>Group travel is structurally large and growing — 71% of grandparents have taken a recent multigen trip; 92% of parents plan to travel with kids next year.<sup><a href="#r14">14</a></sup> Tools that handle many planners and viewers win.</p></div>
+  <div class="card"><span class="badge">Trend</span><h4>Plan-to-Book Integration</h4><p>Users want to plan and book in one flow — "see the activity, book it, it appears in the itinerary." The pipeline is broken in most tools.</p></div>
+
+  <!-- 09 -->
+  <div class="sec-num">09</div>
+  <h2>Opportunities for Tripwheel</h2>
+  <p class="lede">The gaps Tripwheel can own, mapped to the evidence above.</p>
+
+  <div class="card"><span class="badge">Differentiator</span><h4>Beautiful + Shareable by Default</h4><p>Every itinerary is a gorgeous, no-login web page. Link → see → done. Directly fills the Google Trips void<sup><a href="#r11">11</a></sup> and serves a group-trip-default audience.<sup><a href="#r8">8</a></sup></p></div>
+  <div class="card"><span class="badge">Differentiator</span><h4>Map-First, Not Map-Sidebar</h4><p>The map is the interface — drag pins to reorder, click to expand. Aligns with maps being travellers' #1 tool.<sup><a href="#r4">4</a></sup> Nobody does this cleanly.</p></div>
+  <div class="card"><span class="badge">Differentiator</span><h4>AI Draft → Human Polish</h4><p>AI generates the starting point; local experts / community refine it. The hybrid beats pure-AI (generic) and pure-manual (slow) — and 84% of AI users already say the tools improved their experience, so the draft step is welcomed.<sup><a href="#r6">6</a></sup></p></div>
+  <div class="card"><span class="badge">User Need</span><h4>Offline-First Design</h4><p>PWA + service worker: full itinerary and maps without data. A genuine technical moat for international travellers facing real roaming costs.<sup><a href="#r7">7</a></sup></p></div>
+  <div class="card"><span class="badge">User Need</span><h4>Smart Day Builder</h4><p>"I have 3 things today — fill the gaps." Suggest nearby activities, food, and transit to cut decision fatigue while keeping flexibility.</p></div>
+  <div class="card"><span class="badge">Market Gap</span><h4>Multi-Player Planning</h4><p>Real-time co-editing, comments, voting, conflict resolution. The group-trip problem is structurally large and still unsolved.<sup><a href="#r8">8</a></sup></p></div>
+
+  <div class="card"><span class="badge">Positioning</span><p>There is no <b>"beautiful, shareable, map-first"</b> itinerary tool that serves both planners and viewers. Wanderlog is powerful but heavy; TripIt is functional but dated; Sheets is flexible but soulless; Notion is customisable but overkill. <b>Tripwheel can own the space between "beautiful" and "functional."</b></p></div>
+
+  <div class="statgrid">
+    <div class="stat"><div class="n">$11.6T</div><div class="l">Global T&amp;T market (2025)</div><div class="src">WTTC<sup><a href="#r1">1</a></sup></div></div>
+    <div class="stat"><div class="n">~40%</div><div class="l">Travellers already using AI to plan</div><div class="src">Statista/industry<sup><a href="#r9">9</a></sup></div></div>
+    <div class="stat"><div class="n">52%</div><div class="l">Use maps — the #1 travel app</div><div class="src">Expedia<sup><a href="#r4">4</a></sup></div></div>
+    <div class="stat"><div class="n">0</div><div class="l">"Beautiful + map-first + no-login" tools</div><div class="src">This analysis</div></div>
+  </div>
+
+  <!-- REFERENCES -->
+  <div class="refs">
+    <h2 id="references">Sources &amp; References</h2>
+    <p class="lede">Every quantitative claim above maps to a numbered source here. Reddit quotes are illustrative and unverified (see §3 flag).</p>
+    <ol>
+      <li id="r1">WTTC — <i>Travel &amp; Tourism Sees Best Year Ever, Outpacing the Global Economy in 2025</i> (US$11.6T GDP contribution; 9.8% of global economy; 366M jobs). <a href="https://wttc.org/news/travel-tourism-sees-best-year-ever,-outpacing-the-global-economy-in-2025">wttc.org</a> · methodology: <a href="https://wttc.org/research/economic-impact/">Economic Impact Research</a></li>
+      <li id="r2">UN Tourism — <i>International tourist arrivals up 4% in 2025</i> (1.52B international tourists; US$2.02T international receipts). <a href="https://www.untourism.int/news/international-tourist-arrivals-up-4-in-2025-reflecting-strong-travel-demand-around-the-world">untourism.int</a></li>
+      <li id="r3">CivicScience — <i>Many Americans Are Feeling Stressed Over Travel Planning</i> (71% find planning stressful; 78% among parents). <a href="https://civicscience.com/as-vacation-season-heats-up-many-americans-are-feeling-stressed-over-travel-planning/">civicscience.com</a></li>
+      <li id="r4">Travel Agent Central / Expedia data — <i>Nearly Two-Thirds of Travelers Rely on Mobile Apps During Trip</i> (7–8 apps per trip; maps 52%, weather 51%, airlines 50%; itinerary-in-one-place 64%; flight alerts 65%). <a href="https://www.travelagentcentral.com/running-your-business/stats-nearly-two-thirds-travelers-rely-mobile-apps-during-trip">travelagentcentral.com</a></li>
+      <li id="r5">Going — <i>TripIt Review 2026</i> &amp; TripIt Pro (free core app; Pro $49/yr; interactive maps for 103 airports). <a href="https://www.going.com/guides/tripit-review">going.com</a> · <a href="https://www.tripit.com/web/pro">tripit.com/web/pro</a></li>
+      <li id="r6">Phocuswright — <i>From hype to habit: 78% of travelers say GenAI improves trip planning</i> (84% say AI improved their experience; itinerary creation a top use case). <a href="https://www.phocuswright.com/Travel-Research/Research-Updates/2025/From-hype-to-habit-78-percent-of-travelers-say-GenAI-improves-trip-planning">phocuswright.com</a></li>
+      <li id="r7">Roaming &amp; offline-map demand context (est. $60B+ unexpected roaming charges, 2024; eSIM/offline-map shift). <a href="https://thebossmagazine.com/post/avoid-roaming-charges-abroad-2026/">thebossmagazine.com</a> · <a href="https://simology.io/blog/best-offline-maps-travel-2025-google-vs-apple-vs-mapsme">simology.io</a></li>
+      <li id="r8">Talker Research — <i>America's 2025 travel snapshot</i> (trip companions: partner 34%, immediate family 34%, friends 24%; 40% of millennials plan a friends trip). <a href="https://talkerresearch.com/study-finds-americas-2025-travel-snapshot/">talkerresearch.com</a></li>
+      <li id="r9">Statista — <i>Generative AI use for leisure travel planning, US/Canada</i> (~40% global use AI; 29% of US consumers). <a href="https://www.statista.com/statistics/1427995/generative-ai-use-leisure-travel-planning-us-canada/">statista.com</a> · context: <a href="https://www.mckinsey.com/featured-insights/week-in-charts/travel-planning-gets-an-ai-upgrade">McKinsey</a></li>
+      <li id="r10">Sabre — <i>Information overload: content fragmentation is driving up agency costs</i>. <a href="https://www.sabre.com/insights/releases/information-overload-sabres-global-travel-agency-survey-finds-content-fragmentation-is-driving-up-agency-costs-and-undermining-customer-experience/">sabre.com</a></li>
+      <li id="r11">Google Travel — Wikipedia (Google Trips discontinued August 5, 2019; folded into Google Travel/Maps). <a href="https://en.wikipedia.org/wiki/Google_Travel">en.wikipedia.org/wiki/Google_Travel</a></li>
+      <li id="r12">GBTA — <i>Google Shutting Down Trips App in Favor of Google Travel</i>. <a href="https://gbta.org/google-shutting-down-trips-app-in-favor-of-google-travel/">gbta.org</a></li>
+      <li id="r13">IT Brief — <i>Generative AI drives 3,500% surge in US travel planning online</i>. <a href="https://itbrief.news/story/generative-ai-drives-3-500-surge-in-us-travel-planning-online">itbrief.news</a></li>
+      <li id="r14">Family Travel Association (via SYTA) — <i>2025 Family Travel Survey</i> (92% of parents likely to travel with kids; 71% of grandparents took a recent multigen trip). <a href="https://syta.org/blog/the-2025-family-travel-survey-from-the-family-travel-association/">syta.org</a></li>
+      <li id="r15">Amadeus — <i>Gen AI and social media transform how U.S. travelers plan travel</i>. <a href="https://amadeus.com/en/newsroom/press-releases/amadeus-research-gen-ai-social-media-transform-us-travelers-plan">amadeus.com</a></li>
+    </ol>
+  </div>
+
+  <footer>
+    Travel Itinerary Research v2 — compiled June 26, 2026 for Tripwheel product research.<br>
+    Industry figures sourced and dated above. Qualitative advisor heuristics and Reddit quotes are illustrative, not statistical. Market estimates vary by methodology (T&amp;T GDP contribution vs. total economic footprint vs. OTA revenue) — figures here use WTTC's GDP-contribution basis.
+  </footer>
+
+</div>
+</body>
+</html>

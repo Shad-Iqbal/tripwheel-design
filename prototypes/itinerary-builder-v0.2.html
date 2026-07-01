@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tripwheel — Itinerary Builder v0.2 (tool)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+/* ============================================================
+   Design tokens — inherited verbatim from v0.4.3-states.html
+   ============================================================ */
+:root{
+  --n-0:#ffffff; --n-50:#fafafa; --n-100:#f4f4f5; --n-150:#ececef;
+  --n-200:#dddddd; --n-300:#d4d4d8; --n-400:#a1a1aa; --n-500:#71717a;
+  --n-600:#52525b; --n-700:#3f3f46; --n-800:#27272a; --n-900:#18181b;
+  --a-50:#eff6ff; --a-100:#dbeafe; --a-200:#bfdbfe; --a-500:#3b82f6;
+  --a-600:#2563eb; --a-700:#1d4ed8;
+  --s-ok-50:#ecfdf5; --s-ok-500:#10b981; --s-ok-600:#059669;
+  --s-warn-50:#fffbeb; --s-warn-500:#f59e0b; --s-warn-600:#d97706;
+  --s-err-50:#fef2f2; --s-err-500:#ef4444; --s-err-600:#dc2626;
+  --s-info-50:#eff6ff; --s-info-500:#3b82f6;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
+  --s7:28px; --s8:32px; --s10:40px; --s12:48px; --s16:64px;
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-2xl:20px; --r-full:9999px;
+  --sh-xs:0 1px 2px rgba(0,0,0,.03);
+  --sh-sm:0 2px 8px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.02);
+  --sh-md:0 4px 16px rgba(0,0,0,.05), 0 2px 6px rgba(0,0,0,.03);
+  --sh-lg:0 8px 30px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.03);
+  --sh-xl:0 16px 40px rgba(0,0,0,.08), 0 6px 16px rgba(0,0,0,.04);
+  --font-sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --t-xs:11.5px; --t-sm:13px; --t-base:14px; --t-md:15px;
+  --t-lg:17px; --t-xl:20px; --t-2xl:24px; --t-3xl:30px; --t-4xl:36px;
+  --sidebar-w:240px; --topbar-h:60px;
+  --bw:0.5px; --border:#dddddd; --border-hover:#cccccc;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{font-family:var(--font-sans);font-size:var(--t-base);line-height:1.5;color:var(--n-900);background:var(--n-0);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+ul{margin:0;padding:0;list-style:none}
+h1,h2,h3,h4,h5,h6{margin:0;font-weight:600;letter-spacing:-0.01em}
+p{margin:0}
+img{display:block;max-width:100%}
+hr{border:none;border-top:var(--bw) solid var(--border);margin:0}
+::selection{background:var(--a-100);color:var(--a-700)}
+
+/* ---- App shell (matches v0.4.3) ---- */
+.app-shell{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
+.sidebar{background:var(--n-0);border-right:var(--bw) solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-head{height:var(--topbar-h);padding:0 var(--s5);display:flex;align-items:center;gap:var(--s3);border-bottom:var(--bw) solid var(--border)}
+.brand-mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--a-600),var(--a-700));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.sidebar-head .wordmark{font-weight:600;color:var(--n-900);font-size:15px;letter-spacing:-0.01em}
+.sidebar-body{flex:1;overflow-y:auto;padding:var(--s4) var(--s3) var(--s6)}
+.nav-label{font-size:var(--t-xs);font-weight:600;color:var(--n-500);text-transform:uppercase;letter-spacing:.06em;padding:var(--s3) var(--s3) var(--s2)}
+.nav-item{display:flex;align-items:center;gap:var(--s3);padding:8px 12px;border-radius:var(--r-md);color:var(--n-700);font-size:var(--t-base);font-weight:500;cursor:pointer;transition:all .12s ease;position:relative}
+.nav-item:hover{background:var(--n-100);color:var(--n-900)}
+.nav-item.active{background:var(--a-50);color:var(--a-700)}
+.nav-item.active::before{content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--a-600);border-radius:0 3px 3px 0}
+.nav-item .ni-icon{width:18px;height:18px;flex-shrink:0;color:currentColor;opacity:.85}
+.nav-item .ni-label{flex:1}
+.nav-item .ni-soon{font-size:10.5px;font-weight:600;padding:2px 6px;border-radius:var(--r-full);background:var(--n-100);color:var(--n-500);letter-spacing:.02em}
+.nav-item.disabled{color:var(--n-400);cursor:not-allowed}
+.nav-item.disabled:hover{background:transparent;color:var(--n-400)}
+.nav-item.disabled .ni-icon{opacity:.45}
+.sidebar-foot{padding:var(--s3);border-top:var(--bw) solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);border-radius:var(--r-md);cursor:pointer;transition:background .12s ease}
+.user-chip:hover{background:var(--n-100)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#fbcfe8,#a5b4fc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;flex-shrink:0}
+.user-chip .uc-meta{flex:1;min-width:0}
+.user-chip .uc-name{font-weight:600;font-size:13.5px;color:var(--n-900);line-height:1.2}
+.user-chip .uc-ws{font-size:12px;color:var(--n-500);line-height:1.3}
+
+/* Topbar */
+.app-main{min-width:0;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);border-bottom:var(--bw) solid var(--border);display:flex;align-items:center;padding:0 var(--s8);gap:var(--s5);position:sticky;top:0;z-index:50}
+.tb-titles{display:flex;flex-direction:column;min-width:0}
+.tb-titles .bc{font-size:12px;color:var(--n-500);display:flex;align-items:center;gap:6px}
+.tb-titles .bc a{color:var(--n-500)}
+.tb-titles .bc .current{color:var(--n-700);font-weight:500}
+.tb-title{font-size:16px;font-weight:600;color:var(--n-900);line-height:1.2;margin-top:1px}
+.tb-actions{margin-left:auto;display:flex;align-items:center;gap:var(--s2)}
+.divider-v{width:1px;height:24px;background:var(--border);margin:0 var(--s1)}
+
+/* Mode toggle (segmented) */
+.mode-toggle{display:inline-flex;background:var(--n-100);border-radius:var(--r-md);padding:3px;gap:2px}
+.mode-toggle button{padding:6px 14px;border-radius:var(--r-sm);font-size:var(--t-sm);font-weight:500;color:var(--n-600);transition:all .15s ease}
+.mode-toggle button.active{background:var(--n-0);color:var(--n-900);box-shadow:var(--sh-xs)}
+
+/* Buttons (v0.4.3) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);padding:0 14px;height:36px;border-radius:var(--r-md);font-weight:500;font-size:13.5px;line-height:1;transition:all .15s ease;white-space:nowrap}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+.btn-primary{background:var(--a-600);color:#fff}
+.btn-primary:hover{background:var(--a-700)}
+.btn-secondary{background:var(--n-0);color:var(--n-800);border:var(--bw) solid var(--border)}
+.btn-secondary:hover{background:var(--n-50);border-color:var(--border-hover)}
+.btn-ghost{color:var(--n-700);background:transparent}
+.btn-ghost:hover{background:var(--n-100);color:var(--n-900)}
+.btn-sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:var(--r-sm)}
+.btn-block{width:100%}
+
+/* Icon button */
+.icon-btn{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--n-600);position:relative;transition:all .12s ease}
+.icon-btn:hover{background:var(--n-100);color:var(--n-900)}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn.sm{width:28px;height:28px;border-radius:var(--r-sm)}
+.icon-btn.sm svg{width:15px;height:15px}
+
+/* Inputs (v0.4.3) */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;font-weight:500;color:var(--n-700)}
+.input,.textarea,.select{width:100%;background:var(--n-0);border:var(--bw) solid var(--border);border-radius:var(--r-md);padding:0 12px;height:38px;font-size:13.5px;color:var(--n-900);transition:all .15s ease;outline:none;display:flex;align-items:center}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--a-600);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.input::placeholder,.textarea::placeholder{color:var(--n-400)}
+.textarea{padding:10px 12px;height:auto;min-height:64px;resize:vertical;line-height:1.5;display:block;align-items:stretch}
+.field-hint{font-size:12px;color:var(--n-500)}
+
+/* Panels (v0.4.3) */
+.panel{background:var(--n-0);border:var(--bw) solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs)}
+.panel-head{padding:var(--s4) var(--s5);display:flex;align-items:center;gap:var(--s3);border-bottom:var(--bw) solid var(--border)}
+.panel-head .ph-title{font-size:14.5px;font-weight:600;color:var(--n-900)}
+.panel-head .ph-sub{font-size:12.5px;color:var(--n-500);margin-top:1px}
+.panel-head .ph-actions{margin-left:auto;display:flex;align-items:center;gap:var(--s2)}
+.panel-body{padding:var(--s5)}
+.panel-body.flush{padding:0}
+
+/* Pills (v0.4.3) */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:var(--r-full);font-size:11.5px;font-weight:600;letter-spacing:.01em;border:var(--bw) solid transparent}
+.pill .pdot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill-ok{background:var(--s-ok-50);color:var(--s-ok-600)}
+.pill-warn{background:var(--s-warn-50);color:var(--s-warn-600)}
+.pill-err{background:var(--s-err-50);color:var(--s-err-600)}
+.pill-info{background:var(--s-info-50);color:var(--a-700)}
+.pill-neutral{background:var(--n-100);color:var(--n-600)}
+.pill-accent{background:var(--a-50);color:var(--a-700)}
+.pill-outline{background:var(--n-0);border-color:var(--border);color:var(--n-700)}
+
+/* ============================================================
+   Itinerary Builder stage
+   ============================================================ */
+.ib-stage{flex:1;min-height:0;position:relative;background:var(--n-50)}
+.ib-view{display:none}
+.ib-view.active{display:block}
+.ib-builder.active{display:grid}
+
+/* Welcome */
+.ib-welcome{max-width:640px;margin:0 auto;padding:var(--s16) var(--s6);text-align:center}
+.ib-welcome .brand-mark.lg{width:44px;height:44px;border-radius:12px;margin:0 auto var(--s5)}
+.ib-welcome .brand-mark.lg svg{width:24px;height:24px}
+.ib-welcome h1{font-size:var(--t-3xl);font-weight:700;letter-spacing:-0.02em;margin-bottom:var(--s3)}
+.ib-welcome p{color:var(--n-500);font-size:var(--t-md);margin-bottom:var(--s6)}
+.ib-welcome .cta-row{display:flex;gap:var(--s3);justify-content:center;flex-wrap:wrap}
+.ib-restored{margin-top:var(--s6);font-size:var(--t-xs);color:var(--n-500);display:none}
+.ib-restored a{color:var(--a-600);cursor:pointer;text-decoration:underline}
+
+/* Builder grid */
+.ib-builder{display:grid;grid-template-columns:300px 1fr 348px;grid-template-rows:1fr;height:calc(100vh - var(--topbar-h))}
+.ib-builder > *{min-width:0;min-height:0;overflow:auto;background:var(--n-50)}
+.ib-col{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s4);border-right:var(--bw) solid var(--border)}
+.ib-col:last-child{border-right:none}
+.ib-col.center{border-right:var(--bw) solid var(--border);background:var(--n-50)}
+.ib-col .panel{flex-shrink:0}
+
+/* compact fields inside panels */
+.ib-col .field{margin-bottom:var(--s3)}
+.ib-col .field:last-child{margin-bottom:0}
+.ib-col .input,.ib-col .textarea,.ib-col .select{height:34px;font-size:13px}
+.ib-col .textarea{min-height:54px;padding:8px 10px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+
+/* segmented pill control */
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.seg button{padding:5px 10px;border-radius:var(--r-full);font-size:var(--t-xs);font-weight:500;border:var(--bw) solid var(--border);background:var(--n-0);color:var(--n-600);transition:all .12s}
+.seg button:hover{border-color:var(--border-hover)}
+.seg button.active{background:var(--a-600);color:#fff;border-color:var(--a-600)}
+
+/* day pills */
+.day-pills{display:flex;flex-direction:column;gap:var(--s2)}
+.day-pill{display:flex;align-items:center;gap:var(--s3);padding:9px var(--s3);border-radius:var(--r-md);border:var(--bw) solid var(--border);background:var(--n-0);cursor:pointer;transition:all .12s;text-align:left;width:100%}
+.day-pill:hover{border-color:var(--border-hover);background:var(--n-50)}
+.day-pill.active{border-color:var(--a-500);background:var(--a-50);box-shadow:0 0 0 1px var(--a-200)}
+.day-pill .dp-num{width:24px;height:24px;border-radius:50%;background:var(--n-100);color:var(--n-600);display:flex;align-items:center;justify-content:center;font-size:var(--t-xs);font-weight:600;flex-shrink:0}
+.day-pill.active .dp-num{background:var(--a-600);color:#fff}
+.day-pill .dp-meta{flex:1;min-width:0}
+.day-pill .dp-label{font-size:var(--t-sm);font-weight:600;color:var(--n-900);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-pill .dp-sub{font-size:var(--t-xs);color:var(--n-500);line-height:1.3}
+.day-pill .dp-flag{color:var(--s-warn-600)}
+.add-day-btn{width:100%;padding:8px;border:1px dashed var(--n-300);border-radius:var(--r-md);color:var(--n-500);font-size:var(--t-sm);font-weight:500;background:transparent;margin-top:var(--s2)}
+.add-day-btn:hover{color:var(--a-600);border-color:var(--a-200);background:var(--a-50)}
+
+/* center: day header + timeline */
+.day-bar{background:var(--n-0);border:var(--bw) solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-xs);padding:var(--s4) var(--s5);margin-bottom:var(--s4)}
+.day-bar .db-top{display:flex;align-items:center;gap:var(--s3)}
+.day-bar .db-title{font-size:var(--t-lg);font-weight:600}
+.day-bar .db-meta{margin-left:auto;display:flex;gap:var(--s2)}
+.day-bar .db-sub{color:var(--n-500);font-size:var(--t-sm);margin-top:2px}
+.day-bar .input{margin-top:var(--s3);height:34px;font-size:13px}
+
+.timeline{display:flex;flex-direction:column;gap:var(--s3)}
+.tl-empty{padding:var(--s12) var(--s6);text-align:center;color:var(--n-500);border:1px dashed var(--n-300);border-radius:var(--r-lg);background:var(--n-0)}
+.tl-empty .big{font-size:var(--t-md);color:var(--n-700);margin-bottom:var(--s2)}
+
+/* item card */
+.ib-item{background:var(--n-0);border:var(--bw) solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-xs);transition:box-shadow .12s,border-color .12s;overflow:hidden}
+.ib-item.focused{border-color:var(--a-500);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.ib-item.dragging{opacity:.5}
+.ib-item-head{display:flex;align-items:flex-start;gap:var(--s3);padding:var(--s3) var(--s4);cursor:grab}
+.ib-item-head .drag{color:var(--n-300);flex-shrink:0;margin-top:3px;cursor:grab}
+.ib-item-head .drag svg{width:14px;height:14px}
+.ib-pip{width:30px;height:30px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#fff}
+.ib-pip svg{width:15px;height:15px}
+.type-anchor{background:#0f766e}
+.type-activity{background:var(--a-600)}
+.type-meal{background:#d97706}
+.type-buffer{background:var(--n-400)}
+.type-transit{background:#7c3aed}
+.type-optional{background:#0891b2}
+.type-wildcard{background:#db2777}
+.type-planb{background:#4f46e5}
+.ib-item-main{flex:1;min-width:0}
+.ib-item-title-row{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.ib-item-title{font-weight:600;font-size:var(--t-md);color:var(--n-900)}
+.ib-item-title.empty{color:var(--n-400);font-weight:500}
+.ib-item-time{font-size:var(--t-xs);color:var(--n-500);font-variant-numeric:tabular-nums}
+.ib-item-loc{font-size:var(--t-xs);color:var(--n-600);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib-item-loc .noloc{color:var(--s-warn-600)}
+.tag-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.ib-item-actions{display:flex;gap:2px;flex-shrink:0}
+.ib-item-body{display:none;padding:0 var(--s4) var(--s4) calc(30px + var(--s3) + var(--s4))}
+.ib-item.expanded .ib-item-body{display:block}
+.ib-item-body .field{margin-bottom:var(--s3)}
+.ib-item-body .input,.ib-item-body .textarea,.ib-item-body .select{height:34px;font-size:13px}
+.ib-item-body .textarea{min-height:54px;padding:8px 10px}
+.type-picker{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:var(--s3)}
+.type-picker button{padding:4px 9px;border-radius:var(--r-full);font-size:var(--t-xs);font-weight:500;border:var(--bw) solid var(--border);color:var(--n-600);background:var(--n-0)}
+.type-picker button.active{background:var(--n-900);color:#fff;border-color:var(--n-900)}
+.ib-why{font-size:var(--t-sm);color:var(--n-700);background:var(--n-50);padding:var(--s3);border-radius:var(--r-md);border-left:3px solid var(--a-500);margin-top:var(--s2)}
+
+/* map panel */
+.ib-map-wrap{position:relative;height:260px;background:var(--n-100);border-radius:var(--r-md);overflow:hidden}
+#ibMap{position:absolute;inset:0}
+.map-fallback{position:absolute;inset:0;padding:var(--s3);overflow:auto;font-size:var(--t-sm);display:none}
+.map-fallback .rl-item{display:flex;gap:var(--s2);padding:6px 0;border-bottom:var(--bw) solid var(--border);cursor:pointer}
+.map-fallback .rl-item:hover{background:var(--n-50)}
+.map-fallback .rl-num{font-weight:600;color:var(--a-600);min-width:18px}
+.map-offline{position:absolute;inset:0;background:rgba(244,244,245,.96);display:none;align-items:center;justify-content:center;flex-direction:column;gap:var(--s2);padding:var(--s6);text-align:center;font-size:var(--t-sm);color:var(--n-600)}
+.map-offline svg{width:26px;height:26px;color:var(--n-400)}
+
+/* suggestions */
+.sug{background:var(--s-warn-50);border:1px solid #fde68a;border-radius:var(--r-md);padding:var(--s3) var(--s4);margin-bottom:var(--s3)}
+.sug.s-info{background:var(--s-info-50);border-color:var(--a-200)}
+.sug:last-child{margin-bottom:0}
+.sug-head{display:flex;align-items:center;gap:var(--s2);margin-bottom:4px}
+.sug-icon{width:15px;height:15px;flex-shrink:0;color:var(--s-warn-600)}
+.sug.s-info .sug-icon{color:var(--a-600)}
+.sug-title{font-weight:600;font-size:var(--t-sm)}
+.sug-msg{font-size:var(--t-xs);color:var(--n-700);line-height:1.45}
+.sug-actions{display:flex;gap:var(--s2);margin-top:var(--s2)}
+.sug-actions button{font-size:var(--t-xs);font-weight:600;padding:4px 10px;border-radius:var(--r-full);border:var(--bw) solid var(--n-300);background:var(--n-0);color:var(--n-700)}
+.sug-actions button.accept{background:var(--n-900);color:#fff;border-color:var(--n-900)}
+.sug.empty{color:var(--n-400);background:transparent;border-color:transparent;text-align:center;font-size:var(--t-xs);padding:var(--s6)}
+
+/* ============================================================
+   Traveler preview
+   ============================================================ */
+.ib-preview{background:var(--n-0);min-height:calc(100vh - var(--topbar-h))}
+.cover{position:relative;min-height:300px;display:flex;align-items:flex-end;color:#fff;overflow:hidden;background-size:cover;background-position:center}
+.cover.grad{background:linear-gradient(135deg,#1e3a8a,#4f46e5 55%,#7c3aed)}
+.cover .cover-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.12) 60%,rgba(0,0,0,.25))}
+.cover-inner{position:relative;z-index:2;max-width:880px;margin:0 auto;width:100%;padding:var(--s12) var(--s6)}
+.cover .c-dest{font-size:var(--t-sm);font-weight:600;text-transform:uppercase;letter-spacing:.12em;opacity:.9}
+.cover .c-title{font-size:var(--t-4xl);font-weight:700;letter-spacing:-0.02em;margin:var(--s2) 0 6px;line-height:1.05}
+.cover .c-dates{font-size:var(--t-md);opacity:.92}
+.cover .c-note{margin-top:var(--s4);font-size:var(--t-sm);opacity:.88;max-width:560px;line-height:1.55}
+.traveler-wrap{max-width:880px;margin:0 auto;padding:var(--s8) var(--s6) var(--s16)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3);margin-bottom:var(--s8)}
+.stat{padding:var(--s4);background:var(--n-50);border:var(--bw) solid var(--border);border-radius:var(--r-lg);text-align:center}
+.stat .v{font-size:var(--t-2xl);font-weight:700;color:var(--n-900)}
+.stat .k{font-size:var(--t-xs);color:var(--n-500);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.tv-daytabs{display:flex;gap:var(--s2);overflow-x:auto;padding-bottom:var(--s3);margin-bottom:var(--s6);border-bottom:var(--bw) solid var(--border)}
+.tv-daytabs button{padding:8px var(--s4);border-radius:var(--r-full);font-size:var(--t-sm);font-weight:500;color:var(--n-600);background:var(--n-100);white-space:nowrap;flex-shrink:0}
+.tv-daytabs button.active{background:var(--n-900);color:#fff}
+.tv-day{display:none}
+.tv-day.active{display:block}
+.tv-day-head{margin-bottom:var(--s5)}
+.tv-day-head .tv-title{font-size:var(--t-2xl);font-weight:700}
+.tv-day-head .tv-sub{font-size:var(--t-sm);color:var(--n-500);margin-top:4px}
+.tv-day-head .tv-focus{display:inline-block;margin-top:var(--s2);font-size:var(--t-xs);font-weight:600;padding:3px 10px;border-radius:var(--r-full);background:var(--a-50);color:var(--a-700)}
+.tv-map{height:180px;border-radius:var(--r-lg);margin-bottom:var(--s6);background:var(--n-100);overflow:hidden;border:var(--bw) solid var(--border)}
+.tv-map .map-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--n-500)}
+.tv-timeline{display:flex;flex-direction:column;gap:var(--s3)}
+.tv-item{display:flex;gap:var(--s4);padding:var(--s4);border-radius:var(--r-lg);background:var(--n-50);border:var(--bw) solid var(--border)}
+.tv-item.anchor{background:#ecfdf5;border-color:#a7f3d0}
+.tv-item.optional,.tv-item.wildcard{opacity:.78}
+.tv-item.planb{background:#eef2ff;border-color:#c7d2fe}
+.tv-item .tv-pip{width:34px;height:34px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:600;font-size:12px}
+.tv-item .tv-pip svg{width:16px;height:16px}
+.tv-item .tv-body{flex:1;min-width:0}
+.tv-item .tv-ititle{font-weight:600;font-size:var(--t-md)}
+.tv-item .tv-imeta{font-size:var(--t-xs);color:var(--n-500);margin-top:2px}
+.tv-item .tv-idesc{font-size:var(--t-sm);color:var(--n-700);margin-top:var(--s2);line-height:1.5}
+.tv-item .tv-why{font-size:var(--t-xs);color:var(--n-600);font-style:italic;margin-top:var(--s2);padding-left:var(--s3);border-left:2px solid var(--a-200)}
+.tv-item .tv-link{margin-top:var(--s2)}
+.tv-item .tv-link a{color:var(--a-600);font-size:var(--t-xs)}
+.tv-item .tv-link a:hover{color:var(--a-700)}
+.offline-notice{margin-top:var(--s8);padding:var(--s4);background:var(--s-warn-50);border:1px solid #fde68a;border-radius:var(--r-md);font-size:var(--t-sm);color:var(--s-warn-600);text-align:center;display:none}
+.offline-notice.show{display:block}
+
+/* save state pill */
+.save-pill .pdot{background:var(--n-400)}
+.save-pill.saved .pdot{background:var(--s-ok-500)}
+.save-pill.unsaved .pdot{background:var(--s-warn-500)}
+.save-pill.restored .pdot{background:var(--a-500)}
+
+/* ---- Modal ---- */
+.modal-veil{position:fixed;inset:0;background:rgba(24,24,27,.45);display:none;align-items:center;justify-content:center;z-index:1000;padding:var(--s4)}
+.modal-veil.show{display:flex}
+.modal{background:var(--n-0);border-radius:var(--r-xl);box-shadow:var(--sh-lg);max-width:560px;width:100%;max-height:85vh;overflow:auto}
+.modal-head{padding:var(--s5) var(--s6);border-bottom:var(--bw) solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:var(--t-lg)}
+.modal-body{padding:var(--s6)}
+.modal-body .hint{font-size:var(--t-sm);color:var(--n-500);margin-bottom:var(--s4);line-height:1.55}
+.modal-body .hint b{color:var(--n-700)}
+.modal textarea{width:100%;min-height:200px;padding:var(--s4);border:var(--bw) solid var(--border);border-radius:var(--r-md);font-family:ui-monospace,Menlo,monospace;font-size:13px;resize:vertical;outline:none}
+.modal textarea:focus{border-color:var(--a-600);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.modal .ai-copy{margin-top:var(--s4);padding:var(--s4);background:var(--a-50);border-radius:var(--r-md);font-size:var(--t-sm);color:var(--a-700);text-align:center}
+.modal-foot{padding:var(--s4) var(--s6);border-top:var(--bw) solid var(--border);display:flex;justify-content:flex-end;gap:var(--s2)}
+
+/* ---- Toast ---- */
+.toast{position:fixed;bottom:var(--s6);left:50%;transform:translateX(-50%) translateY(20px);background:var(--n-900);color:#fff;padding:10px var(--s5);border-radius:var(--r-full);font-size:var(--t-sm);box-shadow:var(--sh-lg);opacity:0;transition:all .2s ease;z-index:2000;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Leaflet pin */
+.tw-pin{background:transparent;border:none}
+
+/* ---- Mobile ---- */
+@media (max-width:1100px){
+  .ib-builder{grid-template-columns:260px 1fr 300px}
+}
+@media (max-width:860px){
+  .app-shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .ib-builder{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto}
+  .ib-builder > *{overflow:visible}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:0 var(--s4);gap:var(--s3)}
+  .tb-titles .bc{display:none}
+  .cover .c-title{font-size:var(--t-3xl)}
+}
+
+/* ---- Print ---- */
+@media print{
+  .sidebar,.topbar,.ib-item-actions,.drag,.tv-daytabs,.offline-notice,.btn,.mode-toggle,.divider-v{display:none!important}
+  body{background:#fff}
+  .app-shell{grid-template-columns:1fr}
+  .ib-stage{background:#fff}
+  .ib-view{display:block!important}
+  .ib-builder{display:none!important}
+  .ib-item{box-shadow:none;break-inside:avoid}
+  .traveler-wrap{max-width:none;padding:0 var(--s4)}
+  .cover{min-height:200px}
+  .tv-day{display:block!important;break-inside:avoid;margin-bottom:var(--s6)}
+  .tv-map{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR (matches v0.4.3) ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4L18.4 5.6"/></svg></span>
+      <span class="wordmark">Tripwheel</span>
+    </div>
+    <div class="sidebar-body">
+      <div class="nav-label">Tools</div>
+      <div class="nav-item" onclick="toastNav('Dashboard')"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span class="ni-label">Dashboard</span></div>
+      <div class="nav-item" onclick="toastNav('Social Media')"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg><span class="ni-label">Social Media</span></div>
+      <div class="nav-item" onclick="toastNav('Photo Tool')"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span class="ni-label">Photo Tool</span></div>
+
+      <div class="nav-label" style="margin-top:8px">Planning</div>
+      <div class="nav-item active"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="ni-label">Itinerary Builder</span></div>
+      <div class="nav-item disabled"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg><span class="ni-label">Trip Listing</span><span class="ni-soon">Soon</span></div>
+      <div class="nav-item disabled"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="ni-label">Bookings</span><span class="ni-soon">Soon</span></div>
+      <div class="nav-item disabled"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span class="ni-label">Payments</span><span class="ni-soon">Soon</span></div>
+      <div class="nav-item disabled"><svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="ni-label">Reports</span><span class="ni-soon">Soon</span></div>
+    </div>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="avatar">AR</div>
+        <div class="uc-meta"><div class="uc-name">Alex Rivera</div><div class="uc-ws">Northwind Travel Co.</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--n-400)"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN COLUMN ============ -->
+  <div class="app-main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="tb-titles">
+        <div class="bc"><a href="#">Northwind Travel Co.</a> <span style="color:var(--n-300)">/</span> <span class="current">Itinerary Builder</span></div>
+        <div class="tb-title" id="tbTitle">Itinerary Builder</div>
+      </div>
+      <div class="mode-toggle" id="modeToggle" style="margin-left:var(--s4)">
+        <button data-mode="build" class="active">Build</button>
+        <button data-mode="preview">Preview</button>
+      </div>
+      <div class="tb-actions">
+        <span class="pill pill-neutral save-pill saved" id="saveState"><span class="pdot"></span><span id="saveStateText">Saved locally</span></span>
+        <div class="divider-v"></div>
+        <button class="btn btn-secondary btn-sm" id="importBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Import AI draft</button>
+        <button class="btn btn-secondary btn-sm" id="shareBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Share</button>
+        <button class="btn btn-primary btn-sm" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>Export</button>
+      </div>
+    </header>
+
+    <!-- Stage -->
+    <div class="ib-stage">
+
+      <!-- WELCOME -->
+      <section class="ib-view active" id="welcomeView">
+        <div class="ib-welcome">
+          <div class="brand-mark lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
+          <h1>Build a beautiful, map-first itinerary</h1>
+          <p>Turn scattered plans into a polished, no-login traveler page. Plan in minutes, share with anyone.</p>
+          <div class="cta-row">
+            <button class="btn btn-primary btn-lg" id="startBlankBtn">Start a blank trip</button>
+            <button class="btn btn-secondary btn-lg" id="startSampleBtn">Load sample AI draft</button>
+            <button class="btn btn-ghost btn-lg" id="startImportBtn">Paste an AI draft</button>
+          </div>
+          <div class="ib-restored" id="restoredNote">↺ Restored a trip from this browser. <a id="restoredOpen">Open it →</a></div>
+        </div>
+      </section>
+
+      <!-- BUILDER -->
+      <section class="ib-view ib-builder" id="buildView">
+        <!-- LEFT -->
+        <aside class="ib-col left">
+          <div class="panel">
+            <div class="panel-head"><div class="ph-title">Trip details</div><div class="ph-actions"><button class="icon-btn sm" id="editTripBtn" title="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg></button></div></div>
+            <div class="panel-body">
+              <div class="field"><label>Title</label><input class="input" id="fTitle" placeholder="Lisbon long weekend"></div>
+              <div class="field"><label>Destination</label><input class="input" id="fDest" placeholder="Lisbon, Portugal"></div>
+              <div class="field-row">
+                <div class="field"><label>Start</label><input class="input" type="date" id="fStart"></div>
+                <div class="field"><label>End</label><input class="input" type="date" id="fEnd"></div>
+              </div>
+              <div class="field"><label>Travelers</label><div class="seg" id="fTravelers"><button data-v="solo">Solo</button><button data-v="couple">Couple</button><button data-v="friends">Friends</button><button data-v="family">Family</button><button data-v="multi">Multi-gen</button></div></div>
+              <div class="field"><label>Pace</label><div class="seg" id="fPace"><button data-v="relaxed">Relaxed</button><button data-v="balanced">Balanced</button><button data-v="packed">Packed</button></div></div>
+              <div class="field"><label>Cover image URL <span style="color:var(--n-400);font-weight:400">· blank = gradient</span></label><input class="input" id="fCover" placeholder="https://…"></div>
+              <div class="field"><label>Trip note</label><textarea class="textarea" id="fNote" placeholder="A short line for the cover…"></textarea></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="ph-title">Days</div><div class="ph-actions"><span class="pill pill-neutral" id="dayCount">0</span></div></div>
+            <div class="panel-body">
+              <div class="day-pills" id="dayPills"></div>
+              <button class="add-day-btn" id="addDayBtn">+ Add day</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- CENTER -->
+        <main class="ib-col center">
+          <div class="day-bar">
+            <div class="db-top">
+              <div class="db-title" id="dsTitle">Day 1</div>
+              <div class="db-meta"><span class="pill pill-accent" id="dsAnchorPill">0 anchors</span><span class="pill pill-neutral" id="dsStopPill">0 stops</span></div>
+            </div>
+            <div class="db-sub" id="dsSub">Build around one anchor, then add meals, buffers, and optionals.</div>
+            <input class="input" id="dsFocus" placeholder="Neighbourhood focus (e.g. Alfama)">
+            <input class="input" id="dsSummary" placeholder="One-line plan summary" style="margin-top:var(--s2)">
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </main>
+
+        <!-- RIGHT -->
+        <aside class="ib-col right">
+          <div class="panel">
+            <div class="panel-head"><div class="ph-title">Map</div><div class="ph-actions"><span class="pill pill-neutral" id="mapPinCount">0 pins</span></div></div>
+            <div class="panel-body flush">
+              <div class="ib-map-wrap">
+                <div id="ibMap"></div>
+                <div class="map-fallback" id="mapFallback"></div>
+                <div class="map-offline" id="mapOffline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><div>Map unavailable — itinerary still works as a route list.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="ph-title">Smart suggestions</div><div class="ph-actions"><span class="pill pill-info" id="sugCount">0</span></div></div>
+            <div class="panel-body" id="suggestions"></div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- PREVIEW -->
+      <section class="ib-view ib-preview" id="previewView">
+        <div class="cover grad" id="cover"><div class="cover-veil"></div>
+          <div class="cover-inner">
+            <div class="c-dest" id="cDest"></div>
+            <div class="c-title" id="cTitle"></div>
+            <div class="c-dates" id="cDates"></div>
+            <div class="c-note" id="cNote"></div>
+          </div>
+        </div>
+        <div class="traveler-wrap">
+          <div class="stats" id="stats"></div>
+          <div class="tv-daytabs" id="tvDaytabs"></div>
+          <div id="tvDays"></div>
+          <div class="offline-notice" id="offlineNotice">You appear to be offline. Your itinerary text stays readable — map tiles may be missing.</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-veil" id="modalVeil">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">Import AI draft</h3><button class="icon-btn" id="modalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+/* ============================================================
+   Tripwheel Itinerary Builder v0.2 — tool inside the product shell
+   Same logic as v0.1, reskinned to v0.4.3 design system.
+   ============================================================ */
+(function(){
+"use strict";
+
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const uid = ()=> Math.random().toString(36).slice(2,10);
+const esc = s => (s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+window.toastNav = name => toast(name+" is outside this Itinerary Builder prototype");
+
+const TYPE_META = {
+  anchor:{label:"Anchor",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 9h14M12 22a5 5 0 005-5"/></svg>'},
+  activity:{label:"Activity",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'},
+  meal:{label:"Meal",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v8a2 2 0 002 2 2 2 0 002-2V3M5 13v8M19 3c-1.5 0-2 2-2 4v4h2V3z"/></svg>'},
+  buffer:{label:"Buffer",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>'},
+  transit:{label:"Transit",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17V8l2-3h10l2 3v9M8 21v-2M16 21v-2"/></svg>'},
+  optional:{label:"Optional",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>'},
+  wildcard:{label:"Wildcard",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 5 5 1-3.5 3.5L17 18l-5-3-5 3 1.5-5.5L5 9l5-1z"/></svg>'},
+  planb:{label:"Plan B",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7z"/></svg>'}
+};
+const TYPE_PILL = {anchor:"pill-accent",meal:"pill-warn",optional:"pill-info",wildcard:"pill-info",planb:"pill-info",buffer:"pill-neutral",transit:"pill-neutral",activity:"pill-outline"};
+
+let trip=null, activeDayId=null, focusedItemId=null, mode="build";
+let map=null, mapLayer=null, routeLine=null, markers={};
+let tvMaps={};
+let dismissed=new Set();
+
+/* ---------- Persistence ---------- */
+const LS_KEY="tripwheel.v0.2.trip";
+function persist(){try{localStorage.setItem(LS_KEY,JSON.stringify(trip));setSave("saved");}catch(e){setSave("unsaved");}}
+function loadLocal(){try{const r=localStorage.getItem(LS_KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+let st;function scheduleSave(){setSave("unsaved");clearTimeout(st);st=setTimeout(persist,400);}
+function setSave(s){const el=$("#saveState");el.className="pill pill-neutral save-pill "+s;el.querySelector("#saveStateText").textContent=s==="saved"?"Saved locally":s==="unsaved"?"Saving…":"Restored";}
+
+/* ---------- Share ---------- */
+const SHARE_LIMIT=3500;
+function encodeShare(){try{return "#t="+btoa(unescape(encodeURIComponent(JSON.stringify(trip))));}catch(e){return null;}}
+function decodeShare(){const h=location.hash;if(!h||!h.startsWith("#t="))return null;try{return JSON.parse(decodeURIComponent(escape(atob(h.slice(3)))));}catch(e){return null;}}
+
+/* ---------- Factories ---------- */
+function newTrip(){return{id:uid(),title:"Untitled trip",destination:"",startDate:"",endDate:"",travelerType:"couple",pace:"balanced",cover:"",note:"",days:[newDay(1)]};}
+function newDay(n,l){return{id:uid(),label:l||("Day "+n),date:"",focusArea:"",summary:"",items:[]};}
+function newItem(t,title){return{id:uid(),type:t||"activity",title:title||"",startTime:"",endTime:"",locationText:"",lat:null,lng:null,description:"",why:"",tags:[],notes:"",links:[],cost:"",indoor:"",family:""};}
+
+/* ---------- Trip fields ---------- */
+function renderTripFields(){
+  if(!trip)return;
+  $("#fTitle").value=trip.title||"";$("#fDest").value=trip.destination||"";
+  $("#fStart").value=trip.startDate||"";$("#fEnd").value=trip.endDate||"";
+  $("#fCover").value=trip.cover||"";$("#fNote").value=trip.note||"";
+  $$("#fTravelers button").forEach(b=>b.classList.toggle("active",b.dataset.v===trip.travelerType));
+  $$("#fPace button").forEach(b=>b.classList.toggle("active",b.dataset.v===trip.pace));
+  $("#tbTitle").textContent = trip.title&&trip.title!=="Untitled trip"?trip.title:"Itinerary Builder";
+}
+
+/* ---------- Day pills ---------- */
+function renderDayPills(){
+  const w=$("#dayPills");w.innerHTML="";
+  $("#dayCount").textContent=trip.days.length;
+  trip.days.forEach((d,i)=>{
+    const a=d.items.filter(it=>it.type==="anchor").length;
+    const flag=d.items.length===0?"· empty":(a===0?"· no anchor":"");
+    const el=document.createElement("button");
+    el.className="day-pill"+(d.id===activeDayId?" active":"");
+    el.innerHTML=`<div class="dp-num">${i+1}</div><div class="dp-meta"><div class="dp-label">${esc(d.label)}</div><div class="dp-sub">${d.items.length} stops · ${a} anchor${a!==1?'s':''} <span class="dp-flag">${flag}</span></div></div>`;
+    el.onclick=()=>{activeDayId=d.id;renderAll();};
+    w.appendChild(el);
+  });
+}
+
+/* ---------- Timeline ---------- */
+function curDay(){return trip.days.find(d=>d.id===activeDayId);}
+function renderTimeline(){
+  const day=curDay();
+  $("#dsTitle").textContent=day.label;
+  const a=day.items.filter(it=>it.type==="anchor").length;
+  $("#dsAnchorPill").textContent=a+" anchor"+(a!==1?'s':'');
+  $("#dsStopPill").textContent=day.items.length+" stop"+(day.items.length!==1?'s':'');
+  $("#dsFocus").value=day.focusArea||"";
+  $("#dsSummary").value=day.summary||"";
+  const w=$("#timeline");w.innerHTML="";
+  if(day.items.length===0){
+    w.innerHTML=`<div class="tl-empty"><div class="big">No stops yet</div><div>Add an anchor to anchor this day, then build around it.</div><div style="margin-top:var(--s4)"><button class="btn btn-primary btn-sm" id="emptyAddAnchor">+ Add anchor</button></div></div>`;
+    const b=$("#emptyAddAnchor");if(b)b.onclick=()=>{day.items.push(newItem("anchor",""));scheduleSave();renderAll();};
+    return;
+  }
+  let pin=0;
+  day.items.forEach(it=>{
+    const meta=TYPE_META[it.type];
+    const hasLoc=it.lat!=null&&it.lng!=null;
+    const showPin=hasLoc?(++pin):"—";
+    const el=document.createElement("div");
+    el.className="ib-item"+(it.id===focusedItemId?" focused":"");
+    el.draggable=true;el.dataset.id=it.id;
+    el.innerHTML=`
+      <div class="ib-item-head">
+        <span class="drag" title="Drag to reorder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span>
+        <div class="ib-pip type-${it.type}">${hasLoc?showPin:meta.icon}</div>
+        <div class="ib-item-main">
+          <div class="ib-item-title-row">
+            <span class="ib-item-title${it.title?'':' empty'}">${esc(it.title)||'Untitled stop'}</span>
+            ${it.startTime?`<span class="ib-item-time">${esc(it.startTime)}${it.endTime?'–'+esc(it.endTime):''}</span>`:''}
+          </div>
+          <div class="ib-item-loc">${it.locationText?esc(it.locationText):'<span class="noloc">Needs location</span>'}</div>
+          <div class="tag-row">${tags(it)}</div>
+        </div>
+        <div class="ib-item-actions">
+          <button class="icon-btn sm" data-act="expand" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button class="icon-btn sm" data-act="dup" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg></button>
+          <button class="icon-btn sm" data-act="del" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+        </div>
+      </div>
+      <div class="ib-item-body">
+        <div class="type-picker">${Object.keys(TYPE_META).map(t=>`<button data-type="${t}" class="${it.type===t?'active':''}">${TYPE_META[t].label}</button>`).join('')}</div>
+        <div class="field-row">
+          <div class="field"><label>Title</label><input class="input" data-f="title" value="${esc(it.title)}"></div>
+          <div class="field"><label>Location text</label><input class="input" data-f="locationText" value="${esc(it.locationText)}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Start time</label><input class="input" data-f="startTime" placeholder="09:30" value="${esc(it.startTime)}"></div>
+          <div class="field"><label>End time</label><input class="input" data-f="endTime" placeholder="11:00" value="${esc(it.endTime)}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Latitude</label><input class="input" data-f="lat" type="number" step="0.0001" value="${it.lat??''}" placeholder="auto"></div>
+          <div class="field"><label>Longitude</label><input class="input" data-f="lng" type="number" step="0.0001" value="${it.lng??''}" placeholder="auto"></div>
+        </div>
+        <div class="field"><label>Description</label><textarea class="textarea" data-f="description">${esc(it.description)}</textarea></div>
+        <div class="field"><label>Why it matters</label><input class="input" data-f="why" value="${esc(it.why)}"></div>
+        <div class="field-row">
+          <div class="field"><label>Cost hint</label><input class="input" data-f="cost" value="${esc(it.cost)}" placeholder="€€"></div>
+          <div class="field"><label>Indoor / Outdoor</label><select class="select" data-f="indoor"><option value=""></option><option value="indoor" ${it.indoor==='indoor'?'selected':''}>Indoor</option><option value="outdoor" ${it.indoor==='outdoor'?'selected':''}>Outdoor</option></select></div>
+        </div>
+        <div class="field"><label>Link</label><input class="input" data-f="links" value="${esc((it.links||[])[0]||'')}" placeholder="https://…"></div>
+        ${it.why?`<div class="ib-why">${esc(it.why)}</div>`:''}
+      </div>`;
+    w.appendChild(el);
+  });
+  bindItem();
+}
+function tags(it){
+  const t=[];
+  const cls=TYPE_PILL[it.type]||"pill-neutral";
+  if(["anchor","optional","wildcard","planb","meal"].includes(it.type)) t.push(`<span class="pill ${cls}">${TYPE_META[it.type].label}</span>`);
+  if(it.cost)t.push(`<span class="pill pill-outline">${esc(it.cost)}</span>`);
+  if(it.indoor)t.push(`<span class="pill pill-outline">${esc(it.indoor)}</span>`);
+  return t.join('');
+}
+function bindItem(){
+  $$(".ib-item").forEach(el=>{
+    const id=el.dataset.id;
+    el.querySelector('[data-act="expand"]').onclick=()=>el.classList.toggle("expanded");
+    el.querySelector('[data-act="dup"]').onclick=()=>{const d=curDay();const s=d.items.find(i=>i.id===id);const c=JSON.parse(JSON.stringify(s));c.id=uid();const i=d.items.findIndex(x=>x.id===id);d.items.splice(i+1,0,c);scheduleSave();renderAll();};
+    el.querySelector('[data-act="del"]').onclick=()=>{const d=curDay();d.items=d.items.filter(i=>i.id!==id);if(focusedItemId===id)focusedItemId=null;scheduleSave();renderAll();};
+    el.querySelectorAll(".type-picker button").forEach(b=>b.onclick=()=>{const it=curDay().items.find(i=>i.id===id);it.type=b.dataset.type;scheduleSave();renderAll();});
+    el.querySelectorAll("[data-f]").forEach(inp=>{
+      const f=inp.dataset.f;
+      inp.oninput=()=>{const it=curDay().items.find(i=>i.id===id);
+        if(f==="lat"||f==="lng")it[f]=inp.value===""?null:Number(inp.value);
+        else if(f==="links")it.links=inp.value?[inp.value]:[];
+        else it[f]=inp.value;
+        scheduleSave();
+        if(["title","locationText","startTime","endTime","lat","lng"].includes(f))renderTimeline();
+      };
+    });
+    el.addEventListener("dragstart",e=>{el.classList.add("dragging");e.dataTransfer.setData("text",id);});
+    el.addEventListener("dragend",()=>el.classList.remove("dragging"));
+    el.addEventListener("dragover",e=>e.preventDefault());
+    el.addEventListener("drop",e=>{e.preventDefault();const s=e.dataTransfer.getData("text");if(!s||s===id)return;const it=curDay().items;const f=it.findIndex(i=>i.id===s),t=it.findIndex(i=>i.id===id);const[m]=it.splice(f,1);it.splice(t,0,m);scheduleSave();renderAll();});
+  });
+}
+
+/* ---------- Map ---------- */
+function ensureMap(){
+  if(typeof L==="undefined"){$("#ibMap").style.display="none";$("#mapFallback").style.display="block";$("#mapOffline").style.display="none";return false;}
+  $("#mapOffline").style.display="none";
+  if(!map){
+    map=L.map($("#ibMap"),{scrollWheelZoom:true,zoomControl:true}).setView([38.7223,-9.1393],12);
+    mapLayer=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",crossOrigin:true}).addTo(map);
+    map.on("popupopen",e=>{if(e.popup._itemId){focusedItemId=e.popup._itemId;renderTimeline();}});
+  }
+  return true;
+}
+function renderMap(){
+  const day=curDay();const ok=ensureMap();
+  const pins=day.items.filter(it=>it.lat!=null&&it.lng!=null);
+  $("#mapPinCount").textContent=pins.length+" pin"+(pins.length!==1?'s':'');
+  if(!ok){renderMapFallback(pins,day);return;}
+  Object.values(markers).forEach(m=>map.removeLayer(m));markers={};
+  if(routeLine){map.removeLayer(routeLine);routeLine=null;}
+  let idx=0;const ll=[];
+  pins.forEach(it=>{
+    idx++;
+    const ic=L.divIcon({className:"tw-pin",html:`<div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);background:${pipColor(it.type)}">${idx}</div>`,iconSize:[26,26],iconAnchor:[13,13]});
+    const m=L.marker([it.lat,it.lng],{icon:ic,draggable:true}).addTo(map);
+    m._itemId=it.id;
+    m.bindPopup(`<b>${esc(it.title)}</b><br><span style="color:#666">${esc(it.locationText)}</span>`);
+    m.on("click",()=>{focusedItemId=it.id;renderTimeline();});
+    m.on("dragend",()=>{const l=m.getLatLng();it.lat=l.lat;it.lng=l.lng;scheduleSave();});
+    markers[it.id]=m;ll.push([it.lat,it.lng]);
+  });
+  if(ll.length>=2)routeLine=L.polyline(ll,{color:"#2563eb",weight:3,opacity:.6,dashArray:"6 6"}).addTo(map);
+  if(ll.length)map.fitBounds(L.latLngBounds(ll).pad(0.3));
+  mapLayer.off("tileerror");mapLayer.on("tileerror",()=>{$("#mapOffline").style.display="flex";});
+}
+function pipColor(t){return {anchor:"#0f766e",activity:"#2563eb",meal:"#d97706",buffer:"#a1a1aa",transit:"#7c3aed",optional:"#0891b2",wildcard:"#db2777",planb:"#4f46e5"}[t]||"#2563eb";}
+function renderMapFallback(pins,day){
+  const fb=$("#mapFallback");fb.innerHTML="";
+  if(day.items.length===0){fb.innerHTML='<div style="color:var(--n-500);padding:var(--s3)">No stops to route.</div>';return;}
+  let idx=0;
+  day.items.forEach(it=>{const n=it.lat!=null?++idx:"–";const el=document.createElement("div");el.className="rl-item";el.innerHTML=`<span class="rl-num">${n}</span><div><div style="font-weight:600">${esc(it.title)}</div><div style="color:var(--n-500);font-size:12px">${esc(it.locationText)||'No location'}</div></div>`;el.onclick=()=>{focusedItemId=it.id;renderTimeline();};fb.appendChild(el);});
+}
+
+/* ---------- Suggestions ---------- */
+function renderSuggestions(){
+  const w=$("#suggestions");w.innerHTML="";
+  const sugs=[];
+  trip.days.forEach(d=>{
+    const its=d.items,anchors=its.filter(i=>i.type==="anchor"),meals=its.filter(i=>i.type==="meal");
+    if(its.length>0&&anchors.length===0)sugs.push(mk("anchor",d.id,"info","Add an anchor","No anchor on "+d.label+". Pick the one thing this day is built around.",{action:"add-anchor"}));
+    if(anchors.length>1)sugs.push(mk("anchor2",d.id,"warn","Too many anchors",d.label+" has "+anchors.length+" anchors. Consider making extras Optional.",null));
+    if(its.length>=3&&meals.length===0)sugs.push(mk("meal",d.id,"warn","Missing meals",d.label+" has no meals. Add lunch or dinner to anchor energy.",{action:"add-meal"}));
+    const btb=its.some((it,i)=>it.startTime&&its[i+1]&&its[i+1].startTime&&it.endTime&&it.endTime>its[i+1].startTime);
+    if(btb)sugs.push(mk("buffer",d.id,"warn","Back-to-back items","Some items overlap on "+d.label+". Add a buffer.",{action:"add-buffer"}));
+    const pins=its.filter(i=>i.lat!=null&&i.lng!=null);
+    if(pins.length>=3){let z=false;for(let i=0;i<pins.length-2;i++){if(dist(pins[i],pins[i+2])<dist(pins[i],pins[i+1])*0.6){z=true;break;}}if(z)sugs.push(mk("zigzag",d.id,"warn","Possible zigzag","Route on "+d.label+" doubles back. Consider reordering stops.",null));}
+    const out=its.filter(i=>i.indoor==="outdoor"),pb=its.filter(i=>i.type==="planb");
+    if(out.length>=2&&pb.length===0)sugs.push(mk("planb",d.id,"info","Add a Plan B","Outdoor-heavy day — drop in one indoor Plan B in case of rain.",{action:"add-planb"}));
+    if(its.length>=7)sugs.push(mk("overload",d.id,"warn","Packed day",d.label+" has "+its.length+" stops. Move extras to Optional to keep the day calm.",null));
+  });
+  const live=sugs.filter(s=>!dismissed.has(s.id));
+  $("#sugCount").textContent=live.length;
+  if(live.length===0){w.innerHTML='<div class="sug empty">No suggestions. Days look balanced.</div>';return;}
+  live.forEach(s=>{
+    const el=document.createElement("div");
+    el.className="sug"+(s.sev==="warn"?"":" s-info");
+    el.innerHTML=`<div class="sug-head"><svg class="sug-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><span class="sug-title">${esc(s.title)}</span></div><div class="sug-msg">${esc(s.msg)}</div>${s.act?`<div class="sug-actions"><button class="accept" data-do="${s.act.action}" data-day="${s.dayId}">Accept</button><button data-dismiss="${s.id}">Dismiss</button></div>`:`<div class="sug-actions"><button data-dismiss="${s.id}">Dismiss</button></div>`}`;
+    w.appendChild(el);
+  });
+  $$("#suggestions .sug-actions button").forEach(b=>{
+    if(b.dataset.dismiss)b.onclick=()=>{dismissed.add(b.dataset.dismiss);renderSuggestions();};
+    if(b.dataset.do)b.onclick=()=>{const d=trip.days.find(x=>x.id===b.dataset.day);const m={"add-anchor":newItem("anchor",""),"add-meal":newItem("meal",""),"add-buffer":newItem("buffer",""),"add-planb":newItem("planb","")};d.items.push(m[b.dataset.do]);activeDayId=d.id;scheduleSave();renderAll();};
+  });
+}
+function mk(id,dayId,sev,title,msg,act){return{id,dayId,sev,title,msg,act};}
+function dist(a,b){const dx=a.lat-b.lat,dy=a.lng-b.lng;return Math.sqrt(dx*dx+dy*dy);}
+
+/* ---------- Preview ---------- */
+function renderPreview(){
+  if(!trip)return;
+  const c=$("#cover");
+  if(trip.cover){c.style.backgroundImage=`url('${trip.cover}')`;c.className="cover";}else{c.style.backgroundImage="";c.className="cover grad";}
+  $("#cDest").textContent=trip.destination||"Your trip";
+  $("#cTitle").textContent=trip.title||"Untitled trip";
+  $("#cDates").textContent=dateRange();
+  $("#cNote").textContent=trip.note||"";
+  const all=trip.days.flatMap(d=>d.items);
+  $("#stats").innerHTML=`<div class="stat"><div class="v">${trip.days.length}</div><div class="k">Days</div></div><div class="stat"><div class="v">${all.length}</div><div class="k">Stops</div></div><div class="stat"><div class="v">${all.filter(i=>i.type==="anchor").length}</div><div class="k">Anchors</div></div><div class="stat"><div class="v">${all.filter(i=>i.type==="optional").length}</div><div class="k">Optional</div></div>`;
+  const tabs=$("#tvDaytabs");tabs.innerHTML="";
+  trip.days.forEach((d,i)=>{const b=document.createElement("button");b.textContent=d.label;b.className=(i===0?"active":"");b.onclick=()=>{$$("#tvDaytabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$("#tvDays .tv-day").forEach(x=>x.classList.remove("active"));$("#tvDay-"+d.id).classList.add("active");};tabs.appendChild(b);});
+  const dw=$("#tvDays");dw.innerHTML="";
+  Object.values(tvMaps).forEach(m=>{try{m.remove();}catch(e){}});tvMaps={};
+  trip.days.forEach((d,i)=>{
+    const pins=d.items.filter(it=>it.lat!=null&&it.lng!=null);
+    const div=document.createElement("div");
+    div.className="tv-day"+(i===0?" active":"");div.id="tvDay-"+d.id;
+    div.innerHTML=`<div class="tv-day-head"><div class="tv-title">${esc(d.label)}</div><div class="tv-sub">${esc(d.summary||'')}${d.summary&&d.date?' · ':''}${esc(d.date||'')}</div>${d.focusArea?`<span class="tv-focus">${esc(d.focusArea)}</span>`:''}</div><div class="tv-map" id="tvMap-${d.id}"></div><div class="tv-timeline">${d.items.length===0?'<div style="color:var(--n-500);padding:var(--s4)">No stops planned.</div>':d.items.map(tvItem).join('')}</div>`;
+    dw.appendChild(div);
+    if(typeof L!=="undefined"&&pins.length){
+      setTimeout(()=>{const el=$("#tvMap-"+d.id);if(!el)return;try{const m=L.map("tvMap-"+d.id,{zoomControl:false,scrollWheelZoom:false,attributionControl:false}).setView([pins[0].lat,pins[0].lng],13);tvMaps[d.id]=m;L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{crossOrigin:true}).addTo(m);const ll=[];pins.forEach((it,idx)=>{L.marker([it.lat,it.lng],{icon:L.divIcon({className:"tw-pin",html:`<div style="width:22px;height:22px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)">${idx+1}</div>`,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(m);ll.push([it.lat,it.lng]);});if(ll.length>=2)L.polyline(ll,{color:"#2563eb",weight:2.5,opacity:.6,dashArray:"5 5"}).addTo(m);m.fitBounds(L.latLngBounds(ll).pad(0.3));}catch(e){}},0);
+    }else{const fb=$("#tvMap-"+d.id);fb.innerHTML='<div class="map-fallback" style="display:flex">Route list — map not available</div>';}
+  });
+  checkOnline();
+}
+function tvItem(it){const m=TYPE_META[it.type];return `<div class="tv-item ${it.type}"><div class="tv-pip type-${it.type}">${m.icon}</div><div class="tv-body"><div class="tv-ititle">${esc(it.title)||'Untitled'}</div><div class="tv-imeta">${it.startTime?esc(it.startTime)+(it.endTime?'–'+esc(it.endTime):'')+' · ':''}${esc(it.locationText)||'Location TBD'}${it.cost?' · '+esc(it.cost):''}</div>${it.description?`<div class="tv-idesc">${esc(it.description)}</div>`:''}${it.why?`<div class="tv-why">${esc(it.why)}</div>`:''}${(it.links||[])[0]?`<div class="tv-link"><a href="${esc(it.links[0])}" target="_blank">Open link →</a></div>`:''}</div></div>`;}
+function dateRange(){if(!trip.startDate)return"";const f=d=>new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric"});let s=f(trip.startDate);if(trip.endDate&&trip.endDate!==trip.startDate)s+=" – "+f(trip.endDate);return s;}
+function checkOnline(){$("#offlineNotice").classList.toggle("show",!navigator.onLine);if(typeof L==="undefined")$("#offlineNotice").classList.add("show");}
+window.addEventListener("online",checkOnline);window.addEventListener("offline",checkOnline);
+
+/* ---------- AI parser ---------- */
+const SAMPLE=`Lisbon long weekend
+Day 1 — Alfama
+10:00 São Jorge Castle — hilltop Moorish castle with city views (anchor)
+13:00 Lunch at Time Out Market
+15:00 Wander Alfama lanes, optional fado stop
+18:00 Sunset at Miradouro de Santa Catarina
+Day 2 — Belém
+09:30 Pastéis de Belém
+10:30 Jerónimos Monastery (anchor)
+13:00 Lunch by the river
+15:00 MAAT museum walk
+Day 3 — Bairro Alto & Chiado
+10:00 Elevador de Santa Justa
+12:00 Coffee at A Brasileira
+14:00 LUNCH — Cervejaria Trindade
+16:00 Shopping Chiado (optional)
+20:00 Fado dinner (Plan B if raining: indoor fado at Mesa de Frades)`;
+function parseAIDraft(text){
+  const t=newTrip();t.days=[];
+  const lines=text.split(/\r?\n/);let cur=null,titleLine=null;
+  lines.forEach(raw=>{const line=raw.trim();if(!line)return;
+    const dm=line.match(/^Day\s+(\d+)\b.*?(?:—|-|–)\s*(.*)$/i)||line.match(/^Day\s+(\d+)\b/i);
+    if(dm){const n=parseInt(dm[1]);const label=dm[2]?line.replace(/^Day\s+\d+\s*[—\-–]\s*/i,"").trim():("Day "+n);cur={id:uid(),label,date:"",focusArea:"",summary:"",items:[]};t.days.push(cur);return;}
+    if(!cur){if(/^[A-Z][\w\s,]+$/.test(line)&&!/d{1,2}:\d{2}/.test(line)&&line.length<60&&!titleLine)titleLine=line;return;}
+    const tm=line.match(/^(\d{1,2}:\d{2})\s*(?:[-–]\s*(\d{1,2}:\d{2})\s*)?(.*)$/);
+    let rest=line,st="",et="";if(tm){st=tm[1];et=tm[2]||"";rest=tm[3];}
+    let type="activity";if(/\banchor\b/i.test(rest))type="anchor";else if(/\b(lunch|dinner|breakfast|brunch|meal|coffee|eat|café|cafe|pastéis|pasteis)\b/i.test(rest))type="meal";else if(/\b(plan b|plan-b|rain backup|indoor backup)\b/i.test(rest))type="planb";else if(/\b(optional|if time|if energy|maybe)\b/i.test(rest))type="optional";else if(/\b(buffer|break|rest|free time)\b/i.test(rest))type="buffer";
+    let title=rest,desc="";const pm=rest.match(/^(.*?)\s*[—\-–]\s*(.*)$/);if(pm){title=pm[1].trim();desc=pm[2].trim();}
+    const pm2=title.match(/^(.*?)\s*\((.*)\)\s*$/);if(pm2){title=pm2[1].trim();desc=(pm2[2]+(desc?" — "+desc:"")).trim();}
+    title=title.replace(/\b(anchor|optional|plan b|plan-b|buffer)\b/gi,"").replace(/\s+/g," ").trim();
+    if(!title)return;
+    cur.items.push({id:uid(),type,title,startTime:st,endTime:et,locationText:"",lat:null,lng:null,description:desc,why:"",tags:[],notes:"",links:[],cost:"",indoor:"",family:""});
+  });
+  if(titleLine)t.title=titleLine;
+  if(t.days.length===0)t.days=[newDay(1)];
+  return t;
+}
+
+/* ---------- Orchestrator ---------- */
+function renderAll(){
+  if(!trip){
+    $$(".ib-view").forEach(v=>v.classList.remove("active"));
+    $("#welcomeView").classList.add("active");
+    $("#tbTitle").textContent="Itinerary Builder";
+    const r=loadLocal();const n=$("#restoredNote");
+    if(r){n.style.display="block";$("#restoredOpen").onclick=()=>{trip=r;activeDayId=r.days[0].id;setSave("restored");enterMode("build");};}
+    return;
+  }
+  if(mode==="build"){
+    $$(".ib-view").forEach(v=>v.classList.remove("active"));
+    $("#buildView").classList.add("active");
+    renderTripFields();renderDayPills();renderTimeline();renderMap();renderSuggestions();
+    if(map)setTimeout(()=>map.invalidateSize(),50);
+  }else{
+    $$(".ib-view").forEach(v=>v.classList.remove("active"));
+    $("#previewView").classList.add("active");
+    renderPreview();
+  }
+}
+function enterMode(m){mode=m;$$("#modeToggle button").forEach(b=>b.classList.toggle("active",b.dataset.mode===m));renderAll();}
+
+/* ---------- Modals ---------- */
+function openModal(title,body,foot){$("#modalTitle").textContent=title;$("#modalBody").innerHTML=body;$("#modalFoot").innerHTML=foot;$("#modalVeil").classList.add("show");}
+function closeModal(){$("#modalVeil").classList.remove("show");}
+$("#modalClose").onclick=closeModal;
+$("#modalVeil").addEventListener("click",e=>{if(e.target===$("#modalVeil"))closeModal();});
+window.closeModalShare=closeModal;
+
+function openImport(){
+  const existing=!!trip;
+  openModal("Import AI draft",
+    `<div class="hint">Paste a free-text or ChatGPT itinerary. We detect days, times, meals, anchors, and Plan Bs — then you polish.<br><b>AI gets you started. You make it yours. Review locations and timing before you travel.</b></div>
+     <textarea id="aiInput" placeholder="Day 1 — Alfama&#10;10:00 São Jorge Castle (anchor)&#10;13:00 Lunch at Time Out Market…"></textarea>
+     <div class="ai-copy">Parsing happens locally in your browser. Nothing is sent anywhere.</div>
+     <button class="btn btn-ghost btn-sm" id="loadSample" style="margin-top:var(--s3)">Load sample AI draft</button>`,
+    existing?`<button class="btn btn-secondary" id="aiAppend">Append to current trip</button><button class="btn btn-primary" id="aiReplace">Replace current trip</button>`:`<button class="btn btn-primary" id="aiReplace">Create trip from draft</button>`);
+  $("#loadSample").onclick=()=>{$("#aiInput").value=SAMPLE;};
+  const run=()=>{const txt=$("#aiInput").value.trim();if(!txt){toast("Paste something first");return;}const p=parseAIDraft(txt);if(!p||p.days.every(d=>d.items.length===0)){toast("Couldn't find any stops");return;}if(existing){p.days.forEach(d=>trip.days.push(d));}else{trip=p;}activeDayId=trip.days[0].id;closeModal();scheduleSave();enterMode("build");toast("Draft imported — review locations & timing");};
+  if($("#aiReplace"))$("#aiReplace").onclick=()=>{if(existing&&!confirm("Replace your current trip?"))return;run();};
+  if($("#aiAppend"))$("#aiAppend").onclick=run;
+}
+function openShare(){
+  if(!trip){toast("Nothing to share yet");return;}
+  const enc=encodeShare();const big=enc&&enc.length>SHARE_LIMIT;
+  openModal("Share this trip",
+    big?`<div class="hint">This trip is too large for a link. Export the itinerary file instead.</div><p style="margin-top:var(--s4)">The share link would be <b>${enc.length}</b> characters. Links work best under ~${SHARE_LIMIT}.</p>`
+       :`<div class="hint">Anyone with this link opens a read-only traveler view — no login, no install.</div><textarea id="shareLink" readonly style="min-height:80px;font-size:12px">${enc?esc(location.origin+location.pathname+enc):'No trip'}</textarea><div class="ai-copy">Encoded in the URL itself. Nothing is stored on a server.</div>`,
+    big?`<button class="btn btn-secondary" onclick="closeModalShare()">Close</button><button class="btn btn-primary" id="shareExportFallback">Export JSON instead</button>`
+       :`<button class="btn btn-secondary" onclick="closeModalShare()">Close</button><button class="btn btn-primary" id="copyLink">Copy link</button>`);
+  if($("#copyLink"))$("#copyLink").onclick=()=>{const ta=$("#shareLink");ta.select();document.execCommand("copy");toast("Link copied");};
+  if($("#shareExportFallback"))$("#shareExportFallback").onclick=()=>{closeModal();exportJSON();};
+}
+function exportJSON(){if(!trip){toast("Nothing to export");return;}const b=new Blob([JSON.stringify(trip,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(trip.title||"tripwheel-trip").replace(/\s+/g,"-").toLowerCase()+".json";a.click();toast("JSON exported");}
+function openExport(){
+  if(!trip){toast("Nothing to export");return;}
+  openModal("Export itinerary",
+    `<div class="hint">Download a JSON backup you can re-import later, or print the traveler view to PDF.</div>
+     <div style="display:flex;gap:var(--s3);margin-top:var(--s4)"><button class="btn btn-primary" id="exJson">Download JSON</button><button class="btn btn-secondary" id="exPrint">Print / Save as PDF</button></div>`,
+    `<button class="btn btn-secondary" onclick="closeModalShare()">Close</button>`);
+  $("#exJson").onclick=()=>{closeModal();exportJSON();};
+  $("#exPrint").onclick=()=>{closeModal();enterMode("preview");setTimeout(()=>window.print(),300);};
+}
+
+/* ---------- Wire up ---------- */
+$("#modeToggle").addEventListener("click",e=>{const b=e.target.closest("button");if(b)enterMode(b.dataset.mode);});
+$("#importBtn").onclick=openImport;
+$("#startImportBtn").onclick=openImport;
+$("#startBlankBtn").onclick=()=>{trip=newTrip();activeDayId=trip.days[0].id;scheduleSave();enterMode("build");};
+$("#startSampleBtn").onclick=()=>{trip=parseAIDraft(SAMPLE);activeDayId=trip.days[0].id;scheduleSave();enterMode("build");toast("Sample loaded — review & polish");};
+$("#shareBtn").onclick=openShare;
+$("#exportBtn").onclick=openExport;
+$("#editTripBtn").onclick=()=>{if(!trip)return;if(confirm("Clear current trip and start fresh?")){trip=newTrip();activeDayId=trip.days[0].id;dismissed.clear();scheduleSave();enterMode("build");}};
+
+$("#fTitle").oninput=e=>{trip.title=e.target.value;$("#tbTitle").textContent=e.target.value||"Itinerary Builder";scheduleSave();};
+$("#fDest").oninput=e=>{trip.destination=e.target.value;scheduleSave();};
+$("#fStart").onchange=e=>{trip.startDate=e.target.value;scheduleSave();recomputeDates();};
+$("#fEnd").onchange=e=>{trip.endDate=e.target.value;scheduleSave();recomputeDates();};
+$("#fCover").oninput=e=>{trip.cover=e.target.value;scheduleSave();};
+$("#fNote").oninput=e=>{trip.note=e.target.value;scheduleSave();};
+$("#fTravelers").addEventListener("click",e=>{const b=e.target.closest("button");if(b){trip.travelerType=b.dataset.v;$$("#fTravelers button").forEach(x=>x.classList.toggle("active",x===b));scheduleSave();}});
+$("#fPace").addEventListener("click",e=>{const b=e.target.closest("button");if(b){trip.pace=b.dataset.v;$$("#fPace button").forEach(x=>x.classList.toggle("active",x===b));scheduleSave();}});
+$("#addDayBtn").onclick=()=>{const d=newDay(trip.days.length+1);trip.days.push(d);activeDayId=d.id;scheduleSave();renderAll();};
+$("#dsFocus").oninput=e=>{curDay().focusArea=e.target.value;scheduleSave();};
+$("#dsSummary").oninput=e=>{curDay().summary=e.target.value;scheduleSave();};
+function recomputeDates(){if(!trip.startDate)return;const s=new Date(trip.startDate);trip.days.forEach((d,i)=>{const dt=new Date(s);dt.setDate(s.getDate()+i);d.date=dt.toISOString().slice(0,10);});}
+
+/* ---------- Boot ---------- */
+function boot(){
+  const shared=decodeShare();
+  if(shared){trip=shared;activeDayId=trip.days[0]?.id;setSave("restored");renderAll();enterMode("preview");}
+  else{renderAll();}
+}
+boot();
+
+window.__tw={get trip(){return trip;},parseAIDraft,encodeShare,decodeShare};
+})();
+</script>
+</body>
+</html>

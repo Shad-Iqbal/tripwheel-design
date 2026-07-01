@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Itinerary Builder × ICP Cross-Check — Tripwheel Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #faf8f5;
+  --bg-alt: #f3f0eb;
+  --card: #ffffff;
+  --border: #e0dcd6;
+  --border-light: #ece8e2;
+  --text: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #a8a29e;
+  --accent: #115e59;
+  --accent-light: #d1fae5;
+  --accent-bg: #f0fdfa;
+  --amber: #b45309;
+  --amber-light: #fef3c7;
+  --amber-bg: #fffbeb;
+  --diff-color: #9a3412;
+  --diff-bg: #fff7ed;
+  --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --max-w: 920px;
+  --sidebar-w: 220px;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-wrapper { display: flex; max-width: calc(var(--max-w) + var(--sidebar-w) + 60px); margin: 0 auto; padding: 0 1.5rem; }
+
+.sidebar { position: sticky; top: 2rem; align-self: flex-start; width: var(--sidebar-w); flex-shrink: 0; margin-right: 40px; padding-top: 6rem; display: none; }
+@media (min-width: 1100px) { .sidebar { display: block; } }
+.sidebar nav { border-left: 2px solid var(--border); padding-left: 16px; }
+.sidebar a { display: block; font-size: 12.5px; color: var(--text-secondary); text-decoration: none; padding: 4px 0; line-height: 1.5; transition: color 0.15s; }
+.sidebar a:hover, .sidebar a.active { color: var(--accent); }
+.sidebar a.active { font-weight: 600; }
+
+.main-content { flex: 1; min-width: 0; max-width: var(--max-w); padding: 3rem 0 6rem; }
+
+h1 { font-family: var(--serif); font-size: 2.25rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text); }
+h2 { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; margin: 3.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); color: var(--text); }
+h3 { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.75rem; color: var(--text); }
+h4 { font-family: var(--sans); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin: 1.5rem 0 0.5rem; }
+p { margin-bottom: 1rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { font-weight: 600; }
+code { background: var(--bg-alt); padding: 2px 6px; border-radius: 3px; font-size: 0.85em; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+.subtitle { font-family: var(--serif); font-size: 1.1rem; font-style: italic; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; }
+.meta-line { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+
+.section-num { font-family: var(--sans); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); display: block; margin-bottom: 0.25rem; margin-top: 3.5rem; }
+
+.badge { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.badge-island { background: #dbeafe; color: #1e40af; }
+.badge-advisor { background: #fce7f3; color: #9d174d; }
+.badge-luxury { background: #f3e8ff; color: #6b21a8; }
+.badge-honeymoon { background: #fef3c7; color: #92400e; }
+.badge-safari { background: #d1fae5; color: #065f46; }
+.badge-multiday { background: #ffedd5; color: #9a3412; }
+
+.callout { border-radius: 6px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-size: 0.92rem; line-height: 1.65; }
+.callout-thesis { background: var(--accent-bg); border-left: 4px solid var(--accent); }
+.callout-rec { background: var(--amber-bg); border-left: 4px solid var(--amber); }
+.callout-note { background: var(--bg-alt); border-left: 4px solid var(--border); }
+.callout strong { font-weight: 700; }
+
+.table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; border-radius: 6px; border: 1px solid var(--border-light); }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; line-height: 1.55; }
+th { background: var(--bg-alt); font-weight: 600; text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); vertical-align: top; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(0,0,0,0.015); }
+
+.yes { color: var(--accent); font-weight: 700; }
+.partial { color: var(--amber); font-weight: 600; }
+.no { color: var(--diff-color); font-weight: 600; }
+.muted { color: var(--text-muted); }
+
+/* feature scorecard */
+.score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin: 1.5rem 0; }
+.score-card { background: var(--card); border: 1px solid var(--border-light); border-radius: 8px; padding: 1rem 1.15rem; }
+.score-card .sc-h { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+.score-card .sc-d { font-size: 0.8rem; color: var(--text-secondary); }
+.score-card .sc-tag { display: inline-block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 4px; margin-top: 0.6rem; }
+.tag-have { background: var(--accent-bg); color: var(--accent); }
+.tag-partial { background: var(--amber-bg); color: var(--amber); }
+.tag-missing { background: var(--diff-bg); color: var(--diff-color); }
+
+/* fit meter */
+.fit { display: inline-flex; gap: 3px; vertical-align: middle; }
+.fit i { width: 9px; height: 9px; border-radius: 2px; background: var(--border); display: inline-block; }
+.fit i.on { background: var(--accent); }
+
+.retrofit-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.retrofit-col { border-radius: 6px; padding: 1rem 1.25rem; }
+.retrofit-hard { background: #fef2f2; border: 1px solid #fecaca; }
+.retrofit-easy { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.retrofit-col h4 { margin-top: 0; }
+.retrofit-col ul { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+.retrofit-col li { font-size: 0.82rem; padding: 3px 0; color: var(--text-secondary); }
+@media (max-width: 600px) { .retrofit-matrix { grid-template-columns: 1fr; } }
+
+.strat-list { list-style: none; padding: 0; margin: 1.5rem 0; }
+.strat-list li { padding: 1rem 0; border-bottom: 1px solid var(--border-light); }
+.strat-list li:last-child { border-bottom: none; }
+.strat-list strong { display: block; font-size: 0.95rem; margin-bottom: 0.25rem; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 1.25rem; margin: 0.5rem 0 1.25rem; font-size: 0.8rem; color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+hr.rule { margin: 3rem 0 1.5rem; border: none; border-top: 1px solid var(--border); }
+.foot { font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; }
+
+@media print {
+  .sidebar { display: none !important; }
+  .page-wrapper { display: block; }
+  .main-content { max-width: 100%; padding: 0; }
+  body { font-size: 11pt; background: white; }
+  h1 { font-size: 20pt; }
+  h2 { font-size: 15pt; break-after: avoid; }
+  .table-wrap { overflow: visible; }
+  .callout, .score-card, tr { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<aside class="sidebar" id="sidebar">
+<nav>
+  <a href="#exec">Executive Summary</a>
+  <a href="#what">What the Builder Is</a>
+  <a href="#position">Position in the Architecture</a>
+  <a href="#features">Feature Inventory</a>
+  <a href="#icp-map">ICP × Builder Map</a>
+  <a href="#tension">The Anchor Tension</a>
+  <a href="#gaps">Gap Analysis</a>
+  <a href="#recommendations">Recommendations</a>
+  <a href="#method">Method &amp; Sources</a>
+</nav>
+</aside>
+
+<main class="main-content">
+
+<header style="margin-bottom: 3rem;">
+  <p class="meta-line">Tripwheel Research · Cross-Check</p>
+  <h1>Itinerary Builder × ICP Cross-Check</h1>
+  <p class="subtitle">Does the <code>v0.5.5</code> itinerary builder serve the six agency ICPs' jobs and painpoints &mdash; and where does it stop short of the research's architecture?</p>
+  <p class="meta-line">v1.0 &middot; 1 Jul 2026 &middot; Compiled for Shad / Tripwheel</p>
+  <p class="meta-line">Sources: <code>prototypes/v0.5.5-states.html</code> (itinerary builder) &times; <code>docs/research/island-tour-vs-agency-icps-combined.html</code> (ICP research v1.1)</p>
+</header>
+
+<!-- 1. EXEC -->
+<span class="section-num" id="exec">Section 1</span>
+<h2>Executive Summary</h2>
+
+<div class="callout callout-thesis">
+<strong>The finding in one paragraph.</strong> The <code>v0.5.5</code> itinerary builder is a <strong>day-by-day experiential trip planner and client-facing proposal tool</strong> &mdash; not a booking, pricing, or inventory engine. In the research's architecture it sits inside the <strong>shared ~60% core</strong> (it is the "Itinerary Builder" every ICP needs) and it implements the Itinerary entity's <em>draft</em> and <em>shared</em> states. But its <em>shape</em> quietly commits to one workflow: a human-crafted, shareable proposal &mdash; the research's <code>quote</code> mode. That makes it an excellent fit for <span class="badge badge-luxury">Luxury</span> and a strong-but-incomplete fit for <span class="badge badge-advisor">Advisor</span>, while leaving the recommended v1 anchor <span class="badge badge-island">Island Tour</span>'s actual money-path (fixed catalogue &rarr; instant book &rarr; deposit) entirely outside the tool.
+</div>
+
+<div class="callout callout-rec">
+<strong>Headline tension.</strong> The research names Island Tour as the v1 anchor because it is the simplest data model (<code>fixed_catalogue</code> + instant book). The builder, however, is architected like a bespoke <code>quote</code>-mode proposal tool. So the tool as-built is <em>most</em> complete for the ICPs the research recommends <em>deferring</em>, and <em>least</em> complete for the anchor's conversion flow. The decision this report surfaces: does the builder grow a pricing + quote&rarr;confirm status ladder, or does that live in a separate Bookings/Payments module?
+</div>
+
+<!-- 2. WHAT -->
+<span class="section-num" id="what">Section 2</span>
+<h2>What the Builder Is</h2>
+
+<p>Read from the prototype source, the tool does the following and only the following:</p>
+
+<ul style="margin: 0 0 1rem 1.1rem;">
+  <li><strong>Brief capture</strong> &mdash; trip name, destination, client, start date, length, adults/kids + note, budget tier ($/$$/$$$), pace (relaxed / balanced / packed), and interest chips (Food, Culture, Nature, Nightlife, Shopping, Relax, Adventure, History).</li>
+  <li><strong>Three start modes</strong> &mdash; Blank, Template, or AI draft (AI tailors day suggestions to the brief's pace and interests).</li>
+  <li><strong>Day builder</strong> &mdash; reorderable stops, each with a category (Sight / Food / Nature / Transit), duration in minutes, a note, and photos; a Leaflet map with auto-estimated <em>intra-city</em> transit (walk / metro / train); editable day title + date; and a trip "overview" (intro note, must-dos, don'ts).</li>
+  <li><strong>Templates</strong> &mdash; a reusable library tagged by category (Beach &amp; Island, City Break, Multi-city, Honeymoon, Adventure) with "used N&times;" counts.</li>
+  <li><strong>Sharing</strong> &mdash; a live, no-login link; WhatsApp / email / copy; PDF download or send; a branded client viewer ("Planned by Alex Rivera · Northwind Travel Co."); and a client &rarr; advisor reply loop.</li>
+  <li><strong>Statuses</strong> &mdash; only two: <code>Draft</code> and <code>Shared</code>.</li>
+</ul>
+
+<div class="callout callout-note">
+<strong>What it is not.</strong> There is no price or cost anywhere (budget is a $ tag with no totals), no booking step, no payment or deposit/balance, no inventory or availability, and no status beyond Draft/Shared. Its transit model is city micro-transit (walk/metro/train), not inter-city or charter transfers.
+</div>
+
+<!-- 3. POSITION -->
+<span class="section-num" id="position">Section 3</span>
+<h2>Position in the Research Architecture</h2>
+
+<p>The research proposes a single <code>Workspace</code> model = a <strong>shared ~60% core</strong> + <strong>4 booking modes</strong> + <strong>7 toggleable modules</strong>. Placing the builder against that:</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th style="min-width:150px">Architecture layer</th><th>Where the builder lands</th></tr></thead>
+<tbody>
+<tr><td><strong>Shared core</strong></td><td class="yes">Direct hit. It is the "Itinerary Builder" (and touches CMS-style content via notes/overview, and Media via photos). The feature matrix marks "multi-component itinerary builder" &#10003; for all six ICPs.</td></tr>
+<tr><td><strong>Booking mode</strong></td><td class="partial">Implicitly <code>quote</code>-shaped: brief-driven, human-assembled, shared as a proposal. Does not express <code>fixed_catalogue</code> (no products/instant-book), <code>scheduled_departure</code> (no departure picker), or <code>per_date_inventory</code> (no capacity).</td></tr>
+<tr><td><strong>Modules</strong></td><td class="no">None wired in. The nearest is <code>tailormade</code> (templates ≈ tailormade starting points). No <code>room_block</code>, <code>trade_portal</code>, <code>commission_split</code>, <code>concierge_247</code>, <code>trip_style_taxonomy</code>, <code>schools_program</code>, or <code>conservation_pages</code>.</td></tr>
+<tr><td><strong>Entity states</strong></td><td class="partial">Covers Itinerary <em>draft</em> and <em>quote-sent</em> (≈ Shared). Stops before Booking and Payment.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- 4. FEATURES -->
+<span class="section-num" id="features">Section 4</span>
+<h2>Feature Inventory vs. Research Feature Matrix</h2>
+
+<div class="score-grid">
+  <div class="score-card"><div class="sc-h">Multi-component itinerary</div><div class="sc-d">Days, stops, categories, notes, photos, reorder.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">Media library (per stop)</div><div class="sc-d">Multi-photo stops, collage, lightbox.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">Client viewer + share link</div><div class="sc-d">No-login live link, WhatsApp/email, reply loop.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">PDF / brochure export</div><div class="sc-d">Print-to-PDF, send as static copy.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">Templates (≈ tailormade)</div><div class="sc-d">Reusable, categorised starting points.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">AI draft from brief</div><div class="sc-d">Pace/interest-tailored day suggestions.</div><span class="sc-tag tag-have">Have</span></div>
+  <div class="score-card"><div class="sc-h">Quote / proposal builder</div><div class="sc-d">Presentation is there; pricing + accept step are not.</div><span class="sc-tag tag-partial">Partial</span></div>
+  <div class="score-card"><div class="sc-h">CRM (client + lead)</div><div class="sc-d">Client is attached to a trip; no lead pipeline.</div><span class="sc-tag tag-partial">Partial</span></div>
+  <div class="score-card"><div class="sc-h">Per-component pricing / totals</div><div class="sc-d">Budget is a $ tag only. No cost anywhere.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Booking engine (instant book)</div><div class="sc-d">Anchor ICP's core path. Absent.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Payment / deposit / balance</div><div class="sc-d">No payment link, schedule, or ledger.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Scheduled-departure picker</div><div class="sc-d">No departure codes, seats, or waitlist.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Per-date / per-camp inventory</div><div class="sc-d">No capacity, holds, or availability.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Room block / group manifest</div><div class="sc-d">No per-guest ledger or wedding party.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Commission split</div><div class="sc-d">No supplier net-rates or advisor payout.</div><span class="sc-tag tag-missing">Missing</span></div>
+  <div class="score-card"><div class="sc-h">Trip-style / physical rating</div><div class="sc-d">Categories are experiential, not taxonomic.</div><span class="sc-tag tag-missing">Missing</span></div>
+</div>
+
+<!-- 5. ICP MAP -->
+<span class="section-num" id="icp-map">Section 5</span>
+<h2>ICP × Builder Map</h2>
+
+<p>For each ICP: the fit of the builder to its jobs-to-be-done, the painpoints it addresses today, and the gaps it leaves against the research.</p>
+
+<div class="legend">
+  <span><span class="fit"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span> = fit strength (higher = better served)</span>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th style="min-width:130px">ICP</th>
+  <th style="min-width:90px">Fit</th>
+  <th>JTBD the builder serves</th>
+  <th>Painpoints addressed</th>
+  <th>Critical gaps vs research</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><span class="badge badge-luxury">Luxury</span></td>
+  <td><span class="fit"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></td>
+  <td>JTBD 3 &mdash; "branded, magazine-quality PDF or web page."</td>
+  <td>Viewer + PDF + advisor branding directly deliver the polished proposal artifact.</td>
+  <td class="no">No per-component pricing, no <code>concierge_247</code>, no supplier-confirmations-into-one-file. It's the <em>look</em> of the proposal, not the quote.</td>
+</tr>
+<tr>
+  <td><span class="badge badge-advisor">Advisor</span></td>
+  <td><span class="fit"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td>JTBD 3 &mdash; "polished proposal with photos, pricing, and a payment link."</td>
+  <td>Photos, branded shareable proposal, and client reply loop are all present.</td>
+  <td class="no">No pricing, no payment link, no commission split, no supplier net-rates. The proposal is half-built &mdash; presentation without the commercial layer.</td>
+</tr>
+<tr>
+  <td><span class="badge badge-island">Island Tour</span></td>
+  <td><span class="fit"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></td>
+  <td>JTBD 4&ndash;5 &mdash; tailormade day content that lives on the same site as bookable tours.</td>
+  <td>Good day-planner for bespoke / multi-day tours; templates ≈ tailormade.</td>
+  <td class="no">Anchor's money-path is <code>fixed_catalogue</code> + instant book + deposit/balance &mdash; none modelled. No products, no book, no price.</td>
+</tr>
+<tr>
+  <td><span class="badge badge-multiday">Multi-Day</span></td>
+  <td><span class="fit"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></td>
+  <td>JTBD 1 &mdash; show the day-by-day of a scheduled trip.</td>
+  <td>Strong for authoring the fixed itinerary content and notes.</td>
+  <td class="no">No <code>scheduled_departure</code> picker, no departure codes, no seat inventory, no waitlist, no public reviews / physical rating.</td>
+</tr>
+<tr>
+  <td><span class="badge badge-honeymoon">Honeymoon</span></td>
+  <td><span class="fit"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></td>
+  <td>JTBD 5 &mdash; upsell experiences on the same platform.</td>
+  <td>Day-planner works for the honeymoon leg itself.</td>
+  <td class="no">No <code>room_block</code>, no COMPARE tool, no per-guest payment ledger, no wedding manifest &mdash; the ICP's defining features.</td>
+</tr>
+<tr>
+  <td><span class="badge badge-safari">Safari</span></td>
+  <td><span class="fit"><i class="on"></i><i></i><i></i><i></i><i></i></span></td>
+  <td>JTBD 2 &mdash; assemble a multi-camp itinerary (<em>visually</em> only).</td>
+  <td>Map + multi-day structure loosely fit the shape of a route.</td>
+  <td class="no">No per-camp per-date inventory, no availability holds/expiry, no inter-camp transfers as bookable items, no trade portal. Transit is walk/metro/train, not charter flights.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- 6. TENSION -->
+<span class="section-num" id="tension">Section 6</span>
+<h2>The Anchor Tension, in Detail</h2>
+
+<p>The research is explicit: <span class="badge badge-island">Island Tour</span> is the cleanest v1 anchor because it is <code>fixed_catalogue</code>, mostly instant-book, mostly deposit + balance &mdash; the simplest data and content model. The traveler journey for that ICP is <strong>browse &rarr; discover &rarr; compare 2&ndash;3 tour variants &rarr; instant book with deposit</strong>.</p>
+
+<p>The builder, by contrast, implements the <strong>quote</strong>-mode journey: capture a brief, assemble a bespoke day-by-day by hand (or from AI/template), then share a live proposal and collect a reply. That is the Advisor / Luxury pattern &mdash; the research's own "4+ step, no card-on-file at inquiry" flow &mdash; not the anchor's two-step book&rarr;pay.</p>
+
+<p>The consequence is a mismatch of completeness. The builder is closest to done for the two ICPs the research recommends deferring or licensing (Advisor is called "a fundamentally different data model… recommend deferring"), and furthest from done for the anchor it recommends shipping first. This is not a defect in the builder &mdash; it is a strong proposal tool &mdash; but it means <strong>the builder alone does not make the Island Tour v1 sellable</strong>. The catalogue + instant-book + deposit surface must exist alongside it.</p>
+
+<!-- 7. GAPS -->
+<span class="section-num" id="gaps">Section 7</span>
+<h2>Gap Analysis: What to Add, What to Defer</h2>
+
+<p>Grouping the missing pieces by how central they are to shipping, and how hard the research says they are to retrofit.</p>
+
+<div class="retrofit-matrix">
+  <div class="retrofit-col retrofit-hard">
+    <h4 style="color:#991b1b;">Add to the builder / adjacent (blocks a sellable v1)</h4>
+    <ul>
+      <li><strong>Pricing:</strong> per-stop / per-day / trip totals &mdash; unlocks a real quote for every ICP.</li>
+      <li><strong>Status ladder:</strong> extend Draft/Shared &rarr; Quote-sent &rarr; Accepted &rarr; Confirmed &rarr; Paid.</li>
+      <li><strong>Instant book + deposit/balance:</strong> the anchor's conversion path (may live in a Bookings module the builder hands off to).</li>
+      <li><strong>Lead / CRM link:</strong> a lead pipeline behind the client attachment.</li>
+    </ul>
+  </div>
+  <div class="retrofit-col retrofit-easy">
+    <h4 style="color:#166534;">Defer to per-ICP modules (research: hardest to retrofit, but post-MVP)</h4>
+    <ul>
+      <li><strong>Honeymoon:</strong> <code>room_block</code> + per-guest ledger + COMPARE.</li>
+      <li><strong>Safari:</strong> <code>per_date_inventory</code>, holds, inter-camp transfers, <code>trade_portal</code>.</li>
+      <li><strong>Multi-Day:</strong> <code>scheduled_departure</code> picker, codes, seats, waitlist, physical rating.</li>
+      <li><strong>Advisor:</strong> <code>commission_split</code>, supplier net-rates.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Universal gaps that matter across all six</h3>
+<p>Three absences show up for every ICP, not just one: <strong>price/cost anywhere</strong>, <strong>any booking or payment step</strong>, and <strong>any status beyond Draft/Shared</strong>. These are the difference between a <em>presentation</em> tool and a <em>proposal</em> tool. Closing them is what turns the builder from a beautiful share-link into the commercial spine of the quote-mode ICPs.</p>
+
+<!-- 8. RECOMMENDATIONS -->
+<span class="section-num" id="recommendations">Section 8</span>
+<h2>Recommendations</h2>
+
+<ul class="strat-list">
+  <li>
+    <strong>Keep the builder as the shared-core proposal surface &mdash; don't overload it.</strong>
+    It is already an excellent day-by-day planner and client viewer. Inventory, payments, and per-ICP modules should not be crammed into it; they belong to modes/modules the builder <em>hands off to</em>.
+  </li>
+  <li>
+    <strong>Add the pricing + status ladder next &mdash; it is the single highest-leverage gap.</strong>
+    Per-component pricing and a Quote-sent &rarr; Accepted &rarr; Confirmed &rarr; Paid status chain unlock Advisor, Luxury, Honeymoon, and Safari <em>quote</em> flows at once, with one shared change rather than four bespoke ones.
+  </li>
+  <li>
+    <strong>Decide the Island Tour money-path deliberately.</strong>
+    The anchor needs a fixed-catalogue browse + instant-book + deposit surface that the builder does not provide. Either build that as a sibling Bookings module for v1, or accept that v1's first sellable ICP is a <em>quote</em>-mode agency (Luxury), not Island Tour &mdash; and re-anchor accordingly.
+  </li>
+  <li>
+    <strong>Wire templates to the <code>tailormade</code> module concept explicitly.</strong>
+    Templates are the one module the builder already gestures at. Naming and structuring them as tailormade starting points keeps the door open for Luxury / Safari / Island Tour reuse.
+  </li>
+  <li>
+    <strong>Treat the reply loop as the seed of CRM.</strong>
+    The client &rarr; advisor reply is a lightweight thread today. Behind it should sit the lead/CRM pipeline every ICP's JTBD assumes (Advisor JTBD 6, Luxury JTBD 1).
+  </li>
+</ul>
+
+<div class="callout callout-rec">
+<strong>Bottom line.</strong> The builder is a correct and polished piece of the shared ~60% core, and the best-in-class part of the quote-mode experience. To make it load-bearing for a sellable v1, add pricing and a quote&rarr;confirm status ladder, and make an explicit call on whether the Island Tour anchor's instant-book path is built now (as a sibling module) or deferred in favour of launching a quote-mode ICP first.
+</div>
+
+<!-- 9. METHOD -->
+<span class="section-num" id="method">Section 9</span>
+<h2>Method &amp; Sources</h2>
+
+<p style="font-size:0.9rem;">This cross-check was produced by reading the prototype source and the ICP research end-to-end, then mapping observed builder capabilities against the research's feature matrix (Section 8), jobs-to-be-done (Section 6), and modes/modules architecture (Section 9). "Fit" ratings are qualitative judgements from the JTBD alignment, not a measured score. No feature was inferred from UI labels alone &mdash; each was confirmed in the prototype's data model and handler logic.</p>
+
+<h4>Source documents</h4>
+<ul style="list-style:none;padding:0;font-size:0.85rem;color:var(--text-secondary);">
+  <li><strong>Builder:</strong> <code>prototypes/v0.5.5-states.html</code> &mdash; itinerary screen, <code>iti</code> module, brief/template/AI/share logic, <code>STATUS</code>, <code>CAT</code>, <code>INTERESTS</code>, trips &amp; templates seed data.</li>
+  <li><strong>Research:</strong> <code>docs/research/island-tour-vs-agency-icps-combined.html</code> v1.1 (29 Jun 2026) &mdash; 6 ICPs, traveler/agency journeys, data model, JTBD, feature matrix, modes + modules.</li>
+</ul>
+
+<hr class="rule">
+<p class="foot">
+Cross-check report v1.0 &middot; 1 Jul 2026. Analysis compiled for Shad / Tripwheel. Fit ratings and the 60/40 core estimate are qualitative, drawn from the referenced research's own framing. This document reflects the <code>v0.5.5</code> prototype state and should be revisited as the builder gains pricing, status, or module surfaces.
+</p>
+
+</main>
+</div>
+
+<script>
+document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(link.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+const sections = document.querySelectorAll('[id]');
+const tocLinks = document.querySelectorAll('.sidebar a[href^="#"]');
+function updateToc(){
+  let cur='';
+  sections.forEach(s=>{ if(s.getBoundingClientRect().top<=100) cur=s.id; });
+  tocLinks.forEach(l=>l.classList.toggle('active', l.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll', updateToc, { passive:true });
+updateToc();
+</script>
+
+</body>
+</html>
